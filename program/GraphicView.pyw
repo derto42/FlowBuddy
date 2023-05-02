@@ -92,6 +92,7 @@ class NewGroupDialog(QDialog):
         create_button.clicked.connect(self.validate_and_accept)
         button_layout.addWidget(create_button)
 
+        layout.addItem(QSpacerItem(1, 10, QSizePolicy.Minimum, QSizePolicy.Fixed))
         layout.addLayout(button_layout)
 
     def paintEvent(self, event):
@@ -205,7 +206,7 @@ class NewTaskDialog(QDialog):
         self.choose_file_button.clicked.connect(self.choose_file)
 
         button_layout = QHBoxLayout()
-        button_layout.setSpacing(10)
+        button_layout.setSpacing(20)
         button_layout.setAlignment(Qt.AlignCenter)
 
         cancel_button = CustomButton("")
@@ -222,7 +223,7 @@ class NewTaskDialog(QDialog):
         create_button.clicked.connect(self.validate_and_accept)
         button_layout.addWidget(create_button)
 
-        layout.addItem(QSpacerItem(1, 20, QSizePolicy.Minimum, QSizePolicy.Fixed))
+        layout.addItem(QSpacerItem(1, 10, QSizePolicy.Minimum, QSizePolicy.Fixed))
         layout.addLayout(button_layout)
 
         self.setStyleSheet("background-color: #FFFFFF;")  # set white background color
