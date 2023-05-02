@@ -479,8 +479,7 @@ class CustomWindow(QWidget):
                         json.dump(data, f, indent=4)
                         f.truncate()
 
-                self.clearLayout(self.parent_layout)
-                self.render_groups()
+                self.rerender_groups()
 
     def create_new_task(self, group_name):
         new_task_dialog = NewTaskDialog(self, group_name)
@@ -504,10 +503,7 @@ class CustomWindow(QWidget):
                     json.dump(data, f, indent=4)
                     f.truncate()
 
-                # Update the UI for the new task
-                # self.update_ui_for_new_task(group_name, task_data)
-                self.clearLayout(self.parent_layout)
-                self.render_groups()
+                self.rerender_groups()
 
     def edit_group(self, group_name, group_label_widget):
         edit_group_dialog = NewGroupDialog(self, group_name)
@@ -552,37 +548,7 @@ class CustomWindow(QWidget):
                     f.truncate()
                     json.dump(data, f, indent=4)
 
-            # Update the UI to reflect the new group
-            group_layout = QVBoxLayout()
-            
-            group_label = QLabel(group_name)
-            group_label.setFont(QFont("helvetica", 24, QFont.Bold))
-
-            create_task_button = QPushButton()
-
-            delete_group_button = self.create_delete_button()
-            delete_group_button.clicked.connect(partial(self.delete_group, group_name, group_layout=group_layout))
-            create_task_button = QPushButton()
-            create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
-            create_task_button.setFixedSize(24, 24)
-            create_task_button.setCursor(Qt.PointingHandCursor)
-            create_task_button.clicked.connect(partial(self.create_new_task, group_name))
-            create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
-            create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
-            edit_group_button = self.create_edit_button()
-            edit_group_button.clicked.connect(partial(self.edit_group, group_name, group_label))
-
-            header_layout = QHBoxLayout()
-            header_layout.addWidget(group_label)
-            header_layout.addStretch(1)
-            header_layout.addWidget(create_task_button)
-            header_layout.addWidget(delete_group_button)
-            header_layout.addWidget(edit_group_button)
-
-            group_layout.addLayout(header_layout)
-
-            self.parent_layout.addLayout(group_layout)
-            self.update()
+            self.rerender_groups()
 
     def save_and_close(self):
         self.save_position()
@@ -628,6 +594,11 @@ class CustomWindow(QWidget):
 
         self.clearLayout(task_layout)
         self.update()
+        
+    def rerender_groups(self):
+        self.clearLayout(self.parent_layout)
+        self.render_groups()
+        self.turn_edit_mode(self.edit_mode)
         
     def render_groups(self):
         with open("data.json") as f:
