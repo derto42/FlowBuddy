@@ -392,6 +392,7 @@ class CustomWindow(QWidget):
         self.turn_edit_mode(False)  # edit mode is turned off in default
 
         layout.addLayout(self.parent_layout)
+        layout.addStretch(1)
 
     def set_button_style(self, button, style, event):
         button.setStyleSheet(style)
@@ -690,20 +691,20 @@ class CustomWindow(QWidget):
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
                     task_layout.addWidget(button)
 
-                    def func_1(*x):
-                        pass
-                    
-                    def func_2(*x):
-                        pass
-                    
+                    commands = []
+
                     if task["url"]:
                         urls = task["url"].split(',')
-                        func_1 = lambda *x, urls=urls: [webbrowser.open(url.strip()) for url in urls]
+                        func_1 = lambda *x, urls=urls, name=task["name"]: print([webbrowser.open(url.strip()) for url in urls], x, name)
+                        commands.append(func_1)
                         
                     if task["file"]:
-                        func_2 = lambda *x: os.startfile(task["file"])
+                        func_2 = lambda *x, name=task["name"]: print(os.startfile(task["file"]), x, name)
+                        commands.append(func_2)
                         
-                    button.clicked.connect(lambda x: func_2(func_1()))
+                    button.setProperty("commands", commands)
+                        
+                    button.clicked.connect(lambda x, btn=button: [command() for command in btn.property("commands")])
                     if not (task["url"] or task["file"]):
                         button.setEnabled(False)
 
