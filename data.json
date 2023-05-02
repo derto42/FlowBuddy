@@ -1,0 +1,33 @@
+[
+    {
+        "name": "Fonts",
+        "tasks": [
+            {
+                "name": "DAFONTs",
+                "text": "",
+                "button_text": "DAFONT",
+                "url": "https://www.dafontfree.io/commercial-fonts/",
+                "file": "file"
+            },
+            {
+                "name": "cehckit",
+                "text": "",
+                "button_text": "WOFF2 Converter",
+                "url": "",
+                "file": "D:/System/Pictures/AI/Projects/DesignOverlay/internals/AddOns/ttf to woff2.pyw"
+            }
+        ]
+    },
+    {
+        "name": "Images",
+        "tasks": [
+            {
+                "name": "images1",
+                "text": "Optimizer",
+                "button_text": "Optimize",
+                "url": "",
+                "file": "C:/Program Files/Imagine/Imagine.exe"
+            }
+        ]
+    }
+]

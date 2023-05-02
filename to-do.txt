@@ -1,0 +1,9 @@
+Bug: when I press ` twice it doesnt save position
+
+Bug: Create/Edit Task/Group is not borderless
+
+Fix a bug, when creating a no button thingy in fonts, the woff2 becomes unusable
+
+Bug: Clicking edit button twice makes it unusable
+
+Add: Edit toggle button that will show and hide buttons
