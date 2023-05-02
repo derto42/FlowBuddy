@@ -646,10 +646,10 @@ class CustomWindow(QWidget):
 
             header_layout = QHBoxLayout()
             header_layout.addWidget(group_label)
-            header_layout.addStretch(1)
             header_layout.addWidget(create_task_button)
             header_layout.addWidget(delete_group_button)
             header_layout.addWidget(edit_group_button)
+            header_layout.addStretch(1)
 
             group_layout.addLayout(header_layout)
 
@@ -674,7 +674,7 @@ class CustomWindow(QWidget):
                     button.setProperty("normal_color", "#DADADA")
                     button.setProperty("hover_color", "#EBEBEB")
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
-
+                    task_layout.addWidget(button)
 
                     def func_1(*x):
                         pass
@@ -693,9 +693,9 @@ class CustomWindow(QWidget):
                     if not (task["url"] or (task["file"] and task["file"] != "file")):
                         button.setEnabled(False)
 
-                task_layout.addWidget(button)
-                task_layout.addWidget(delete_task_button, alignment=Qt.AlignRight)
-                task_layout.addWidget(edit_task_button)                
+                task_layout.addWidget(delete_task_button)
+                task_layout.addWidget(edit_task_button)
+                task_layout.addStretch(1)
                 group_layout.addLayout(task_layout)
 
             self.parent_layout.addLayout(group_layout)
