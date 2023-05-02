@@ -196,7 +196,7 @@ class NewTaskDialog(QDialog):
         self.url_input.setFont(QFont("Helvetica", 16))
         layout.addWidget(self.url_input, alignment=Qt.AlignCenter)
 
-        self.file_input = "file"
+        self.file_input = ""
 
         self.choose_file_button = CustomButton("Choose File")
         self.choose_file_button.setFixedSize(200, 38)
@@ -687,11 +687,11 @@ class CustomWindow(QWidget):
                         urls = task["url"].split(',')
                         func_1 = lambda *x, urls=urls: [webbrowser.open(url.strip()) for url in urls]
                         
-                    if task["file"] and task["file"] != "file":
+                    if task["file"]:
                         func_2 = lambda *x: os.startfile(task["file"])
                         
                     button.clicked.connect(lambda x: func_2(func_1()))
-                    if not (task["url"] or (task["file"] and task["file"] != "file")):
+                    if not (task["url"] or task["file"]):
                         button.setEnabled(False)
 
                 task_layout.addSpacing(10)
