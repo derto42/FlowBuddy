@@ -1,6 +1,6 @@
 [
     {
-        "name": "Fonts",
+        "name": "Fontas",
         "tasks": [
             {
                 "name": "fonts1263463475",
@@ -17,8 +17,8 @@
                 "file": "D:/System/Pictures/AI/Projects/DesignOverlay/GitHub/AddOns/ttf to woff2.pyw"
             },
             {
-                "name": "Fonts1682987859",
-                "text": "Check",
+                "name": "2463757",
+                "text": "Check IT out",
                 "button_text": "",
                 "url": "",
                 "file": "file"
@@ -29,11 +29,18 @@
         "name": "Images",
         "tasks": [
             {
-                "name": "images15325",
-                "text": "Optimizer",
+                "name": "35266",
+                "text": "Optimize",
                 "button_text": "Optimize",
                 "url": "",
                 "file": "C:/Program Files/Imagine/Imagine.exe"
+            },
+            {
+                "name": "Images1683042625",
+                "text": "testing",
+                "button_text": "",
+                "url": "",
+                "file": "file"
             }
         ]
     }

@@ -452,6 +452,10 @@ class CustomWindow(QWidget):
             if result == QDialog.Accepted:
                 updated_task_data = edit_task_dialog.get_task_data()
                 if updated_task_data:
+                    # Generate a unique task name based on the current timestamp
+                    unique_task_name = f"{group_name}{int(time.time())}"
+                    updated_task_data["name"] = unique_task_name
+
                     # Update the task data in the JSON file
                     with open("data.json", "r+") as f:
                         data = json.load(f)
@@ -465,6 +469,8 @@ class CustomWindow(QWidget):
                         f.seek(0)
                         json.dump(data, f, indent=4)
                         f.truncate()
+
+
 
     def create_new_task(self, group_name):
         new_task_dialog = NewTaskDialog(self, group_name)
