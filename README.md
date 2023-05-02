@@ -10,8 +10,8 @@ GraphicFlow is a  user-friendly shortcut and group management application built 
    - Delete groups you no longer need.
 
 2. Create and manage shortcuts within groups:
-   - Add new shortcuts to each group, including a label, button text, and action (open a URL or a local file).
-   - Edit existing shortcuts, updating their labels, button texts, and actions.
+   - Add new shortcuts to each group, including a label, button , and action (open a URL or a local file).
+   - Edit existing shortcuts, updating their labels, button , and actions.
    - Delete shortcuts you no longer need.
 
 3. Customize the appearance of buttons:
@@ -26,5 +26,4 @@ GraphicFlow is a  user-friendly shortcut and group management application built 
 
 To get started with GraphicFlow, simply run the provided Python script. You will need Python 3 and the PyQt5 package installed.
 
-Once you have the required dependencies, launch the application by running the script:
-
+Once you have the required dependencies, open the "GraphicLauncher.pyw"
