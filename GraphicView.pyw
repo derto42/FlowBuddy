@@ -39,6 +39,7 @@ class CustomButton(QPushButton):
         size = QSize(button_width, 38)  # Setting fixed height including top and bottom padding
         return size
 
+
 class NewGroupDialog(QDialog):
     def __init__(self, parent=None, group_name=None):
         super().__init__(parent)
@@ -103,7 +104,6 @@ class NewGroupDialog(QDialog):
         stroke_color = QColor("#DADADA")
         painter.setPen(QPen(stroke_color, 2))
         painter.drawPath(path)
-        
 
     def get_group_name(self):
         return self.group_name_input.text()
@@ -138,9 +138,20 @@ class NewGroupDialog(QDialog):
             
         self.accept()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.moving = True
+            self.offset = event.pos()
+
+    def mouseMoveEvent(self, event):
+        if self.moving:
+            self.move(event.globalPos() - self.offset)
+
+
 class NewTaskDialog(QDialog):
     def __init__(self, group_name, parent=None, task_data=None):
         super().__init__(parent)
+        self.setWindowFlags(Qt.FramelessWindowHint)
         self.group_name = group_name
         self.file_input = None
         self.task_data = task_data
@@ -227,16 +238,12 @@ class NewTaskDialog(QDialog):
             if "file" in self.task_data and self.task_data["file"]:
                 self.file_input = self.task_data["file"]
 
-       
-
-
     def choose_file(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
         file_name, _ = QFileDialog.getOpenFileName(self, "Choose File", "", "All Files (*)", options=options)
         if file_name:
             self.file_input = file_name
-
 
     def get_task_data(self):
         text = self.text_input.text().strip()
@@ -251,12 +258,19 @@ class NewTaskDialog(QDialog):
             "file": self.file_input
         }
 
-
     def validate_and_accept(self):
         task_data = self.get_task_data()
         if task_data:
             self.accept()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.moving = True
+            self.offset = event.pos()
+
+    def mouseMoveEvent(self, event):
+        if self.moving:
+            self.move(event.globalPos() - self.offset)
 
 
 class CustomWindow(QWidget):
@@ -268,7 +282,6 @@ class CustomWindow(QWidget):
         edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
         edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
         return edit_button
-
 
     def __init__(self):
         super().__init__()
@@ -433,7 +446,6 @@ class CustomWindow(QWidget):
                         group_layout.addLayout(task_layout)
                         break
 
-
     def edit_task(self, task_name, group_name):
         # Find the existing task data
         task_data = None
@@ -469,7 +481,6 @@ class CustomWindow(QWidget):
                         json.dump(data, f, indent=4)
                         f.truncate()
 
-
     def create_new_task(self, group_name):
         new_task_dialog = NewTaskDialog(group_name, self)
         new_task_dialog.setModal(True)
@@ -494,8 +505,6 @@ class CustomWindow(QWidget):
 
                 # Update the UI for the new task
                 self.update_ui_for_new_task(group_name, task_data)
-
-
 
     def edit_group(self, group_name):
         edit_group_dialog = NewGroupDialog(self, group_name)
@@ -522,7 +531,6 @@ class CustomWindow(QWidget):
                     if isinstance(widget, QLabel) and widget.text() == group_name:
                         widget.setText(new_group_name)
                         break
-
 
     def create_new_group(self):
         new_group_dialog = NewGroupDialog(self)
@@ -569,8 +577,7 @@ class CustomWindow(QWidget):
 
             self.layout().addLayout(group_layout)
             self.update()
-            
-            
+
     def save_and_close(self):
         self.save_position()
         self.close()
@@ -602,7 +609,6 @@ class CustomWindow(QWidget):
                     group_layout.deleteLater()
                     break
 
-
     def delete_task(self, group_name, task):
         # Remove task from the data file
         with open("data.json", "r+") as f:
@@ -628,7 +634,6 @@ class CustomWindow(QWidget):
                         task_widget.deleteLater()
                         break
 
-
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -645,7 +650,6 @@ class CustomWindow(QWidget):
     def save_position(self):
         with open("position.txt", "w") as f:
             f.write(f"{self.pos().x()},{self.pos().y()}")
-
 
     def save_and_close(self):
         self.save_position()
