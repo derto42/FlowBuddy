@@ -58,6 +58,9 @@ class NewGroupDialog(QDialog):
         title_label.setFont(QFont("Helvetica", 24, QFont.Bold))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
+        spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        layout.addItem(spacer)
+
         self.group_name_input = QLineEdit()
         self.group_name_input.setFixedHeight(38)
         self.group_name_input.setFixedWidth(200)
