@@ -38,7 +38,7 @@ class ProcessThread(QThread):
 
 def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    icon_path = os.path.join(current_dir, "icon.png")
+    icon_path = os.path.join(current_dir, "icons", "icon.png")
 
     app = QApplication([])
     tray_icon = QSystemTrayIcon(QIcon(icon_path), parent=app)
