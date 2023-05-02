@@ -1,6 +1,6 @@
 # GraphicFlow
 
-GraphicFlow is a powerful and user-friendly shortcut and group management application built using PyQt5. It provides users with an intuitive interface to create, edit, and delete groups and shortcuts to enhance their productivity.
+GraphicFlow is a  user-friendly shortcut and group management application built using PyQt5. It provides users with an intuitive interface to create, edit, and delete shortcuts to enhance their productivity.
 
 ## Features
 
