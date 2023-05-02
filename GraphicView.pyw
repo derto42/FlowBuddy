@@ -534,13 +534,15 @@ class CustomWindow(QWidget):
                     json.dump(data, f, indent=4)
 
             # Update the UI to reflect the new group
+            group_layout = QVBoxLayout()
+            
             group_label = QLabel(group_name)
             group_label.setFont(QFont("helvetica", 24, QFont.Bold))
 
             create_task_button = QPushButton()
 
             delete_group_button = self.create_delete_button()
-            delete_group_button.clicked.connect(partial(self.delete_group, group_name))
+            delete_group_button.clicked.connect(partial(self.delete_group, group_name, group_layout=group_layout))
             create_task_button = QPushButton()
             create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
             create_task_button.setFixedSize(24, 24)
@@ -558,10 +560,9 @@ class CustomWindow(QWidget):
             header_layout.addWidget(delete_group_button)
             header_layout.addWidget(edit_group_button)
 
-            group_layout = QVBoxLayout()
             group_layout.addLayout(header_layout)
 
-            self.layout().addLayout(group_layout)
+            self.parent_layout.addLayout(group_layout)
             self.update()
 
     def save_and_close(self):
