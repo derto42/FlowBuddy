@@ -149,18 +149,18 @@ class NewGroupDialog(QDialog):
 
 
 class NewTaskDialog(QDialog):
-    def __init__(self, group_name, parent=None, task_data=None):
+    def __init__(self, parent, group_name, task_data=None):
         super().__init__(parent)
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.Dialog | Qt.WindowCloseButtonHint | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
         self.group_name = group_name
         self.file_input = None
         self.task_data = task_data
 
-
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout()
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(10)
-        layout.setAlignment(Qt.AlignCenter)
+        self.setLayout(layout)
 
         title_label = QLabel(f"New Task")
         title_label.setFont(QFont("Helvetica", 24, QFont.Bold))
@@ -170,7 +170,7 @@ class NewTaskDialog(QDialog):
         spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addItem(spacer)
 
-        self.text_input = QLineEdit(self)
+        self.text_input = QLineEdit()
         self.text_input.setPlaceholderText("Text")
         self.text_input.setFixedHeight(38)
         self.text_input.setFixedWidth(200)
@@ -178,7 +178,7 @@ class NewTaskDialog(QDialog):
         self.text_input.setFont(QFont("Helvetica", 16))
         layout.addWidget(self.text_input, alignment=Qt.AlignCenter)
 
-        self.button_text_input = QLineEdit(self)
+        self.button_text_input = QLineEdit()
         self.button_text_input.setPlaceholderText("Button Text")
         self.button_text_input.setFixedHeight(38)
         self.button_text_input.setFixedWidth(200)
@@ -186,7 +186,7 @@ class NewTaskDialog(QDialog):
         self.button_text_input.setFont(QFont("Helvetica", 16))
         layout.addWidget(self.button_text_input, alignment=Qt.AlignCenter)
 
-        self.url_input = QLineEdit(self)
+        self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("URL")
         self.url_input.setFixedHeight(38)
         self.url_input.setFixedWidth(200)
@@ -237,6 +237,19 @@ class NewTaskDialog(QDialog):
             self.url_input.setText(self.task_data["url"])
             if "file" in self.task_data and self.task_data["file"]:
                 self.file_input = self.task_data["file"]
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(self.rect().adjusted(0, 0, -1, -1)), 12, 12)
+        painter.fillPath(path, QColor(Qt.white))
+
+        # Adding the stroke around the window
+        stroke_color = QColor("#DADADA")
+        painter.setPen(QPen(stroke_color, 2))
+        painter.drawPath(path)
 
     def choose_file(self):
         options = QFileDialog.Options()
@@ -460,7 +473,7 @@ class CustomWindow(QWidget):
                     break
 
         if task_data:
-            edit_task_dialog = NewTaskDialog(group_name, self, task_data)
+            edit_task_dialog = NewTaskDialog(self, group_name, task_data)
             edit_task_dialog.setModal(True)
             result = edit_task_dialog.exec()
 
@@ -482,7 +495,7 @@ class CustomWindow(QWidget):
                         f.truncate()
 
     def create_new_task(self, group_name):
-        new_task_dialog = NewTaskDialog(group_name, self)
+        new_task_dialog = NewTaskDialog(self, group_name)
         new_task_dialog.setModal(True)
         result = new_task_dialog.exec()
 
