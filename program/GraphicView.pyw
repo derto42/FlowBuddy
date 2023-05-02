@@ -292,10 +292,13 @@ class NewTaskDialog(QDialog):
 class CustomWindow(QWidget):
 
     def toggle_edit_window(self):
-        if self.edit_window.isVisible():
-            self.edit_window.hide()
-        else:
-            self.edit_window.show()
+        self.turn_edit_mode(not self.edit_mode)
+
+    def turn_edit_mode(self, mode: bool):
+        for widget in self.edit_widgets:
+                widget: QPushButton = widget
+                widget.setHidden(not mode)
+        self.edit_mode = mode
 
     def create_toggle_button(self):
         toggle_button = QPushButton()
@@ -328,6 +331,9 @@ class CustomWindow(QWidget):
 
     def __init__(self):
         super().__init__()
+        
+        self.edit_widgets = []
+        self.edit_mode = True
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -382,6 +388,8 @@ class CustomWindow(QWidget):
         self.parent_layout = QVBoxLayout()
         
         self.render_groups()
+        
+        self.turn_edit_mode(False)  # edit mode is turned off in default
 
         layout.addLayout(self.parent_layout)
 
@@ -624,6 +632,7 @@ class CustomWindow(QWidget):
         with open("data.json") as f:
             data = json.load(f)
 
+        self.edit_widgets = []
         for group in data:
             group_layout = QVBoxLayout()
 
@@ -651,6 +660,10 @@ class CustomWindow(QWidget):
             header_layout.addWidget(delete_group_button)
             header_layout.addWidget(edit_group_button)
             header_layout.addStretch(1)
+            
+            self.edit_widgets.append(create_task_button)
+            self.edit_widgets.append(delete_group_button)
+            self.edit_widgets.append(edit_group_button)
 
             group_layout.addLayout(header_layout)
 
@@ -698,6 +711,10 @@ class CustomWindow(QWidget):
                 task_layout.addWidget(delete_task_button)
                 task_layout.addWidget(edit_task_button)
                 task_layout.addStretch(1)
+                
+                self.edit_widgets.append(delete_task_button)
+                self.edit_widgets.append(edit_task_button)
+                
                 group_layout.addLayout(task_layout)
 
             self.parent_layout.addLayout(group_layout)
@@ -748,4 +765,3 @@ if __name__ == "__main__":
     window = CustomWindow()
     window.show()
     sys.exit(app.exec_())
-
