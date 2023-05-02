@@ -675,12 +675,22 @@ class CustomWindow(QWidget):
                     button.setProperty("hover_color", "#EBEBEB")
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
 
+
+                    def func_1():
+                        pass
+                    
+                    def func_2():
+                        pass
+                    
                     if task["url"]:
                         urls = task["url"].split(',')
-                        button.clicked.connect(lambda checked, urls=urls: [webbrowser.open(url.strip()) for url in urls])
-                    elif task["file"] and task["file"] != "file":
-                        button.clicked.connect(partial(os.startfile, task["file"]))
-                    else:
+                        func_1 = lambda urls=urls: [webbrowser.open(url.strip()) for url in urls]
+                        
+                    if task["file"] and task["file"] != "file":
+                        func_2 = lambda *x: os.startfile(task["file"])
+                        
+                    button.clicked.connect(lambda x: func_2(func_1()))
+                    if not (task["url"] or (task["file"] and task["file"] != "file")):
                         button.setEnabled(False)
 
                 task_layout.addWidget(button)
