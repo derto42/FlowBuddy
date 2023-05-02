@@ -14,8 +14,7 @@ class ProcessThread(QThread):
 
     def run(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        script_path = os.path.join(current_dir, "GraphicView.pyw")
-
+        script_path = os.path.join(current_dir, "program", "GraphicView.pyw")
 
         while not self.isInterruptionRequested():
             # Wait for the '`' key to be pressed
@@ -26,8 +25,8 @@ class ProcessThread(QThread):
 
                 # If the process is not running, start it
                 if self.process is None or self.process.poll() is not None:
-                    self.process = subprocess.Popen(["pythonw", script_path], creationflags=subprocess.CREATE_NO_WINDOW)
-
+                    self.process = subprocess.Popen([sys.executable, script_path], creationflags=subprocess.CREATE_NO_WINDOW)
+                    os.startfile(script_path)  # Add this line
 
                 # If the process is running, terminate it and set it to None
                 else:
@@ -36,9 +35,11 @@ class ProcessThread(QThread):
 
             sleep(0.1)
 
+
+
 def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    icon_path = os.path.join(current_dir, "icons", "icon.png")
+    icon_path = os.path.join(current_dir, "program", "icons", "icon.png")
 
     app = QApplication([])
     tray_icon = QSystemTrayIcon(QIcon(icon_path), parent=app)
