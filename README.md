@@ -20,8 +20,6 @@ GraphicFlow is a  user-friendly shortcut and group management application built 
 4. Save and load the application state:
    - GraphicFlow saves your window position and group/shortcut configuration so that it's consistent across different sessions.
 
-5. Drag and move the application window using the mouse.
-
 ## Getting Started
 
 To get started with GraphicFlow, simply run the provided Python script. You will need Python 3 and the PyQt5 package installed.
