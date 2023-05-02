@@ -24,7 +24,8 @@ class CustomButton(QPushButton):
         painter.setPen(Qt.NoPen)
 
         if self.underMouse():
-            painter.setBrush(QColor("#FFA0A0"))
+            # painter.setBrush(QColor("#FFA0A0"))
+            painter.setBrush(QColor(self.property("hover_color")))
         else:
             painter.setBrush(self.palette().button())
 
@@ -198,6 +199,7 @@ class NewTaskDialog(QDialog):
 
         self.choose_file_button = CustomButton("Choose File")
         self.choose_file_button.setFixedSize(200, 38)
+        self.choose_file_button.setProperty("hover_color", "#FFA0A0")
         layout.addWidget(self.choose_file_button, alignment=Qt.AlignCenter)
         self.choose_file_button.clicked.connect(self.choose_file)
 
@@ -386,7 +388,7 @@ class CustomWindow(QWidget):
                         group_layout.addLayout(task_layout)
                         break
 
-    def edit_task(self, task_name, group_name):
+    def edit_task(self, group_name, task_name):
         # Find the existing task data
         task_data = None
         with open("data.json", "r") as f:
@@ -444,7 +446,9 @@ class CustomWindow(QWidget):
                     f.truncate()
 
                 # Update the UI for the new task
-                self.update_ui_for_new_task(group_name, task_data)
+                # self.update_ui_for_new_task(group_name, task_data)
+                self.clearLayout(self.parent_layout)
+                self.render_groups()
 
     def edit_group(self, group_name):
         edit_group_dialog = NewGroupDialog(self, group_name)
@@ -546,9 +550,14 @@ class CustomWindow(QWidget):
         # Remove task from the data file
         with open("data.json", "r+") as f:
             data = json.load(f)
-            for group in data:
-                if group["name"] == group_name:
-                    group["tasks"] = [t for t in group["tasks"] if t != task]
+            for group_no in range(len(data)):
+                if data[group_no]["name"] == group_name:
+                    task_list = []
+                    for t in data[group_no]["tasks"]:
+                        if t["name"] == task:
+                            continue
+                        task_list.append(t)
+                    data[group_no]["tasks"] = task_list
                     break
             f.seek(0)
             json.dump(data, f, indent=4)
@@ -595,10 +604,10 @@ class CustomWindow(QWidget):
                 task_layout.setSpacing(10)
 
                 delete_task_button = self.create_delete_button()
-                delete_task_button.clicked.connect(partial(self.delete_task, task["name"], group["name"], task_layout=task_layout))
+                delete_task_button.clicked.connect(partial(self.delete_task, group["name"], task["name"], task_layout=task_layout))
 
                 edit_task_button = self.create_edit_button()
-                edit_task_button.clicked.connect(partial(self.edit_task, task["name"], group["name"]))
+                edit_task_button.clicked.connect(partial(self.edit_task, group["name"], task["name"]))
 
                 if task["text"]:
                     task_text = QLabel(task["text"])
