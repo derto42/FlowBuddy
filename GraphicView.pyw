@@ -619,16 +619,14 @@ class CustomWindow(QWidget):
                     button.setProperty("normal_color", "#DADADA")
                     button.setProperty("hover_color", "#EBEBEB")
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
-                
 
-
-                if task["url"]:
-                    urls = task["url"].split(',')
-                    button.clicked.connect(lambda checked, urls=urls: [webbrowser.open(url.strip()) for url in urls])
-                elif task["file"] and task["file"] != "file":
-                    button.clicked.connect(partial(os.startfile, task["file"]))
-                else:
-                    button.setEnabled(False)
+                    if task["url"]:
+                        urls = task["url"].split(',')
+                        button.clicked.connect(lambda checked, urls=urls: [webbrowser.open(url.strip()) for url in urls])
+                    elif task["file"] and task["file"] != "file":
+                        button.clicked.connect(partial(os.startfile, task["file"]))
+                    else:
+                        button.setEnabled(False)
 
                 task_layout.addWidget(button)
                 task_layout.addWidget(delete_task_button, alignment=Qt.AlignRight)
