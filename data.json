@@ -3,18 +3,18 @@
         "name": "Fonts",
         "tasks": [
             {
-                "name": "fonts1",
+                "name": "fonts1263463475",
                 "text": "",
                 "button_text": "DAFONT",
                 "url": "https://www.dafontfree.io/commercial-fonts/",
                 "file": "file"
             },
             {
-                "name": "fonts1",
+                "name": "25325",
                 "text": "",
                 "button_text": "WOFF2 Converter",
                 "url": "",
-                "file": "D:/System/Pictures/AI/Projects/DesignOverlay/internals/AddOns/ttf to woff2.pyw"
+                "file": "D:/System/Pictures/AI/Projects/DesignOverlay/GitHub/AddOns/ttf to woff2.pyw"
             },
             {
                 "name": "Fonts1682987859",
@@ -29,7 +29,7 @@
         "name": "Images",
         "tasks": [
             {
-                "name": "images1",
+                "name": "images15325",
                 "text": "Optimizer",
                 "button_text": "Optimize",
                 "url": "",
