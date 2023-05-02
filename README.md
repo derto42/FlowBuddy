@@ -28,3 +28,5 @@ GraphicFlow is a  user-friendly shortcut and group management application built 
 To get started with GraphicFlow, simply run the provided Python script. You will need Python 3 and the PyQt5 package installed.
 
 Once you have the required dependencies, open the "GraphicLauncher.pyw"
+
+Click ` key to access the overlay
