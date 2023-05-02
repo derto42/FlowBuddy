@@ -7,21 +7,28 @@
                 "text": "",
                 "button_text": "DAFONT",
                 "url": "https://www.dafontfree.io/commercial-fonts/",
-                "file": "file"
+                "file": ""
             },
             {
-                "name": "25325",
+                "name": "Fontas1683050776",
                 "text": "",
                 "button_text": "WOFF2 Converter",
-                "url": "",
-                "file": "D:/System/Pictures/AI/Projects/DesignOverlay/GitHub/AddOns/ttf to woff2.pyw"
+                "url": "https://www.dafontfree.io/commercial-fonts/",
+                "file": "D:/System/Pictures/AI/Projects/DesignOverlay/GitHub/program/AddOns/ttf to woff2.pyw"
             },
             {
                 "name": "2463757",
                 "text": "Check IT out",
                 "button_text": "",
                 "url": "",
-                "file": "file"
+                "file": ""
+            },
+            {
+                "name": "Fontas1683050755",
+                "text": "dfh",
+                "button_text": "hsdh",
+                "url": "",
+                "file": ""
             }
         ]
     },
@@ -40,7 +47,7 @@
                 "text": "testing",
                 "button_text": "",
                 "url": "",
-                "file": "file"
+                "file": ""
             }
         ]
     }
