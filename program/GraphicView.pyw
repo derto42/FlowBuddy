@@ -646,6 +646,7 @@ class CustomWindow(QWidget):
 
             header_layout = QHBoxLayout()
             header_layout.addWidget(group_label)
+            header_layout.addSpacing(10)
             header_layout.addWidget(create_task_button)
             header_layout.addWidget(delete_group_button)
             header_layout.addWidget(edit_group_button)
@@ -693,6 +694,7 @@ class CustomWindow(QWidget):
                     if not (task["url"] or (task["file"] and task["file"] != "file")):
                         button.setEnabled(False)
 
+                task_layout.addSpacing(10)
                 task_layout.addWidget(delete_task_button)
                 task_layout.addWidget(edit_task_button)
                 task_layout.addStretch(1)
