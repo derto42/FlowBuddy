@@ -2,6 +2,7 @@ import sys
 import json
 import webbrowser
 import os
+import time
 from functools import partial
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QGraphicsDropShadowEffect, QDialog, QLineEdit, QFileDialog, QMessageBox
@@ -39,20 +40,18 @@ class CustomButton(QPushButton):
         return size
 
 class NewGroupDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, group_name=None):
         super().__init__(parent)
 
-        self.setWindowFlags(Qt.Dialog | Qt.WindowCloseButtonHint)
+        self.setWindowFlags(Qt.Dialog | Qt.WindowCloseButtonHint | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        
-
 
         layout = QVBoxLayout()
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(10)
         self.setLayout(layout)
 
-        title_label = QLabel("New Group")
+        title_label = QLabel()
         title_label.setFont(QFont("Helvetica", 24, QFont.Bold))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
@@ -66,6 +65,12 @@ class NewGroupDialog(QDialog):
         self.group_name_input.enterEvent = lambda event: self.set_group_name_input_hover(True)
         self.group_name_input.leaveEvent = lambda event: self.set_group_name_input_hover(False)
         layout.addWidget(self.group_name_input, alignment=Qt.AlignCenter)
+
+        if group_name:
+            title_label.setText("Edit Group")
+            self.group_name_input.setText(group_name)
+        else:
+            title_label.setText("New Group")
 
         button_layout = QHBoxLayout()
         button_layout.setSpacing(2)
@@ -83,7 +88,6 @@ class NewGroupDialog(QDialog):
         create_button.setFixedSize(75, 24)
         create_button.clicked.connect(self.validate_and_accept)
         button_layout.addWidget(create_button)
-
 
         layout.addLayout(button_layout)
 
@@ -135,9 +139,12 @@ class NewGroupDialog(QDialog):
         self.accept()
 
 class NewTaskDialog(QDialog):
-    def __init__(self, group_name, parent=None):
+    def __init__(self, group_name, parent=None, task_data=None):
         super().__init__(parent)
         self.group_name = group_name
+        self.file_input = None
+        self.task_data = task_data
+
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
@@ -211,7 +218,14 @@ class NewTaskDialog(QDialog):
         shadow.setOffset(0)
         self.setGraphicsEffect(shadow)  # set shadow effect on dialog
 
+        
 
+        if self.task_data:
+            self.text_input.setText(self.task_data["text"])
+            self.button_text_input.setText(self.task_data["button_text"])
+            self.url_input.setText(self.task_data["url"])
+            if "file" in self.task_data and self.task_data["file"]:
+                self.file_input = self.task_data["file"]
 
        
 
@@ -246,6 +260,16 @@ class NewTaskDialog(QDialog):
 
 
 class CustomWindow(QWidget):
+
+    def create_edit_button(self):
+        edit_button = QPushButton()
+        edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        edit_button.setFixedSize(24, 24)
+        edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
+        edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        return edit_button
+
+
     def __init__(self):
         super().__init__()
 
@@ -269,12 +293,17 @@ class CustomWindow(QWidget):
         new_group_button.clicked.connect(self.create_new_group)
         new_group_button.enterEvent = lambda event: new_group_button.setStyleSheet("background-color: #ACFFBE; border-radius: 12px;")
         new_group_button.leaveEvent = lambda event: new_group_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
+
         top_buttons_layout = QHBoxLayout()
+        top_buttons_layout.setContentsMargins(0, 0, 0, 24)
+        top_buttons_layout.setSpacing(10)
         top_buttons_layout.addWidget(new_group_button)
         top_buttons_layout.addWidget(exit_button)
         top_buttons_widget = QWidget()
         top_buttons_widget.setLayout(top_buttons_layout)
         layout.addWidget(top_buttons_widget, alignment=Qt.AlignTop | Qt.AlignRight)
+
+
 
 
 
@@ -300,34 +329,60 @@ class CustomWindow(QWidget):
             create_task_button.clicked.connect(partial(self.create_new_task, group["name"]))
             create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
             create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
+            
+            delete_group_button = self.create_delete_button()
+            delete_group_button.clicked.connect(partial(self.delete_group, group["name"]))
+
+            edit_group_button = self.create_edit_button()
+            edit_group_button.clicked.connect(partial(self.edit_group, group["name"]))
+
             header_layout = QHBoxLayout()
             header_layout.addWidget(group_label)
-            header_layout.addWidget(create_task_button, alignment=Qt.AlignRight)
+            header_layout.addStretch(1)
+            header_layout.addWidget(create_task_button)
+            header_layout.addWidget(delete_group_button)
+            header_layout.addWidget(edit_group_button)
 
             group_layout.addLayout(header_layout)
 
+
             for task in group["tasks"]:
                 task_layout = QHBoxLayout()
-                task_layout.setSpacing(16)
+                task_layout.setSpacing(10)
+
+                delete_task_button = self.create_delete_button()
+                delete_task_button.clicked.connect(partial(self.delete_task, task["name"], group["name"]))
+
+                edit_task_button = self.create_edit_button()
+                edit_task_button.clicked.connect(partial(self.edit_task, task["name"], group["name"]))
 
                 if task["text"]:
                     task_text = QLabel(task["text"])
                     task_text.setFont(QFont("helvetica", 16))
                     task_layout.addWidget(task_text)
 
-                button = CustomButton(task["button_text"])
-                button.setProperty("normal_color", "#DADADA")
-                button.setProperty("hover_color", "#EBEBEB")
-                button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
+                if task["button_text"]:
+                    button = CustomButton(task["button_text"])
+                    button.setProperty("normal_color", "#DADADA")
+                    button.setProperty("hover_color", "#EBEBEB")
+                    button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
+                
+                delete_task_button = self.create_delete_button()
+                delete_task_button.clicked.connect(partial(self.delete_task, group["name"], task))
+
+
 
                 if task["url"]:
-                    button.clicked.connect(partial(webbrowser.open, task["url"]))
+                    urls = task["url"].split(',')
+                    button.clicked.connect(lambda checked, urls=urls: [webbrowser.open(url.strip()) for url in urls])
                 elif task["file"] and task["file"] != "file":
                     button.clicked.connect(partial(os.startfile, task["file"]))
                 else:
                     button.setEnabled(False)
 
                 task_layout.addWidget(button)
+                task_layout.addWidget(delete_task_button, alignment=Qt.AlignRight)
+                task_layout.addWidget(edit_task_button)                
                 group_layout.addLayout(task_layout)
 
             layout.addLayout(group_layout)
@@ -336,13 +391,84 @@ class CustomWindow(QWidget):
         button.setStyleSheet(style)
 
     def update_ui_for_new_task(self, group_name, task_data):
-        for i in range(self.layout.count()):
-            widget = self.layout.itemAt(i).widget()
-            if isinstance(widget, QLabel) and widget.text() == group_name:
-                task_label = QLabel(task_data["text"])
-                task_label.setFont(QFont("helvetica", 18))
-                self.layout.insertWidget(i + 1, task_label)
-                break
+        for i in range(self.layout().count()):
+            group_layout = self.layout().itemAt(i)
+            if isinstance(group_layout, QVBoxLayout):
+                header_layout = group_layout.itemAt(0)
+                if isinstance(header_layout, QHBoxLayout):
+                    group_label = header_layout.itemAt(0).widget()
+                    if isinstance(group_label, QLabel) and group_label.text() == group_name:
+                        # Create and add the new task layout
+                        task_layout = QHBoxLayout()
+                        task_layout.setSpacing(10)
+
+                        delete_task_button = self.create_delete_button()
+                        delete_task_button.clicked.connect(partial(self.delete_task, task_data["name"], group_name))
+
+                        edit_task_button = self.create_edit_button()
+                        edit_task_button.clicked.connect(partial(self.edit_task, task_data["name"], group_name))
+
+                        if task_data["text"]:
+                            task_text = QLabel(task_data["text"])
+                            task_text.setFont(QFont("helvetica", 16))
+                            task_layout.addWidget(task_text)
+
+                        if task_data["button_text"]:
+                            button = CustomButton(task_data["button_text"])
+                            button.setProperty("normal_color", "#DADADA")
+                            button.setProperty("hover_color", "#EBEBEB")
+                            button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
+
+                            urls = task_data["url"] if "url" in task_data else None
+                            file = task_data["file"] if "file" in task_data and task_data["file"] != "file" else None
+                            if urls or file:
+                                button.clicked.connect(partial(self.open_url_and_file, urls, file))
+                            else:
+                                button.setEnabled(False)
+
+                            task_layout.addWidget(button)
+
+                        task_layout.addWidget(delete_task_button, alignment=Qt.AlignRight)
+                        task_layout.addWidget(edit_task_button)
+                        group_layout.addLayout(task_layout)
+                        break
+
+
+    def edit_task(self, task_name, group_name):
+        # Find the existing task data
+        task_data = None
+        with open("data.json", "r") as f:
+            data = json.load(f)
+            for group in data:
+                if group["name"] == group_name:
+                    for task in group["tasks"]:
+                        if task["name"] == task_name:
+                            task_data = task
+                            break
+                    break
+
+        if task_data:
+            edit_task_dialog = NewTaskDialog(group_name, self, task_data)
+            edit_task_dialog.setModal(True)
+            result = edit_task_dialog.exec()
+
+            if result == QDialog.Accepted:
+                updated_task_data = edit_task_dialog.get_task_data()
+                if updated_task_data:
+                    # Update the task data in the JSON file
+                    with open("data.json", "r+") as f:
+                        data = json.load(f)
+                        for group in data:
+                            if group["name"] == group_name:
+                                for i, task in enumerate(group["tasks"]):
+                                    if task["name"] == task_name:
+                                        group["tasks"][i] = updated_task_data
+                                        break
+                                break
+                        f.seek(0)
+                        json.dump(data, f, indent=4)
+                        f.truncate()
+
 
     def create_new_task(self, group_name):
         new_task_dialog = NewTaskDialog(group_name, self)
@@ -352,6 +478,10 @@ class CustomWindow(QWidget):
         if result == QDialog.Accepted:
             task_data = new_task_dialog.get_task_data()
             if task_data:
+                # Generate a unique task name based on the current timestamp
+                unique_task_name = f"{group_name}{int(time.time())}"
+                task_data["name"] = unique_task_name
+
                 with open("data.json", "r+") as f:
                     data = json.load(f)
                     for group in data:
@@ -362,12 +492,41 @@ class CustomWindow(QWidget):
                     json.dump(data, f, indent=4)
                     f.truncate()
 
+                # Update the UI for the new task
+                self.update_ui_for_new_task(group_name, task_data)
 
+
+
+    def edit_group(self, group_name):
+        edit_group_dialog = NewGroupDialog(self, group_name)
+        edit_group_dialog.setModal(True)
+        result = edit_group_dialog.exec()
+
+        if result == QDialog.Accepted:
+            new_group_name = edit_group_dialog.get_group_name()
+            if new_group_name:
+                # Update the group data in the JSON file
+                with open("data.json", "r+") as f:
+                    data = json.load(f)
+                    for group in data:
+                        if group["name"] == group_name:
+                            group["name"] = new_group_name
+                            break
+                    f.seek(0)
+                    json.dump(data, f, indent=4)
+                    f.truncate()
+
+                # Update the UI to reflect the updated group name
+                for i in range(self.layout().count()):
+                    widget = self.layout().itemAt(i).widget()
+                    if isinstance(widget, QLabel) and widget.text() == group_name:
+                        widget.setText(new_group_name)
+                        break
 
 
     def create_new_group(self):
         new_group_dialog = NewGroupDialog(self)
-        new_group_dialog.setModal(True)  # Make the dialog modal
+        new_group_dialog.setModal(True)
         result = new_group_dialog.exec()
 
         if result == QDialog.Accepted:
@@ -381,15 +540,93 @@ class CustomWindow(QWidget):
                     f.truncate()
                     json.dump(data, f, indent=4)
 
-                # Update the UI to reflect the new group
-                group_label = QLabel(group_name)
-                group_label.setFont(QFont("helvetica", 24, QFont.Bold))
-                self.layout().addWidget(group_label)
-                self.update()
+            # Update the UI to reflect the new group
+            group_label = QLabel(group_name)
+            group_label.setFont(QFont("helvetica", 24, QFont.Bold))
 
+            create_task_button = QPushButton()
+
+            delete_group_button = self.create_delete_button()
+            delete_group_button.clicked.connect(partial(self.delete_group, group_name))
+            create_task_button = QPushButton()
+            create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
+            create_task_button.setFixedSize(24, 24)
+            create_task_button.clicked.connect(partial(self.create_new_task, group_name))
+            create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
+            create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
+            edit_group_button = self.create_edit_button()
+            edit_group_button.clicked.connect(partial(self.edit_group, group_name))
+
+            header_layout = QHBoxLayout()
+            header_layout.addWidget(group_label)
+            header_layout.addStretch(1)
+            header_layout.addWidget(create_task_button)
+            header_layout.addWidget(delete_group_button)
+            header_layout.addWidget(edit_group_button)
+
+            group_layout = QVBoxLayout()
+            group_layout.addLayout(header_layout)
+
+            self.layout().addLayout(group_layout)
+            self.update()
+            
+            
     def save_and_close(self):
         self.save_position()
         self.close()
+
+    def create_delete_button(self):
+        delete_button = QPushButton()
+        delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
+        delete_button.setFixedSize(24, 24)
+        delete_button.enterEvent = lambda event: delete_button.setStyleSheet("background-color: #FFA0A0; border-radius: 12px;")
+        delete_button.leaveEvent = lambda event: delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
+        return delete_button
+
+    def delete_group(self, group_name):
+        # Remove group from the data file
+        with open("data.json", "r+") as f:
+            data = json.load(f)
+            data = [group for group in data if group["name"] != group_name]
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+
+        # Update the UI
+        for i in range(self.layout().count()):
+            group_layout = self.layout().itemAt(i)
+            if isinstance(group_layout, QVBoxLayout):
+                group_label = group_layout.itemAt(0).widget()
+                if isinstance(group_label, QLabel) and group_label.text() == group_name:
+                    self.layout().removeItem(group_layout)
+                    group_layout.deleteLater()
+                    break
+
+
+    def delete_task(self, group_name, task):
+        # Remove task from the data file
+        with open("data.json", "r+") as f:
+            data = json.load(f)
+            for group in data:
+                if group["name"] == group_name:
+                    group["tasks"] = [t for t in group["tasks"] if t != task]
+                    break
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+
+        # Update the UI
+        for i in range(self.layout().count()):
+            group_item = self.layout().itemAt(i)
+            group_widget = group_item.widget()
+            if isinstance(group_widget, QLabel) and group_widget.text() == group_name:
+                for j in range(group_item.layout().count()):
+                    task_item = group_item.layout().itemAt(j)
+                    task_widget = task_item.widget()
+                    if isinstance(task_widget, QLabel) and task_widget.text() == task["text"]:
+                        group_item.layout().removeItem(task_item)
+                        task_widget.deleteLater()
+                        break
 
 
     def paintEvent(self, event):

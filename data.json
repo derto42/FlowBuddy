@@ -3,18 +3,25 @@
         "name": "Fonts",
         "tasks": [
             {
-                "name": "DAFONTs",
+                "name": "fonts1",
                 "text": "",
                 "button_text": "DAFONT",
                 "url": "https://www.dafontfree.io/commercial-fonts/",
                 "file": "file"
             },
             {
-                "name": "cehckit",
+                "name": "fonts1",
                 "text": "",
                 "button_text": "WOFF2 Converter",
                 "url": "",
                 "file": "D:/System/Pictures/AI/Projects/DesignOverlay/internals/AddOns/ttf to woff2.pyw"
+            },
+            {
+                "name": "Fonts1682987859",
+                "text": "Check",
+                "button_text": "",
+                "url": "",
+                "file": "file"
             }
         ]
     },
