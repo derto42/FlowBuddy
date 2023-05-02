@@ -337,8 +337,6 @@ class CustomWindow(QWidget):
         layout.setSpacing(10)
         self.setLayout(layout)
 
-        self.parent_layout = layout
-
         exit_button = QPushButton()
         exit_button.setCursor(Qt.PointingHandCursor)
         exit_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
@@ -381,7 +379,11 @@ class CustomWindow(QWidget):
         except (FileNotFoundError, IndexError, ValueError):
             pass  # If the file doesn't exist or has an incorrect format, ignore it
 
+        self.parent_layout = QVBoxLayout()
+        
         self.render_groups()
+
+        layout.addLayout(self.parent_layout)
 
     def set_button_style(self, button, style, event):
         button.setStyleSheet(style)
