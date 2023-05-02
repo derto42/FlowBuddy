@@ -676,15 +676,15 @@ class CustomWindow(QWidget):
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
 
 
-                    def func_1():
+                    def func_1(*x):
                         pass
                     
-                    def func_2():
+                    def func_2(*x):
                         pass
                     
                     if task["url"]:
                         urls = task["url"].split(',')
-                        func_1 = lambda urls=urls: [webbrowser.open(url.strip()) for url in urls]
+                        func_1 = lambda *x, urls=urls: [webbrowser.open(url.strip()) for url in urls]
                         
                     if task["file"] and task["file"] != "file":
                         func_2 = lambda *x: os.startfile(task["file"])
