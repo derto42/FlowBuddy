@@ -466,6 +466,9 @@ class CustomWindow(QWidget):
                         json.dump(data, f, indent=4)
                         f.truncate()
 
+                self.clearLayout(self.parent_layout)
+                self.render_groups()
+
     def create_new_task(self, group_name):
         new_task_dialog = NewTaskDialog(self, group_name)
         new_task_dialog.setModal(True)
@@ -493,7 +496,7 @@ class CustomWindow(QWidget):
                 self.clearLayout(self.parent_layout)
                 self.render_groups()
 
-    def edit_group(self, group_name):
+    def edit_group(self, group_name, group_label_widget):
         edit_group_dialog = NewGroupDialog(self, group_name)
         edit_group_dialog.setModal(True)
         result = edit_group_dialog.exec()
@@ -513,11 +516,12 @@ class CustomWindow(QWidget):
                     f.truncate()
 
                 # Update the UI to reflect the updated group name
-                for i in range(self.layout().count()):
-                    widget = self.layout().itemAt(i).widget()
-                    if isinstance(widget, QLabel) and widget.text() == group_name:
-                        widget.setText(new_group_name)
-                        break
+                # for i in range(self.parent_layout.layout().count()):
+                #     widget = self.layout().itemAt(i).widget()
+                #     if isinstance(widget, QLabel) and widget.text() == group_name:
+                #         widget.setText(new_group_name)
+                #         break
+                group_label_widget.setText(new_group_name)
 
     def create_new_group(self):
         new_group_dialog = NewGroupDialog(self)
@@ -553,7 +557,7 @@ class CustomWindow(QWidget):
             create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
             create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
             edit_group_button = self.create_edit_button()
-            edit_group_button.clicked.connect(partial(self.edit_group, group_name))
+            edit_group_button.clicked.connect(partial(self.edit_group, group_name, group_label))
 
             header_layout = QHBoxLayout()
             header_layout.addWidget(group_label)
@@ -634,7 +638,7 @@ class CustomWindow(QWidget):
             delete_group_button.clicked.connect(partial(self.delete_group, group["name"], group_layout=group_layout))
 
             edit_group_button = self.create_edit_button()
-            edit_group_button.clicked.connect(partial(self.edit_group, group["name"]))
+            edit_group_button.clicked.connect(partial(self.edit_group, group["name"], group_label))
 
             header_layout = QHBoxLayout()
             header_layout.addWidget(group_label)
