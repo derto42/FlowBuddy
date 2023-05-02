@@ -673,8 +673,9 @@ class CustomWindow(QWidget):
                         func_1 = lambda *x, urls=urls, name=task["name"]: [webbrowser.open(url.strip()) for url in urls]
                         commands.append(func_1)
                         
-                    if task["file"]:
-                        func_2 = lambda *x, name=task["name"]: os.startfile(task["file"])
+                    if "file" in task and task["file"]:
+                        abs_file_path = os.path.abspath(task["file"])
+                        func_2 = lambda *x, name=task["name"]: os.startfile(abs_file_path)
                         commands.append(func_2)
                         
                     button.setProperty("commands", commands)
