@@ -1,43 +1,56 @@
-# GraphicFlow
+<div align="center">
 
-GraphicFlow is a  user-friendly shortcut and group management application built using PyQt5. It provides users with an intuitive interface to create, edit, and delete shortcuts to enhance their productivity.
+<img src="https://user-images.githubusercontent.com/125327962/235814525-334642e4-c3ec-4382-a166-9e7da2193651.png" width="30%" />
+
+FlowBuddy is a user-friendly shortcut management application. It uses an intuitive overlay to create, edit and delete shortcuts to enhance users' productivity.
+
+</div>
+
+<br/><br/>
 
 ## Features
 
-1. Create and manage custom groups:
-   - Add new groups to categorize your shortcuts.
-   - Edit the names of existing groups.
-   - Delete groups you no longer need.
+1. **Manage custom shortcut groups.**
 
-2. Create and manage shortcuts within groups:
-   - Add new shortcuts to each group, including a label, button , and action (open a URL or a local file).
-   - Edit existing shortcuts, updating their labels, button , and actions.
-   - Delete shortcuts you no longer need.
+2. **Manage shortcuts for URLs and Files**
 
-3. Customize the appearance of buttons:
-   - Buttons change color when hovered over, giving a smooth user experience.
+3. **Save the Window Position:**
+   - FlowBuddy saves the overlay layout exactly how you want it.
 
-4. Save and load the application state:
-   - GraphicFlow saves your window position and group/shortcut configuration so that it's consistent across different sessions.
+4. **Runs in the background.**
+   - Open overlay at any time by pressing the \` key.
+   - Quit easily through SystemTray
 
-5. Run it in background and access it at any time by pressig the ` key
-   - SystemTray Icon allows you to quit the background process
+5. **Toggle between Edit and Normal Modes.**
 
-6. Toggle between Edit and Normal Modes
-   - No need for extra buttons. Only what you need, whenever you need it.
+
+
+
+<br/><br/>
 
 ## Getting Started
 
-To get started with GraphicFlow, simply run the provided Python script. You will need Python 3 and the PyQt5 package installed.
+1. Install Python 3.10
 
-Once you have the required dependencies, open the "GraphicLauncher.pyw"
+2. Run ```-r requirements.txt```
 
-Click ` key to access the overlay
+3. Open the "GraphicLauncher.pyw"
 
+4. Press the \` key to access the overlay.
 
+<br/><br/>
 
+## UI Explanation
+
+**Red buttons** - Exit/Delete
+
+**Green button** - Add Group/Task
+
+**Orange Button** - Edit Mode
+
+<br/><br/>
 
 ## Demo
 
-https://user-images.githubusercontent.com/125327962/235811057-804cc63e-d1c5-421f-9d5c-dccff8dfc9eb.mp4
+https://user-images.githubusercontent.com/125327962/235811057-804cc63e-d1c5-421f-9d5c-dccff8dfc9eb.mp4`
 
