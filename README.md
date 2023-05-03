@@ -23,6 +23,9 @@ GraphicFlow is a  user-friendly shortcut and group management application built 
 5. Run it in background and access it at any time by pressig the ` key
    - SystemTray Icon allows you to quit the background process
 
+6. Toggle between Edit and Normal Modes
+   - No need for extra buttons. Only what you need, whenever you need it.
+
 ## Getting Started
 
 To get started with GraphicFlow, simply run the provided Python script. You will need Python 3 and the PyQt5 package installed.
