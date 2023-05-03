@@ -204,7 +204,7 @@ class NewTaskDialog(QDialog):
 
         self.choose_file_button = CustomButton("Choose File")
         self.choose_file_button.setFixedSize(200, 38)
-        self.choose_file_button.setProperty("hover_color", "#FFA0A0")
+        self.choose_file_button.setProperty("hover_color", "#EBEBEB")
         layout.addWidget(self.choose_file_button, alignment=Qt.AlignCenter)
         self.choose_file_button.clicked.connect(self.choose_file)
 
