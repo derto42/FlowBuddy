@@ -1,44 +1,63 @@
 [
     {
-        "name": "Fontas",
+        "name": "Text + Button",
         "tasks": [
             {
-                "name": "fonts1263463475",
-                "text": "",
-                "button_text": "DAFONT",
-                "url": "https://www.dafontfree.io/commercial-fonts/,https://www.youtube.com/watch?v=6EClNaMZRds",
+                "name": "Text + Button1683068687",
+                "text": "Text",
+                "button_text": "",
+                "url": "",
                 "file": ""
             },
             {
-                "name": "Fontas1683051074",
-                "text": "",
-                "button_text": "WOFF2 Converter",
-                "url": "https://www.dafontfree.io/commercial-fonts/",
-                "file": "C:/Program Files/Imagine/Imagine.exe"
+                "name": "Text + Button1683068705",
+                "text": "Text +",
+                "button_text": "Button",
+                "url": "e",
+                "file": ""
             },
             {
-                "name": "2463757",
-                "text": "Check IT out",
-                "button_text": "",
-                "url": "",
+                "name": "Text + Button1683068724",
+                "text": "",
+                "button_text": "Just Button",
+                "url": "e",
                 "file": ""
             }
         ]
     },
     {
-        "name": "Images",
+        "name": "URL + Files",
         "tasks": [
             {
-                "name": "Images1683057322",
-                "text": "Optimize",
-                "button_text": "Optimize",
-                "url": "",
-                "file": "C:/Program Files/Imagine/Imagine.exe"
+                "name": "URL + Files1683072251",
+                "text": "",
+                "button_text": "URL",
+                "url": "youtube.com",
+                "file": ""
             },
             {
-                "name": "Images1683042625",
-                "text": "testing",
-                "button_text": "",
+                "name": "URL + Files1683072257",
+                "text": "",
+                "button_text": "File",
+                "url": "",
+                "file": "C:/Program Files/Imagine/Imagine.exe"
+            }
+        ]
+    },
+    {
+        "name": "Add + Edit + Delete",
+        "tasks": [
+            {
+                "name": "Add + Edit + Delete1683074022",
+                "text": "Delete",
+                "button_text": "Me",
+                "url": "",
+                "file": ""
+            },
+            {
+                "name": "Add + Edit + Delete1683074029",
+                "text": "Edit",
+                "button_text": "Me",
                 "url": "",
                 "file": ""
             }

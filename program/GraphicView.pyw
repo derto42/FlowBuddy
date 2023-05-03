@@ -554,10 +554,6 @@ class CustomWindow(QWidget):
 
             self.rerender_groups()
 
-    def save_and_close(self):
-        self.save_position()
-        self.close()
-
     def create_delete_button(self):
         delete_button = QPushButton()
         delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
@@ -677,6 +673,8 @@ class CustomWindow(QWidget):
                         abs_file_path = os.path.abspath(task["file"])
                         func_2 = lambda *x, name=task["name"]: os.startfile(abs_file_path)
                         commands.append(func_2)
+
+                        
                         
                     button.setProperty("commands", commands)
                         

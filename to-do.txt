@@ -1,9 +1,0 @@
-Bug: when I press ` twice it doesnt save position (NOT IMPORTANT)
-
-Bug: When creating a task without a button, some of the other tasks become unsuable and show an unsuable button WOFF for example
-
-Bug: Clicking edit button twice makes it unusable (HAPPENS RARELY, stopped lately)
-
-Add: Edit toggle button (smile) that will switch between edit and regular view
-
-Bug: A button can't open a file and a website if both are set.
