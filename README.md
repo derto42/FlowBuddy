@@ -2,6 +2,9 @@
 
 <img src="https://user-images.githubusercontent.com/125327962/235814525-334642e4-c3ec-4382-a166-9e7da2193651.png" width="30%" />
 
+
+<br/><br/>
+
 FlowBuddy is a user-friendly shortcut management application. It uses an intuitive overlay to create, edit and delete shortcuts to enhance users' productivity.
 
 </div>
