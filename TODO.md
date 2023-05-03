@@ -6,6 +6,7 @@ Project Description
 
 ### Todo
 
+- [ ] hover and hold show name and info on the button  
 - [ ] Increase spacing between Groups  
 - [ ] Add a delete confirmation  
 - [ ] Make the position get saved in the data.json  

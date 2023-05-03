@@ -14,7 +14,7 @@ class ProcessThread(QThread):
 
     def run(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        script_path = os.path.join(current_dir, "program", "GraphicView.pyw")
+        script_path = os.path.join(current_dir, "GraphicView.pyw")
 
         while not self.isInterruptionRequested():
             # Wait for the '`' key to be pressed
@@ -39,7 +39,7 @@ class ProcessThread(QThread):
 
 def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    icon_path = os.path.join(current_dir, "program", "icons", "icon.png")
+    icon_path = os.path.join(current_dir, "icons", "icon.png")
 
     app = QApplication([])
     tray_icon = QSystemTrayIcon(QIcon(icon_path), parent=app)
