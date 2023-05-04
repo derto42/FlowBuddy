@@ -2,11 +2,13 @@ import os
 
 SAVE_FILE_NAME = "save.json"
 ICONS_FOLDER_NAME = "icons"
+FONTS_FOLDER_NAME = "fonts"
 
 PROGRAM_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SAVE_FILE = os.path.join(PROGRAM_DIR, SAVE_FILE_NAME)
 ICONS_FOLDER = os.path.join(PROGRAM_DIR, ICONS_FOLDER_NAME)
+FONTS_FOLDER = os.path.join(PROGRAM_DIR, FONTS_FOLDER_NAME)
 
 def create_save_file() -> None:
     """Creates a empty save file."""
@@ -21,6 +23,10 @@ def abspath(path: str) -> str:
     else:
         return None
 
+def exists(path: str):
+    """Returns True if the path exists. Returns False otherwise"""
+    return os.path.exists(path)
+
 def icon(icon_name: str) -> str | None:
     """Returns the absolute path of given icon. Retruns None if the icon does not exist."""
     path = os.path.join(ICONS_FOLDER, icon_name)
@@ -28,10 +34,14 @@ def icon(icon_name: str) -> str | None:
         return os.path.abspath(path)
     else:
         return None
-
-def exists(path: str):
-    """Returns True if the path exists. Returns False otherwise"""
-    return os.path.exists(path)
+    
+def font(font_name: str) -> str | None:
+    """Returns the absolute path of given font. Returns None if the font does not exist."""
+    path = os.path.join(FONTS_FOLDER, font_name)
+    if os.path.exists(path):
+        return os.path.abspath(path)
+    else:
+        return None
 
 
 # for testing purposes

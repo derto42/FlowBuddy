@@ -19,11 +19,13 @@ import FileSystem as FS
 
 # variables
 TITLE = "FlowBuddy"
+DEFAULT_FONT = "Montserrat-Medium.ttf"
+DEFAULT_FONT_SIZE = 16
 
 
 
-def get_custom_font(size=16, font_name="Montserrat-Medium", font_folder="fonts"):
-    font_file = f"{font_folder}/{font_name}.ttf"
+def get_custom_font(font_name: str = DEFAULT_FONT, size: int = DEFAULT_FONT_SIZE) -> QFont:
+    font_file = FS.font(font_name)
     font_id = QFontDatabase.addApplicationFont(font_file)
     font_families = QFontDatabase.applicationFontFamilies(font_id)
 
@@ -45,7 +47,7 @@ def get_custom_font(size=16, font_name="Montserrat-Medium", font_folder="fonts")
 class CustomButton(QPushButton): 
     def __init__(self, text, padding=22):
         super().__init__(text)
-        self.setFont(get_custom_font(16, "Montserrat-Medium"))
+        self.setFont(get_custom_font(size=16))
         self.setContentsMargins(0, 0, 0, 0)
         self.setStyleSheet("background-color: #DADADA;")
         self.padding = padding
@@ -88,7 +90,7 @@ class NewGroupDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel()
-        title_label.setFont(get_custom_font(24, "Montserrat-Bold"))
+        title_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -99,7 +101,7 @@ class NewGroupDialog(QDialog):
         self.group_name_input.setFixedWidth(200)
         self.group_name_input.setPlaceholderText("Group Name")
         self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;")
-        self.group_name_input.setFont(get_custom_font(16, "Montserrat-Medium"))
+        self.group_name_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
 
         self.group_name_input.hover_state = False
         self.group_name_input.enterEvent = lambda event: self.set_group_name_input_hover(True)
@@ -203,7 +205,7 @@ class NewTaskDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel(f"New Task")
-        title_label.setFont(get_custom_font(24, "Montserrat-Bold"))
+        title_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         input_style = "background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;"
@@ -215,7 +217,7 @@ class NewTaskDialog(QDialog):
         self.text_input.setFixedHeight(44)
         self.text_input.setFixedWidth(200)
         self.text_input.setStyleSheet(input_style)
-        self.text_input.setFont(get_custom_font(16, "Montserrat-Medium"))
+        self.text_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
         layout.addWidget(self.text_input, alignment=Qt.AlignCenter)
 
         self.button_text_input = QLineEdit()
@@ -223,7 +225,7 @@ class NewTaskDialog(QDialog):
         self.button_text_input.setFixedHeight(44)
         self.button_text_input.setFixedWidth(200)
         self.button_text_input.setStyleSheet(input_style)
-        self.button_text_input.setFont(get_custom_font(16, "Montserrat-Medium"))
+        self.button_text_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
         layout.addWidget(self.button_text_input, alignment=Qt.AlignCenter)
 
         self.url_input = QLineEdit()
@@ -231,7 +233,7 @@ class NewTaskDialog(QDialog):
         self.url_input.setFixedHeight(44)
         self.url_input.setFixedWidth(200)
         self.url_input.setStyleSheet(input_style)
-        self.url_input.setFont(get_custom_font(16, "Montserrat-Medium"))
+        self.url_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
         layout.addWidget(self.url_input, alignment=Qt.AlignCenter)
 
         self.file_input = ""
@@ -455,7 +457,7 @@ class CustomWindow(QWidget):
 
                         if task_data["text"]:
                             task_text = QLabel(task_data["text"])
-                            task_text.setFont(get_custom_font(16, "Montserrat-Medium"))
+                            task_text.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
                             task_layout.addWidget(task_text)
 
                         if task_data["button_text"]:
@@ -643,7 +645,7 @@ class CustomWindow(QWidget):
             group_layout = QVBoxLayout()
 
             group_label = QLabel(group["name"])
-            group_label.setFont(get_custom_font(24, "Montserrat-Bold"))
+            group_label.setFont(get_custom_font(size=24))
 
             create_task_button = QPushButton()
             create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
@@ -686,7 +688,7 @@ class CustomWindow(QWidget):
 
                 if task["text"]:
                     task_text = QLabel(task["text"])
-                    task_text.setFont(get_custom_font(16, "Montserrat-Medium"))
+                    task_text.setFont(get_custom_font(size=16))
                     task_layout.addWidget(task_text)
 
                 if task["button_text"]:
@@ -788,7 +790,7 @@ class ListenKey(QThread):
 def show_tray_icon(parent: QApplication, activate_action: Callable):
     tray_icon = QSystemTrayIcon(QIcon(FS.icon("icon.png")), parent=parent)
     tray_icon.setToolTip(TITLE)
-    tray_icon.activated.connect(activate_action)
+    tray_icon.activated.connect(lambda reason: activate_action() if not reason == QSystemTrayIcon.ActivationReason.Context else None)
     tray_icon.show()
     
     menu = QMenu()
