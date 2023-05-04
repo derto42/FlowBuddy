@@ -32,7 +32,7 @@ def get_custom_font(size=16, font_name="Montserrat-Medium", font_folder="fonts")
 
 
 class CustomButton(QPushButton): 
-    def __init__(self, text, padding=15):
+    def __init__(self, text, padding=22):
         super().__init__(text)
         self.setFont(get_custom_font(16, "Montserrat-Medium"))
         self.setContentsMargins(0, 0, 0, 0)
@@ -52,7 +52,7 @@ class CustomButton(QPushButton):
         else:
             painter.setBrush(self.palette().button())
 
-        painter.drawRoundedRect(self.rect(), 12, 12)
+        painter.drawRoundedRect(self.rect(), 14, 14)
         painter.setPen(self.palette().buttonText().color())
         painter.drawText(self.rect(), Qt.AlignCenter, self.text())
 
@@ -60,7 +60,7 @@ class CustomButton(QPushButton):
         font_metrics = QFontMetrics(self.font())
         text_width = font_metrics.width(self.text())
         button_width = text_width + self.padding * 2  # Adding padding to both sides
-        size = QSize(button_width, 38)  # Setting fixed height including top and bottom padding
+        size = QSize(button_width, 44)  # Setting fixed height including top and bottom padding
         return size
 
 
@@ -84,10 +84,10 @@ class NewGroupDialog(QDialog):
         layout.addItem(spacer)
 
         self.group_name_input = QLineEdit()
-        self.group_name_input.setFixedHeight(38)
+        self.group_name_input.setFixedHeight(44)
         self.group_name_input.setFixedWidth(200)
         self.group_name_input.setPlaceholderText("Group Name")
-        self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
+        self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;")
         self.group_name_input.setFont(get_custom_font(16, "Montserrat-Medium"))
 
         self.group_name_input.hover_state = False
@@ -195,13 +195,13 @@ class NewTaskDialog(QDialog):
         title_label.setFont(get_custom_font(24, "Montserrat-Bold"))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
-        input_style = "background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;"
+        input_style = "background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;"
         spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addItem(spacer)
 
         self.text_input = QLineEdit()
         self.text_input.setPlaceholderText("Text")
-        self.text_input.setFixedHeight(38)
+        self.text_input.setFixedHeight(44)
         self.text_input.setFixedWidth(200)
         self.text_input.setStyleSheet(input_style)
         self.text_input.setFont(get_custom_font(16, "Montserrat-Medium"))
@@ -209,7 +209,7 @@ class NewTaskDialog(QDialog):
 
         self.button_text_input = QLineEdit()
         self.button_text_input.setPlaceholderText("Button Text")
-        self.button_text_input.setFixedHeight(38)
+        self.button_text_input.setFixedHeight(44)
         self.button_text_input.setFixedWidth(200)
         self.button_text_input.setStyleSheet(input_style)
         self.button_text_input.setFont(get_custom_font(16, "Montserrat-Medium"))
@@ -217,7 +217,7 @@ class NewTaskDialog(QDialog):
 
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("URL")
-        self.url_input.setFixedHeight(38)
+        self.url_input.setFixedHeight(44)
         self.url_input.setFixedWidth(200)
         self.url_input.setStyleSheet(input_style)
         self.url_input.setFont(get_custom_font(16, "Montserrat-Medium"))
@@ -226,7 +226,7 @@ class NewTaskDialog(QDialog):
         self.file_input = ""
 
         self.choose_file_button = CustomButton("Choose File")
-        self.choose_file_button.setFixedSize(200, 38)
+        self.choose_file_button.setFixedSize(200, 44)
         self.choose_file_button.setProperty("hover_color", "#EBEBEB")
         layout.addWidget(self.choose_file_button, alignment=Qt.AlignCenter)
         self.choose_file_button.clicked.connect(self.choose_file)
