@@ -61,7 +61,6 @@ class CustomButton(QPushButton):
         painter.setPen(Qt.NoPen)
 
         if self.underMouse():
-            # painter.setBrush(QColor("#FFA0A0"))
             painter.setBrush(QColor(self.property("hover_color")))
         else:
             painter.setBrush(self.palette().button())
@@ -159,10 +158,6 @@ class NewGroupDialog(QDialog):
             self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
 
     def generate_unique_name(self):
-        # with open(FS.abspath("data.json"), "r") as f:
-        #     data = json.load(f)
-        #     existing_group_names = [group["name"] for group in data]
-
         existing_group_names = [group.group_name() for group in SF.get_groups()]
             
         base_name = "Untitled"
@@ -383,13 +378,6 @@ class CustomWindow(QWidget):
         top_buttons_widget.setLayout(top_buttons_layout)
         layout.addWidget(top_buttons_widget, alignment=Qt.AlignTop | Qt.AlignRight)
 
-        # try:
-        #     with open(FS.abspath("position.txt"), "r") as f:
-        #         position = f.read().split(",")
-        #         self.move(int(position[0]), int(position[1]))
-        # except (FileNotFoundError, IndexError, ValueError):
-        #     pass  # If the file doesn't exist or has an incorrect format, ignore it
-
         if (position:=SF.get_setting("position")) != "None":
             self.move(position[0], position[1])
 
@@ -487,18 +475,6 @@ class CustomWindow(QWidget):
                         break
 
     def edit_task(self, group_name, task_name):
-        # Find the existing task data
-        # task_data = None
-        # with open(FS.abspath("data.json"), "r") as f:
-        #     data = json.load(f)
-        #     for group in data:
-        #         if group["name"] == group_name:
-        #             for task in group["tasks"]:
-        #                 if task["name"] == task_name:
-        #                     task_data = task
-        #                     break
-        #             break
-                
         task_data = SF.get_task(group_name, task_name).get_json()
 
         if task_data:
@@ -512,21 +488,6 @@ class CustomWindow(QWidget):
                     # Generate a unique task name based on the current timestamp
                     unique_task_name = f"{group_name}{int(time.time())}"
                     updated_task_data["name"] = unique_task_name
-
-                    # # Update the task data in the JSON file
-                    # with open(FS.abspath("data.json"), "r+") as f:
-                    #     data = json.load(f)
-                    #     for group in data:
-                    #         if group["name"] == group_name:
-                    #             for i, task in enumerate(group["tasks"]):
-                    #                 if task["name"] == task_name:
-                    #                     group["tasks"][i] = updated_task_data
-                    #                     break
-                    #             break
-                    #     f.seek(0)
-                    #     json.dump(data, f, indent=4)
-                    #     f.truncate()
-                        
                     SF.edit_task(group_name, task_name,
                                  new_task_name=unique_task_name,
                                  new_task_content=updated_task_data)
@@ -544,17 +505,6 @@ class CustomWindow(QWidget):
                 # Generate a unique task name based on the current timestamp
                 unique_task_name = f"{group_name}{int(time.time())}"
                 task_data["name"] = unique_task_name
-
-                # with open(FS.abspath("data.json"), "r+") as f:
-                #     data = json.load(f)
-                #     for group in data:
-                #         if group["name"] == group_name:
-                #             group["tasks"].append(task_data)
-                #             break
-                #     f.seek(0)
-                #     json.dump(data, f, indent=4)
-                #     f.truncate()
-                    
                 SF.new_task(group_name, unique_task_name)
                 SF.edit_task(group_name, unique_task_name,
                              new_task_content=task_data)
@@ -569,25 +519,7 @@ class CustomWindow(QWidget):
         if result == QDialog.Accepted:
             new_group_name = edit_group_dialog.get_group_name()
             if new_group_name:
-                # Update the group data in the JSON file
-                # with open(FS.abspath("data.json"), "r+") as f:
-                #     data = json.load(f)
-                #     for group in data:
-                #         if group["name"] == group_name:
-                #             group["name"] = new_group_name
-                #             break
-                #     f.seek(0)
-                #     json.dump(data, f, indent=4)
-                #     f.truncate()
-                    
                 SF.edit_group(group_name, new_group_name=new_group_name)
-
-                # Update the UI to reflect the updated group name
-                # for i in range(self.parent_layout.layout().count()):
-                #     widget = self.layout().itemAt(i).widget()
-                #     if isinstance(widget, QLabel) and widget.text() == group_name:
-                #         widget.setText(new_group_name)
-                #         break
                 group_label_widget.setText(new_group_name)
 
     def create_new_group(self):
@@ -598,16 +530,7 @@ class CustomWindow(QWidget):
         if result == QDialog.Accepted:
             group_name = new_group_dialog.get_group_name()
             if group_name:
-                # with open(FS.abspath("data.json"), "r+") as f:
-                #     data = json.load(f)
-                #     new_group = {"name": group_name, "tasks": []}
-                #     data.append(new_group)
-                #     f.seek(0)
-                #     f.truncate()
-                #     json.dump(data, f, indent=4)
-
                 SF.new_group(group_name)
-
             self.rerender_groups()
 
     def create_delete_button(self):
@@ -620,40 +543,12 @@ class CustomWindow(QWidget):
         return delete_button
 
     def delete_group(self, group_name, group_layout: QVBoxLayout):
-        # Remove group from the data file
-        # with open(FS.abspath("data.json"), "r+") as f:
-        #     data = json.load(f)
-        #     data = [group for group in data if group["name"] != group_name]
-        #     f.seek(0)
-        #     json.dump(data, f, indent=4)
-        #     f.truncate()
-            
         SF.Group(group_name).delete()
-
-        self.clearLayout(group_layout)
-        self.update()
+        self.rerender_groups()
         
     def delete_task(self, group_name, task, task_layout: QVBoxLayout):
-        # Remove task from the data file
-        # with open(FS.abspath("data.json"), "r+") as f:
-        #     data = json.load(f)
-        #     for group_no in range(len(data)):
-        #         if data[group_no]["name"] == group_name:
-        #             task_list = []
-        #             for t in data[group_no]["tasks"]:
-        #                 if t["name"] == task:
-        #                     continue
-        #                 task_list.append(t)
-        #             data[group_no]["tasks"] = task_list
-        #             break
-        #     f.seek(0)
-        #     json.dump(data, f, indent=4)
-        #     f.truncate()
-            
         SF.Task(group_name, task).delete()
-
-        self.clearLayout(task_layout)
-        self.update()
+        self.rerender_groups()
         
     def rerender_groups(self):
         self.clearLayout(self.parent_layout)
@@ -780,8 +675,6 @@ class CustomWindow(QWidget):
         painter.drawPath(path)
 
     def save_position(self):
-        # with open(FS.abspath("position.txt"), "w") as f:
-        #     f.write(f"{self.pos().x()},{self.pos().y()}")
             
         SF.set_setting("position", (self.pos().x(), self.pos().y()))
 
