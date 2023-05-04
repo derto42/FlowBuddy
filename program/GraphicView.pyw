@@ -707,7 +707,10 @@ class CustomWindow(QWidget):
                         
                     if "file" in task and task["file"]:
                         abs_file_path = os.path.abspath(task["file"])
-                        func_2 = lambda *x, name=task["name"]: os.startfile(abs_file_path)
+                        if sys.platform == 'win32':
+                            func_2 = lambda *x, name=task["name"]: os.startfile(abs_file_path)
+                        else:
+                            func_2 = lambda *x, name=task["name"]: f"sudo python3 {abs_file_path}"
                         commands.append(func_2)
 
                         

@@ -12,6 +12,15 @@ class ProcessThread(QThread):
         super(ProcessThread, self).__init__()
         self.process = None
 
+    def start_executable(self, script_path: str):
+        if sys.platform == 'win32':
+            self.process = subprocess.Popen([sys.executable, script_path], creationflags=subprocess.CREATE_NO_WINDOW)
+            os.startfile(script_path)
+        else:
+            self.process = subprocess.Popen([sys.executable, script_path], stdout=subprocess.DEVNULL)
+            command = f"sudo python3 {script_path}"
+            os.system(command)
+
     def run(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         script_path = os.path.join(current_dir, "GraphicView.pyw")
@@ -19,14 +28,13 @@ class ProcessThread(QThread):
         while not self.isInterruptionRequested():
             # Wait for the '`' key to be pressed
             keyboard.wait("`")
-
+            print('key pressed')
             # Check if Ctrl is not being held down
             if not keyboard.is_pressed("ctrl"):
 
                 # If the process is not running, start it
                 if self.process is None or self.process.poll() is not None:
-                    self.process = subprocess.Popen([sys.executable, script_path], creationflags=subprocess.CREATE_NO_WINDOW)
-                    os.startfile(script_path)  # Add this line
+                    self.start_executable(script_path)
 
                 # If the process is running, terminate it and set it to None
                 else:

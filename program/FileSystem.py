@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 
 SAVE_FILE_NAME = "save.json"
