@@ -1,5 +1,6 @@
 import json
-from typing import Any, List, Dict, Literal, Optional, Union
+import gc
+from typing import Any, List, Dict, Literal, Optional, Union, ClassVar
 import FileSystem as FS
 
 FILE_PATH = FS.SAVE_FILE
@@ -10,7 +11,14 @@ class Task:
         self._group_name = group_name
         self._task_name = task_name
         
-        task: dict = _data[group_name][task_name]
+        if group_name not in _data.keys():
+            raise ValueError("Group '%s' not found" % group_name)
+        
+        if task_name not in _data[group_name].keys():
+            new_task(self._group_name, task_name)
+        else:
+            task: dict = _data[group_name][task_name]
+
         self._name = task["name"]
         self._text = task["text"]
         self._button_text = task["button_text"]
@@ -76,7 +84,7 @@ class Task:
     def update_json(self) -> None:
         self._json = {"name": self._name,
                  "text": self._text,
-                 "_button_text": self._button_text,
+                 "button_text": self._button_text,
                  "url": self._url,
                  "file": self._file}
 
@@ -86,20 +94,28 @@ class Task:
         
     def save(self) -> None:
         edit_task(self._group_name, self._task_name,
-                  new_task_name=self.task_name(),
+                  new_task_name=self._task_name,
                   new_task_content=self.get_json())
         
     def get_json(self) -> Dict[str, str]:
         return self._json
 
+    def group(self):
+        """Returns a the group of this task as a Group object."""
+        return Group(self._group_name)
+
+    def delete(self) -> None:
+        """Do not use this object after deletion."""
+        _data[self._group_name].pop(self._task_name)
+        _save_contents()
 
 class Group:
     def __init__(self, group_name: str):
         self._group_name = group_name
         
-        self._tasks = get_group(self._group_name)
+        self._tasks = _data[group_name]
 
-    def group_name(self, group_name: Optional[str]) -> Optional[str]:
+    def group_name(self, group_name: Optional[str] = None) -> Optional[str]:
         if group_name is not None:
             edit_group(self._group_name, new_group_name=group_name)
             self._group_name = group_name
@@ -111,11 +127,17 @@ class Group:
             raise KeyError("Task '%s' not found" % task_name)
         return Task(self._group_name, task_name)
     
-    def add_task(self, task_name: str, task_content: Union[Task, dict[str, str]]) -> Task:
+    def get_tasks(self) -> List[Task]:
+        return [Task(self._group_name, task_name) for task_name in self._tasks.keys()]
+    
+    def add_task(self, task_name: str, task_content: Optional[Union[Task, dict[str, str]]] = None) -> Task:
         if isinstance(task_content, Task):
             content = task_content.get_json()
-        elif isinstance(task, dict):
+        elif isinstance(task_content, dict):
             content = task_content
+        else:
+            content = None
+        new_task(self._group_name, task_name)
         edit_task(self._group_name, task_name, new_task_content=content)
         return self.get_task(task_name)
 
@@ -133,6 +155,11 @@ class Group:
         
     def update(self) -> None:
         self.save()
+
+    def delete(self) -> None:
+        """Do not use this object after deletion."""
+        _data.pop(self._group_name)
+        _save_contents()
 
 def _get_contents() -> Dict[Literal["settings", "data"], Dict[str, Dict]]:
     try:
@@ -161,11 +188,12 @@ _settings = _contents["settings"]
 _data: Dict[str, Dict[str, Dict[str, str]]] = _contents["data"]
 
 
-def get_setting(name: str) -> Any:
+def get_setting(name: str) -> Union[Any, Literal["None"]]:
+    """Returns 'None' if no setting is defined."""
     if name in _settings.keys():
         return _settings[name]
     else:
-        return None
+        return 'None'
 
 def set_setting(name: str, value: Any) -> None:
     global _settings
@@ -173,18 +201,21 @@ def set_setting(name: str, value: Any) -> None:
     _save_contents()
 
 
-def get_group(group_name: str) -> dict[str, dict]:
+def get_group(group_name: str) -> Group:
     if group_name not in _data.keys():
         raise KeyError("Group '%s' not found" % group_name)
-    return _data[group_name].items()
+    return Group(group_name)
 
-def get_groups() -> list[tuple[str, dict]]:
-    return _data.items()
+def get_groups() -> list[Group]:
+    return [Group(group_name) for group_name in _data.keys()]
 
-def new_group(group_name: str) -> None:
+def new_group(group_name: str) -> Group:
     global _data
+    if group_name in _data:
+        raise ValueError("Group name already exists.")
     _data[group_name] = {}
     _save_contents()
+    return Group(group_name)
 
 def edit_group(group_name: str, *,
                new_group_name: Optional[str] = None,
@@ -213,6 +244,8 @@ def get_task(group_name: str, task_name: str) -> Task:
     return Task(group_name, task_name)
 
 def get_tasks(group_name: str) -> List[Task]:
+    if group_name not in _data.keys():
+        raise ValueError("Group '%s' does not exist." % group_name)
     group: dict = _data[group_name]
     tasks = [Task(group_name, task_name) for task_name in group.keys()]
     return tasks
@@ -221,12 +254,12 @@ def new_task(group_name: str, task_name: str) -> None:
     global _data
     if not group_name in _data.keys():
         raise KeyError("Group '%s' not found" % group_name)
-    _data[group_name][task_name] = {}
+    _data[group_name][task_name] = {"name": "", "text": "", "button_text": "", "url": "", "file": ""}
     _save_contents()
 
 def edit_task(group_name: str, task_name: str, *,
-                   new_task_name: Optional[str],
-                   new_task_content: Optional[dict]) -> None:
+                   new_task_name: Optional[str] = None,
+                   new_task_content: Optional[dict] = None) -> None:
     
     if new_task_name == new_task_content == None:
         return
@@ -248,13 +281,29 @@ def edit_task(group_name: str, task_name: str, *,
 
 # for testing purposes
 if __name__ == '__main__':
-    for group_name, group in get_groups():
-        for task_name, properties in group.items():
-            print(group_name, properties["name"])
-            
-    for task in get_tasks("Group 1"):
-        print(task.task_name())
-        
-    task = get_task("Group 1", "Task 1")
-    task.name("Name of task 1")
-    print(task.name())
+    group1 = new_group("Text + Button")
+    task: Task = group1.add_task("Task 1")
+    task.name("Text + Button1683068687")
+    task.text("Text")
+    
+    task2: Task = group1.add_task("Task 2")
+    task2.name("Text + Button1683068705")
+    task2.text("Text +")
+    task2.button_text("Button")
+    task2.url("e")
+
+    task3: Task = group1.add_task("Task 3")
+    task3.name("Text + Button1683068724")
+    task3.button_text("Just Button")
+    task3.url("e")
+    
+    group2 = new_group("URL + Files")
+    task1: Task = group2.add_task("Task 1")
+    task1.name("URL + Files1683072251")
+    task1.button_text("URL")
+    task1.url("youtube.com")
+
+    task2: Task = group2.add_task("Task 2")
+    task2.name("URL + Files1683072257")
+    task2.button_text("File")
+    task2.file("C:/Program Files/Imagine/Imagine.exe")
