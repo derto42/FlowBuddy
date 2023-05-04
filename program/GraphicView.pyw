@@ -3,11 +3,22 @@ import json
 import webbrowser
 import os
 import time
+import keyboard
+from typing import Callable
 from functools import partial
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QGraphicsDropShadowEffect, QDialog, QLineEdit, QFileDialog, QMessageBox
 from PyQt5.QtGui import QFont, QColor, QPainter, QPainterPath, QPalette, QPen, QFontMetrics, QPixmap, QIcon
 from PyQt5.QtCore import QRectF, QEvent, QSize
+from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
+from PyQt5.QtCore import QThread
+
+# local imports
+import FileSystem as FS
+
+
+# variables
+TITLE = "FlowBuddy"
 
 
 class CustomButton(QPushButton):
@@ -295,44 +306,6 @@ class NewTaskDialog(QDialog):
 
 class CustomWindow(QWidget):
 
-    def toggle_edit_window(self):
-        self.turn_edit_mode(not self.edit_mode)
-
-    def turn_edit_mode(self, mode: bool):
-        for widget in self.edit_widgets:
-                widget: QPushButton = widget
-                widget.setHidden(not mode)
-        self.edit_mode = mode
-
-    def create_toggle_button(self):
-        toggle_button = QPushButton()
-        toggle_button.setIcon(QIcon("icons/toggle.png"))
-        toggle_button.setIconSize(QSize(58, 22))
-        toggle_button.setFixedSize(58, 22)
-        toggle_button.setCursor(Qt.PointingHandCursor)
-
-        toggle_button.setStyleSheet("""
-            QPushButton {
-                border: none;
-                icon: url(icons/toggle.png);
-            }
-            QPushButton:hover {
-                icon: url(icons/toggle_hover.png);
-            }
-        """)
-
-        toggle_button.clicked.connect(self.toggle_edit_window)
-        return toggle_button
-
-    def create_edit_button(self):
-        edit_button = QPushButton()
-        edit_button.setCursor(Qt.PointingHandCursor)
-        edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
-        edit_button.setFixedSize(24, 24)
-        edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
-        edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
-        return edit_button
-
     def __init__(self):
         super().__init__()
         
@@ -397,6 +370,44 @@ class CustomWindow(QWidget):
 
         layout.addLayout(self.parent_layout)
         layout.addStretch(1)
+
+    def toggle_edit_window(self):
+        self.turn_edit_mode(not self.edit_mode)
+
+    def turn_edit_mode(self, mode: bool):
+        for widget in self.edit_widgets:
+                widget: QPushButton = widget
+                widget.setHidden(not mode)
+        self.edit_mode = mode
+
+    def create_toggle_button(self):
+        toggle_button = QPushButton()
+        toggle_button.setIcon(QIcon("icons/toggle.png"))
+        toggle_button.setIconSize(QSize(58, 22))
+        toggle_button.setFixedSize(58, 22)
+        toggle_button.setCursor(Qt.PointingHandCursor)
+
+        toggle_button.setStyleSheet("""
+            QPushButton {
+                border: none;
+                icon: url(icons/toggle.png);
+            }
+            QPushButton:hover {
+                icon: url(icons/toggle_hover.png);
+            }
+        """)
+
+        toggle_button.clicked.connect(self.toggle_edit_window)
+        return toggle_button
+
+    def create_edit_button(self):
+        edit_button = QPushButton()
+        edit_button.setCursor(Qt.PointingHandCursor)
+        edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        edit_button.setFixedSize(24, 24)
+        edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
+        edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        return edit_button
 
     def set_button_style(self, button, style, event):
         button.setStyleSheet(style)
@@ -723,7 +734,7 @@ class CustomWindow(QWidget):
 
     def save_and_close(self):
         self.save_position()
-        self.close()
+        self.hide()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -735,8 +746,54 @@ class CustomWindow(QWidget):
             self.move(event.globalPos() - self.drag_start_position)
             event.accept()
 
-if __name__ == "__main__":
+
+
+
+class ListenKey(QThread):
+    def __init__(self, key_press_action: Callable):
+        super(ListenKey, self).__init__()
+        self.key_press_action = key_press_action
+
+    def run(self):
+        while True:
+            keyboard.wait("`")
+            if self.isInterruptionRequested(): break
+            if not keyboard.is_pressed("ctrl"):
+                self.key_press_action()
+
+
+def show_tray_icon(parent: QApplication, activate_action: Callable):
+    tray_icon = QSystemTrayIcon(QIcon(FS.icon("icon.png")), parent=parent)
+    tray_icon.setToolTip(TITLE)
+    tray_icon.activated.connect(activate_action)
+    tray_icon.show()
+    
+    menu = QMenu()
+    quit_action = menu.addAction("Quit")
+    quit_action.triggered.connect(parent.quit)
+    tray_icon.setContextMenu(menu)
+    
+def main():
     app = QApplication(sys.argv)
+    
     window = CustomWindow()
+    # showing the window for first time to construct the window
+    # (Avoid cunstruct from the thread, which does crashes)
     window.show()
+    if not any([x.lower() == '-showui' for x in app.arguments()]):
+        window.hide()
+    
+    toggle_window = lambda: window.show() if window.isHidden() else window.hide()
+    
+    show_tray_icon(app, toggle_window)
+    
+    keyboard_listener = ListenKey(toggle_window)
+    keyboard_listener.start()
+    
+    app.aboutToQuit.connect(keyboard_listener.requestInterruption)
+    
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
