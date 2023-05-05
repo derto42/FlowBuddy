@@ -3,34 +3,69 @@ import json
 import webbrowser
 import os
 import time
+import keyboard
+from typing import Callable
 from functools import partial
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QGraphicsDropShadowEffect, QDialog, QLineEdit, QFileDialog, QMessageBox
-from PyQt5.QtGui import QFont, QColor, QPainter, QPainterPath, QPalette, QPen, QFontMetrics, QPixmap, QIcon
+from PyQt5.QtGui import QFont, QColor, QPainter, QPainterPath, QPalette, QPen, QFontMetrics, QPixmap, QIcon, QFontDatabase
 from PyQt5.QtCore import QRectF, QEvent, QSize
+from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
+from PyQt5.QtCore import QThread
+
+# local imports
+import FileSystem as FS
+import SaveFile as SF
 
 
-class CustomButton(QPushButton):
-    def __init__(self, text, padding=15):
+# variables
+TITLE = "FlowBuddy"
+DEFAULT_FONT = "Montserrat-Medium.ttf"
+DEFAULT_FONT_SIZE = 16
+
+
+
+def get_custom_font(font_name: str = DEFAULT_FONT, size: int = DEFAULT_FONT_SIZE) -> QFont:
+    font_file = FS.font(font_name)
+    font_id = QFontDatabase.addApplicationFont(font_file)
+    font_families = QFontDatabase.applicationFontFamilies(font_id)
+
+    if font_families:
+        font = QFont(font_families[0], size)
+        if "Bold" in font_name:
+            font.setWeight(QFont.Bold)
+        elif "Medium" in font_name:
+            font.setWeight(QFont.Medium)
+        return font
+    else:
+        print(f"Error: Failed to load font '{font_file}'")
+        return QFont("Helvetica", size)
+
+
+
+
+
+class CustomButton(QPushButton): 
+    def __init__(self, text, padding=22):
         super().__init__(text)
-        self.setFont(QFont("Helvetica", 16))
+        self.setFont(get_custom_font(size=16))
         self.setContentsMargins(0, 0, 0, 0)
         self.setStyleSheet("background-color: #DADADA;")
         self.padding = padding
         self.setCursor(Qt.PointingHandCursor)
-        
+
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
 
         if self.underMouse():
-            # painter.setBrush(QColor("#FFA0A0"))
             painter.setBrush(QColor(self.property("hover_color")))
         else:
             painter.setBrush(self.palette().button())
 
-        painter.drawRoundedRect(self.rect(), 12, 12)
+        painter.drawRoundedRect(self.rect(), 14, 14)
         painter.setPen(self.palette().buttonText().color())
         painter.drawText(self.rect(), Qt.AlignCenter, self.text())
 
@@ -38,7 +73,7 @@ class CustomButton(QPushButton):
         font_metrics = QFontMetrics(self.font())
         text_width = font_metrics.width(self.text())
         button_width = text_width + self.padding * 2  # Adding padding to both sides
-        size = QSize(button_width, 38)  # Setting fixed height including top and bottom padding
+        size = QSize(button_width, 44)  # Setting fixed height including top and bottom padding
         return size
 
 
@@ -55,18 +90,19 @@ class NewGroupDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel()
-        title_label.setFont(QFont("Helvetica", 24, QFont.Bold))
+        title_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addItem(spacer)
 
         self.group_name_input = QLineEdit()
-        self.group_name_input.setFixedHeight(38)
+        self.group_name_input.setFixedHeight(44)
         self.group_name_input.setFixedWidth(200)
         self.group_name_input.setPlaceholderText("Group Name")
-        self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
-        self.group_name_input.setFont(QFont("Helvetica", 16))
+        self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;")
+        self.group_name_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
+
         self.group_name_input.hover_state = False
         self.group_name_input.enterEvent = lambda event: self.set_group_name_input_hover(True)
         self.group_name_input.leaveEvent = lambda event: self.set_group_name_input_hover(False)
@@ -122,9 +158,7 @@ class NewGroupDialog(QDialog):
             self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
 
     def generate_unique_name(self):
-        with open("data.json", "r") as f:
-            data = json.load(f)
-            existing_group_names = [group["name"] for group in data]
+        existing_group_names = [group.group_name() for group in SF.get_groups()]
             
         base_name = "Untitled"
         counter = 1
@@ -169,41 +203,41 @@ class NewTaskDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel(f"New Task")
-        title_label.setFont(QFont("Helvetica", 24, QFont.Bold))
+        title_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
-        input_style = "background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;"
+        input_style = "background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;"
         spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addItem(spacer)
 
         self.text_input = QLineEdit()
         self.text_input.setPlaceholderText("Text")
-        self.text_input.setFixedHeight(38)
+        self.text_input.setFixedHeight(44)
         self.text_input.setFixedWidth(200)
         self.text_input.setStyleSheet(input_style)
-        self.text_input.setFont(QFont("Helvetica", 16))
+        self.text_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
         layout.addWidget(self.text_input, alignment=Qt.AlignCenter)
 
         self.button_text_input = QLineEdit()
         self.button_text_input.setPlaceholderText("Button Text")
-        self.button_text_input.setFixedHeight(38)
+        self.button_text_input.setFixedHeight(44)
         self.button_text_input.setFixedWidth(200)
         self.button_text_input.setStyleSheet(input_style)
-        self.button_text_input.setFont(QFont("Helvetica", 16))
+        self.button_text_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
         layout.addWidget(self.button_text_input, alignment=Qt.AlignCenter)
 
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("URL")
-        self.url_input.setFixedHeight(38)
+        self.url_input.setFixedHeight(44)
         self.url_input.setFixedWidth(200)
         self.url_input.setStyleSheet(input_style)
-        self.url_input.setFont(QFont("Helvetica", 16))
+        self.url_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
         layout.addWidget(self.url_input, alignment=Qt.AlignCenter)
 
         self.file_input = ""
 
         self.choose_file_button = CustomButton("Choose File")
-        self.choose_file_button.setFixedSize(200, 38)
+        self.choose_file_button.setFixedSize(200, 44)
         self.choose_file_button.setProperty("hover_color", "#EBEBEB")
         layout.addWidget(self.choose_file_button, alignment=Qt.AlignCenter)
         self.choose_file_button.clicked.connect(self.choose_file)
@@ -295,44 +329,6 @@ class NewTaskDialog(QDialog):
 
 class CustomWindow(QWidget):
 
-    def toggle_edit_window(self):
-        self.turn_edit_mode(not self.edit_mode)
-
-    def turn_edit_mode(self, mode: bool):
-        for widget in self.edit_widgets:
-                widget: QPushButton = widget
-                widget.setHidden(not mode)
-        self.edit_mode = mode
-
-    def create_toggle_button(self):
-        toggle_button = QPushButton()
-        toggle_button.setIcon(QIcon("icons/toggle.png"))
-        toggle_button.setIconSize(QSize(58, 22))
-        toggle_button.setFixedSize(58, 22)
-        toggle_button.setCursor(Qt.PointingHandCursor)
-
-        toggle_button.setStyleSheet("""
-            QPushButton {
-                border: none;
-                icon: url(icons/toggle.png);
-            }
-            QPushButton:hover {
-                icon: url(icons/toggle_hover.png);
-            }
-        """)
-
-        toggle_button.clicked.connect(self.toggle_edit_window)
-        return toggle_button
-
-    def create_edit_button(self):
-        edit_button = QPushButton()
-        edit_button.setCursor(Qt.PointingHandCursor)
-        edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
-        edit_button.setFixedSize(24, 24)
-        edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
-        edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
-        return edit_button
-
     def __init__(self):
         super().__init__()
         
@@ -382,12 +378,8 @@ class CustomWindow(QWidget):
         top_buttons_widget.setLayout(top_buttons_layout)
         layout.addWidget(top_buttons_widget, alignment=Qt.AlignTop | Qt.AlignRight)
 
-        try:
-            with open("position.txt", "r") as f:
-                position = f.read().split(",")
-                self.move(int(position[0]), int(position[1]))
-        except (FileNotFoundError, IndexError, ValueError):
-            pass  # If the file doesn't exist or has an incorrect format, ignore it
+        if (position:=SF.get_setting("position")) != "None":
+            self.move(position[0], position[1])
 
         self.parent_layout = QVBoxLayout()
         
@@ -397,6 +389,44 @@ class CustomWindow(QWidget):
 
         layout.addLayout(self.parent_layout)
         layout.addStretch(1)
+
+    def toggle_edit_window(self):
+        self.turn_edit_mode(not self.edit_mode)
+
+    def turn_edit_mode(self, mode: bool):
+        for widget in self.edit_widgets:
+                widget: QPushButton = widget
+                widget.setHidden(not mode)
+        self.edit_mode = mode
+
+    def create_toggle_button(self):
+        toggle_button = QPushButton()
+        toggle_button.setIcon(QIcon("icons/toggle.png"))
+        toggle_button.setIconSize(QSize(58, 22))
+        toggle_button.setFixedSize(58, 22)
+        toggle_button.setCursor(Qt.PointingHandCursor)
+
+        toggle_button.setStyleSheet("""
+            QPushButton {
+                border: none;
+                icon: url(icons/toggle.png);
+            }
+            QPushButton:hover {
+                icon: url(icons/toggle_hover.png);
+            }
+        """)
+
+        toggle_button.clicked.connect(self.toggle_edit_window)
+        return toggle_button
+
+    def create_edit_button(self):
+        edit_button = QPushButton()
+        edit_button.setCursor(Qt.PointingHandCursor)
+        edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        edit_button.setFixedSize(24, 24)
+        edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
+        edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        return edit_button
 
     def set_button_style(self, button, style, event):
         button.setStyleSheet(style)
@@ -421,7 +451,7 @@ class CustomWindow(QWidget):
 
                         if task_data["text"]:
                             task_text = QLabel(task_data["text"])
-                            task_text.setFont(QFont("helvetica", 16))
+                            task_text.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
                             task_layout.addWidget(task_text)
 
                         if task_data["button_text"]:
@@ -445,17 +475,7 @@ class CustomWindow(QWidget):
                         break
 
     def edit_task(self, group_name, task_name):
-        # Find the existing task data
-        task_data = None
-        with open("data.json", "r") as f:
-            data = json.load(f)
-            for group in data:
-                if group["name"] == group_name:
-                    for task in group["tasks"]:
-                        if task["name"] == task_name:
-                            task_data = task
-                            break
-                    break
+        task_data = SF.get_task(group_name, task_name).get_json()
 
         if task_data:
             edit_task_dialog = NewTaskDialog(self, group_name, task_data)
@@ -468,20 +488,9 @@ class CustomWindow(QWidget):
                     # Generate a unique task name based on the current timestamp
                     unique_task_name = f"{group_name}{int(time.time())}"
                     updated_task_data["name"] = unique_task_name
-
-                    # Update the task data in the JSON file
-                    with open("data.json", "r+") as f:
-                        data = json.load(f)
-                        for group in data:
-                            if group["name"] == group_name:
-                                for i, task in enumerate(group["tasks"]):
-                                    if task["name"] == task_name:
-                                        group["tasks"][i] = updated_task_data
-                                        break
-                                break
-                        f.seek(0)
-                        json.dump(data, f, indent=4)
-                        f.truncate()
+                    SF.edit_task(group_name, task_name,
+                                 new_task_name=unique_task_name,
+                                 new_task_content=updated_task_data)
 
                 self.rerender_groups()
 
@@ -496,16 +505,9 @@ class CustomWindow(QWidget):
                 # Generate a unique task name based on the current timestamp
                 unique_task_name = f"{group_name}{int(time.time())}"
                 task_data["name"] = unique_task_name
-
-                with open("data.json", "r+") as f:
-                    data = json.load(f)
-                    for group in data:
-                        if group["name"] == group_name:
-                            group["tasks"].append(task_data)
-                            break
-                    f.seek(0)
-                    json.dump(data, f, indent=4)
-                    f.truncate()
+                SF.new_task(group_name, unique_task_name)
+                SF.edit_task(group_name, unique_task_name,
+                             new_task_content=task_data)
 
                 self.rerender_groups()
 
@@ -517,23 +519,7 @@ class CustomWindow(QWidget):
         if result == QDialog.Accepted:
             new_group_name = edit_group_dialog.get_group_name()
             if new_group_name:
-                # Update the group data in the JSON file
-                with open("data.json", "r+") as f:
-                    data = json.load(f)
-                    for group in data:
-                        if group["name"] == group_name:
-                            group["name"] = new_group_name
-                            break
-                    f.seek(0)
-                    json.dump(data, f, indent=4)
-                    f.truncate()
-
-                # Update the UI to reflect the updated group name
-                # for i in range(self.parent_layout.layout().count()):
-                #     widget = self.layout().itemAt(i).widget()
-                #     if isinstance(widget, QLabel) and widget.text() == group_name:
-                #         widget.setText(new_group_name)
-                #         break
+                SF.edit_group(group_name, new_group_name=new_group_name)
                 group_label_widget.setText(new_group_name)
 
     def create_new_group(self):
@@ -544,14 +530,7 @@ class CustomWindow(QWidget):
         if result == QDialog.Accepted:
             group_name = new_group_dialog.get_group_name()
             if group_name:
-                with open("data.json", "r+") as f:
-                    data = json.load(f)
-                    new_group = {"name": group_name, "tasks": []}
-                    data.append(new_group)
-                    f.seek(0)
-                    f.truncate()
-                    json.dump(data, f, indent=4)
-
+                SF.new_group(group_name)
             self.rerender_groups()
 
     def create_delete_button(self):
@@ -564,36 +543,12 @@ class CustomWindow(QWidget):
         return delete_button
 
     def delete_group(self, group_name, group_layout: QVBoxLayout):
-        # Remove group from the data file
-        with open("data.json", "r+") as f:
-            data = json.load(f)
-            data = [group for group in data if group["name"] != group_name]
-            f.seek(0)
-            json.dump(data, f, indent=4)
-            f.truncate()
-
-        self.clearLayout(group_layout)
-        self.update()
+        SF.Group(group_name).delete()
+        self.rerender_groups()
         
     def delete_task(self, group_name, task, task_layout: QVBoxLayout):
-        # Remove task from the data file
-        with open("data.json", "r+") as f:
-            data = json.load(f)
-            for group_no in range(len(data)):
-                if data[group_no]["name"] == group_name:
-                    task_list = []
-                    for t in data[group_no]["tasks"]:
-                        if t["name"] == task:
-                            continue
-                        task_list.append(t)
-                    data[group_no]["tasks"] = task_list
-                    break
-            f.seek(0)
-            json.dump(data, f, indent=4)
-            f.truncate()
-
-        self.clearLayout(task_layout)
-        self.update()
+        SF.Task(group_name, task).delete()
+        self.rerender_groups()
         
     def rerender_groups(self):
         self.clearLayout(self.parent_layout)
@@ -601,29 +556,31 @@ class CustomWindow(QWidget):
         self.turn_edit_mode(self.edit_mode)
         
     def render_groups(self):
-        with open("data.json") as f:
-            data = json.load(f)
+        # with open("data.json") as f:
+        #     data = json.load(f)
+            
+        groups = SF.get_groups()
 
         self.edit_widgets = []
-        for group in data:
+        for group in groups:
             group_layout = QVBoxLayout()
 
-            group_label = QLabel(group["name"])
-            group_label.setFont(QFont("helvetica", 24, QFont.Bold))
+            group_label = QLabel(group.group_name())
+            group_label.setFont(get_custom_font(size=24))
 
             create_task_button = QPushButton()
             create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
             create_task_button.setFixedSize(24, 24)
-            create_task_button.clicked.connect(partial(self.create_new_task, group["name"]))
+            create_task_button.clicked.connect(partial(self.create_new_task, group.group_name()))
             create_task_button.setCursor(Qt.PointingHandCursor)
             create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
             create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
             
             delete_group_button = self.create_delete_button()
-            delete_group_button.clicked.connect(partial(self.delete_group, group["name"], group_layout=group_layout))
+            delete_group_button.clicked.connect(partial(self.delete_group, group.group_name(), group_layout=group_layout))
 
             edit_group_button = self.create_edit_button()
-            edit_group_button.clicked.connect(partial(self.edit_group, group["name"], group_label))
+            edit_group_button.clicked.connect(partial(self.edit_group, group.group_name(), group_label))
 
             header_layout = QHBoxLayout()
             header_layout.addWidget(group_label)
@@ -640,23 +597,23 @@ class CustomWindow(QWidget):
             group_layout.addLayout(header_layout)
 
 
-            for task in group["tasks"]:
+            for task in group.get_tasks():
                 task_layout = QHBoxLayout()
                 task_layout.setSpacing(10)
 
                 delete_task_button = self.create_delete_button()
-                delete_task_button.clicked.connect(partial(self.delete_task, group["name"], task["name"], task_layout=task_layout))
+                delete_task_button.clicked.connect(partial(self.delete_task, group.group_name(), task.task_name(), task_layout=task_layout))
 
                 edit_task_button = self.create_edit_button()
-                edit_task_button.clicked.connect(partial(self.edit_task, group["name"], task["name"]))
+                edit_task_button.clicked.connect(partial(self.edit_task, group.group_name(), task.task_name()))
 
-                if task["text"]:
-                    task_text = QLabel(task["text"])
-                    task_text.setFont(QFont("helvetica", 16))
+                if text:=task.text():
+                    task_text = QLabel(text)
+                    task_text.setFont(get_custom_font(size=16))
                     task_layout.addWidget(task_text)
 
-                if task["button_text"]:
-                    button = CustomButton(task["button_text"])
+                if button_text:=task.button_text():
+                    button = CustomButton(button_text)
                     button.setProperty("normal_color", "#DADADA")
                     button.setProperty("hover_color", "#EBEBEB")
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
@@ -664,14 +621,14 @@ class CustomWindow(QWidget):
 
                     commands = []
 
-                    if task["url"]:
-                        urls = task["url"].split(',')
-                        func_1 = lambda *x, urls=urls, name=task["name"]: [webbrowser.open(url.strip()) for url in urls]
+                    if url:=task.url():
+                        urls = url.split(',')
+                        func_1 = lambda *x, urls=urls, name=task.task_name(): [webbrowser.open(url.strip()) for url in urls]
                         commands.append(func_1)
                         
-                    if "file" in task and task["file"]:
-                        abs_file_path = os.path.abspath(task["file"])
-                        func_2 = lambda *x, name=task["name"]: os.startfile(abs_file_path)
+                    if file:=task.file():
+                        abs_file_path = os.path.abspath(file)
+                        func_2 = lambda *x, name=task.task_name(): os.startfile(abs_file_path)
                         commands.append(func_2)
 
                         
@@ -679,7 +636,7 @@ class CustomWindow(QWidget):
                     button.setProperty("commands", commands)
                         
                     button.clicked.connect(lambda x, btn=button: [command() for command in btn.property("commands")])
-                    if not (task["url"] or task["file"]):
+                    if not (task.url() or task.file()):
                         button.setEnabled(False)
 
                 task_layout.addSpacing(10)
@@ -718,12 +675,12 @@ class CustomWindow(QWidget):
         painter.drawPath(path)
 
     def save_position(self):
-        with open("position.txt", "w") as f:
-            f.write(f"{self.pos().x()},{self.pos().y()}")
+            
+        SF.set_setting("position", (self.pos().x(), self.pos().y()))
 
     def save_and_close(self):
         self.save_position()
-        self.close()
+        self.hide()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -735,8 +692,54 @@ class CustomWindow(QWidget):
             self.move(event.globalPos() - self.drag_start_position)
             event.accept()
 
-if __name__ == "__main__":
+
+
+
+class ListenKey(QThread):
+    def __init__(self, key_press_action: Callable):
+        super(ListenKey, self).__init__()
+        self.key_press_action = key_press_action
+
+    def run(self):
+        while True:
+            keyboard.wait("`")
+            if self.isInterruptionRequested(): break
+            if not keyboard.is_pressed("ctrl"):
+                self.key_press_action()
+
+
+def show_tray_icon(parent: QApplication, activate_action: Callable):
+    tray_icon = QSystemTrayIcon(QIcon(FS.icon("icon.png")), parent=parent)
+    tray_icon.setToolTip(TITLE)
+    tray_icon.activated.connect(lambda reason: activate_action() if not reason == QSystemTrayIcon.ActivationReason.Context else None)
+    tray_icon.show()
+    
+    menu = QMenu()
+    quit_action = menu.addAction("Quit")
+    quit_action.triggered.connect(parent.quit)
+    tray_icon.setContextMenu(menu)
+    
+def main():
     app = QApplication(sys.argv)
+    
     window = CustomWindow()
+    # showing the window for first time to construct the window
+    # (Avoid cunstruct from the thread, which does crashes)
     window.show()
+    if not any([x.lower() == '-showui' for x in app.arguments()]):
+        window.hide()
+    
+    toggle_window = lambda: window.show() if window.isHidden() else window.hide()
+    
+    show_tray_icon(app, toggle_window)
+    
+    keyboard_listener = ListenKey(toggle_window)
+    keyboard_listener.start()
+    
+    app.aboutToQuit.connect(keyboard_listener.requestInterruption)
+    
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
