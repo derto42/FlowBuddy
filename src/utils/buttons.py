@@ -8,13 +8,15 @@ from src.utils.colors import replace_color
 
 
 def create_button(icon: str, size: Tuple[int, int], location: Tuple[int, int], style: str, action: Callable, icon_size: Tuple[int, int] = None) -> QPushButton:
-    """Create a button."""
+    """Create a button from defined parameters."""
     button = QPushButton()
     button.setIcon(QIcon(f'../icons/{icon}'))
     button.setFixedSize(*size)
     button.setCursor(Qt.PointingHandCursor)
     button.setStyleSheet(style)
     button.move(*location)
+
+    # Change the color of the button when hovered
     button.enterEvent = lambda event: button.setStyleSheet(replace_color(style, "light"))
     button.leaveEvent = lambda event: button.setStyleSheet(replace_color(style, "dark"))
 
