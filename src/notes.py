@@ -1,4 +1,5 @@
-import sys
+import FileSystem
+
 import os
 from PyQt5.QtWidgets import QApplication, QTextEdit, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt, QPoint
@@ -6,16 +7,19 @@ from PyQt5.QtGui import QFont, QFontDatabase, QTextCursor, QPainter, QPen, QColo
 
 
 def get_custom_font(size=16, font_name="Montserrat-Medium.ttf"):
-    font_path = os.path.join("fonts", font_name)
+    font_path = FileSystem.font(font_name)
     font_id = QFontDatabase.addApplicationFont(font_path)
     font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
     return QFont(font_family, size)
+
 
 class JottingDownWindow(QWidget):
     def __init__(self):
         super().__init__()
 
         self.notes_folder = "notes"
+        # os used. so the notes folder and the notes.txt files will be
+        # created in the working directory. not in the program directory.
         if not os.path.exists(self.notes_folder):
             os.makedirs(self.notes_folder)
         self.text_file_path = os.path.join(self.notes_folder, "notes.txt")
@@ -87,7 +91,7 @@ class JottingDownWindow(QWidget):
             self.old_pos = None
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QApplication([])
     window = JottingDownWindow()
     window.show()
-    sys.exit(app.exec_())
+    app.exec_()
