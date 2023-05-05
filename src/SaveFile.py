@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import json
-import gc
-from typing import Any, List, Dict, Literal, Optional, Union, ClassVar
+from typing import Any, List, Dict, Literal, Optional, Union
+
 import FileSystem as FS
+
 
 FILE_PATH = FS.SAVE_FILE
 
@@ -100,7 +103,7 @@ class Task:
     def get_json(self) -> Dict[str, str]:
         return self._json
 
-    def group(self):
+    def group(self) -> Group:
         """Returns a the group of this task as a Group object."""
         return Group(self._group_name)
 
@@ -219,24 +222,26 @@ def new_group(group_name: str) -> Group:
 
 def edit_group(group_name: str, *,
                new_group_name: Optional[str] = None,
-               new_group_content: Optional[Union[Task, Dict]] = None) -> None:
+               new_group_content: Optional[Dict] = None) -> None:
     
     if new_group_name == new_group_content == None:
         return
     
+    # iterating over the tasks in the group to maintain the order.
+    # if there is a better way to do this(changin the key without changing the order) feel free to change this.
     global _data
-    content = _data.pop(group_name)
+    old_data_items = _data.items()
+    _data = {}
     
-    if new_group_name is not None:
-        group_name = new_group_name
+    for _group_name, _group_content in old_data_items:
+        
+        if group_name == _group_name:
+            name = new_group_name if new_group_name is not None else _group_name
+            content = new_group_content if new_group_content is not None else _group_content
+            _data[name] = content
+        else:
+            _data[_group_name] = _group_content
 
-    if new_group_content is not None:
-        if isinstance(new_group_content, Task):
-            content = {new_group_content.task_name(): new_group_content.get_json()}
-        elif isinstance(new_group_content, dict):
-            content = new_group_content
-    
-    _data[group_name] = content
     _save_contents()
 
 
@@ -263,17 +268,19 @@ def edit_task(group_name: str, task_name: str, *,
     
     if new_task_name == new_task_content == None:
         return
-
+    
+    # iterating over the tasks in the group to maintain the order.
+    # if there is a better way to do this(changin the key without changing the order) feel free to change this.
     global _data
-    content = _data[group_name].pop(task_name)
-
-    if new_task_name is not None:
-        task_name = new_task_name
-
-    if new_task_content is not None:
-        content = new_task_content
-
-    _data[group_name][task_name] = content
+    old_data_group_itmes = _data[group_name].items()
+    _data[group_name] = {}
+    for _task_name, _task_content in old_data_group_itmes:
+        if _task_name == task_name:
+            name = new_task_name if new_task_name is not None else _task_name
+            content = new_task_content if new_task_content is not None else _task_content
+            _data[group_name][name] = content
+        else:
+            _data[group_name][_task_name] = _task_content
     _save_contents()
 
 
@@ -307,3 +314,6 @@ if __name__ == '__main__':
     task2.name("URL + Files1683072257")
     task2.button_text("File")
     task2.file("C:/Program Files/Imagine/Imagine.exe")
+    
+    group1.delete()
+    group2.delete()
