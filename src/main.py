@@ -566,7 +566,7 @@ class CustomWindow(QWidget):
             group_layout = QVBoxLayout()
 
             group_label = QLabel(group.group_name())
-            group_label.setFont(get_custom_font(size=24))
+            group_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
 
             create_task_button = QPushButton()
             create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
@@ -701,11 +701,10 @@ class ListenKey(QThread):
         self.key_press_action = key_press_action
 
     def run(self):
-        while True:
-            keyboard.wait("`")
-            if self.isInterruptionRequested(): break
-            if not keyboard.is_pressed("ctrl"):
-                self.key_press_action()
+        keyboard.add_hotkey("ctrl+`", self.key_press_action)
+
+        while not self.isInterruptionRequested():
+            keyboard.wait()
 
 
 def show_tray_icon(parent: QApplication, activate_action: Callable):
