@@ -694,19 +694,6 @@ class CustomWindow(QWidget):
 
 
 
-
-class ListenKey(QThread):
-    def __init__(self, key_press_action: Callable):
-        super(ListenKey, self).__init__()
-        self.key_press_action = key_press_action
-
-    def run(self):
-        keyboard.add_hotkey("ctrl+`", self.key_press_action)
-
-        while not self.isInterruptionRequested():
-            keyboard.wait()
-
-
 def show_tray_icon(parent: QApplication, activate_action: Callable):
     tray_icon = QSystemTrayIcon(QIcon(FS.icon("icon.png")), parent=parent)
     tray_icon.setToolTip(TITLE)
@@ -732,10 +719,7 @@ def main():
     
     show_tray_icon(app, toggle_window)
     
-    keyboard_listener = ListenKey(toggle_window)
-    keyboard_listener.start()
-    
-    app.aboutToQuit.connect(keyboard_listener.requestInterruption)
+    keyboard.add_hotkey("ctrl+`", toggle_window)
     
     sys.exit(app.exec_())
 
