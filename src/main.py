@@ -12,6 +12,7 @@ from PyQt5.QtGui import QFont, QColor, QPainter, QPainterPath, QPalette, QPen, Q
 from PyQt5.QtCore import QRectF, QEvent, QSize
 from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
 from PyQt5.QtCore import QThread
+from PyQt5 import QtWidgets
 
 # local imports
 import FileSystem as FS
@@ -340,7 +341,6 @@ class CustomWindow(QWidget):
 
         layout = QVBoxLayout()
         layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(10)
         self.setLayout(layout)
 
         exit_button = QPushButton()
@@ -369,7 +369,7 @@ class CustomWindow(QWidget):
 
         top_buttons_widget = QWidget()
         top_buttons_layout = QVBoxLayout()
-        top_buttons_layout.setContentsMargins(0, 0, 0, 20)
+        top_buttons_layout.setContentsMargins(0, 0, 0, 0)
         top_buttons_layout.setSpacing(10)
 
         top_buttons_layout.addLayout(exit_new_group_layout)  # Add the exit and new group buttons layout
@@ -388,7 +388,6 @@ class CustomWindow(QWidget):
         self.turn_edit_mode(False)  # edit mode is turned off in default
 
         layout.addLayout(self.parent_layout)
-        layout.addStretch(1)
 
     def toggle_edit_window(self):
         self.turn_edit_mode(not self.edit_mode)
@@ -426,6 +425,9 @@ class CustomWindow(QWidget):
         edit_button.setFixedSize(24, 24)
         edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
         edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        size_policy = edit_button.sizePolicy()
+        size_policy.setRetainSizeWhenHidden(True)
+        edit_button.setSizePolicy(size_policy)
         return edit_button
 
     def set_button_style(self, button, style, event):
@@ -540,6 +542,9 @@ class CustomWindow(QWidget):
         delete_button.setCursor(Qt.PointingHandCursor)
         delete_button.enterEvent = lambda event: delete_button.setStyleSheet("background-color: #FFA0A0; border-radius: 12px;")
         delete_button.leaveEvent = lambda event: delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
+        size_policy = delete_button.sizePolicy()
+        size_policy.setRetainSizeWhenHidden(True)
+        delete_button.setSizePolicy(size_policy)
         return delete_button
 
     def delete_group(self, group_name, group_layout: QVBoxLayout):
@@ -556,11 +561,13 @@ class CustomWindow(QWidget):
         self.turn_edit_mode(self.edit_mode)
         
     def render_groups(self):
-        # with open("data.json") as f:
-        #     data = json.load(f)
-            
-        groups = SF.get_groups()
 
+        groups = SF.get_groups()
+        
+        # add space between the logo and the list of groups
+        if groups:
+            self.parent_layout.addSpacing(20)
+        
         self.edit_widgets = []
         for group in groups:
             group_layout = QVBoxLayout()
@@ -575,6 +582,9 @@ class CustomWindow(QWidget):
             create_task_button.setCursor(Qt.PointingHandCursor)
             create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
             create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
+            size_policy = create_task_button.sizePolicy()
+            size_policy.setRetainSizeWhenHidden(True)
+            create_task_button.setSizePolicy(size_policy)
             
             delete_group_button = self.create_delete_button()
             delete_group_button.clicked.connect(partial(self.delete_group, group.group_name(), group_layout=group_layout))
@@ -650,6 +660,8 @@ class CustomWindow(QWidget):
                 group_layout.addLayout(task_layout)
 
             self.parent_layout.addLayout(group_layout)
+        
+        self.adjustSize()
 
     def clearLayout(self, layout):
         if layout is not None:
@@ -660,6 +672,7 @@ class CustomWindow(QWidget):
                     widget.deleteLater()
                 else:
                     self.clearLayout(item.layout())
+        QtWidgets.QApplication.instance().processEvents()
 
     def paintEvent(self, event):
         painter = QPainter(self)
