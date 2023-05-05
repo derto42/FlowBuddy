@@ -37,9 +37,9 @@ FlowBuddy is a user-friendly shortcut management application. It uses an intuiti
 
 2. Run ```-r requirements.txt```
 
-3. Open the "GraphicLauncher.pyw"
+3. Open the "main.pyw"
 
-4. Press the \` key to access the overlay.
+4. Press the Ctrl+\` keys to access the overlay.
 
 <br/><br/>
 
