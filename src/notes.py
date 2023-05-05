@@ -1,10 +1,11 @@
-import FileSystem
-
 import os
+
+import keyboard
 from PyQt5.QtWidgets import QApplication, QTextEdit, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QFont, QFontDatabase, QTextCursor, QPainter, QPen, QColor
 
+import FileSystem
 
 def get_custom_font(size=16, font_name="Montserrat-Medium.ttf"):
     font_path = FileSystem.font(font_name)
@@ -94,4 +95,7 @@ if __name__ == "__main__":
     app = QApplication([])
     window = JottingDownWindow()
     window.show()
+    window.hide()
+    toggle_window = lambda: window.show() if window.isHidden() else window.hide()
+    keyboard.add_hotkey("ctrl+`", toggle_window)
     app.exec_()
