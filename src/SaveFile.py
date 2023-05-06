@@ -118,6 +118,9 @@ class Group:
         
         self._tasks = _data[group_name]
 
+    def __len__(self):
+        return len(self._tasks)
+
     def group_name(self, group_name: Optional[str] = None) -> Optional[str]:
         if group_name is not None:
             edit_group(self._group_name, new_group_name=group_name)

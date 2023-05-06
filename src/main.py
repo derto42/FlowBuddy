@@ -12,11 +12,13 @@ from PyQt5.QtGui import QFont, QColor, QPainter, QPainterPath, QPalette, QPen, Q
 from PyQt5.QtCore import QRectF, QEvent, QSize
 from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
 from PyQt5.QtCore import QThread
-from PyQt5 import QtWidgets
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtGui import QKeyEvent
 
 # local imports
 import FileSystem as FS
 import SaveFile as SF
+from utils import ConfirmationDialog
 
 
 # variables
@@ -188,6 +190,13 @@ class NewGroupDialog(QDialog):
         if self.moving:
             self.move(event.globalPos() - self.offset)
 
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        if a0.key() == Qt.Key.Key_Enter or a0.key() == Qt.Key.Key_Return:
+            self.validate_and_accept()
+        elif a0.key() == Qt.Key.Key_Escape:
+            self.reject()
+        return super().keyPressEvent(a0)
+
 
 class NewTaskDialog(QDialog):
     def __init__(self, parent, group_name, task_data=None):
@@ -326,6 +335,13 @@ class NewTaskDialog(QDialog):
     def mouseMoveEvent(self, event):
         if self.moving:
             self.move(event.globalPos() - self.offset)
+
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        if a0.key() == Qt.Key.Key_Enter or a0.key() == Qt.Key.Key_Return:
+            self.validate_and_accept()
+        elif a0.key() == Qt.Key.Key_Escape:
+            self.reject()
+        return super().keyPressEvent(a0)
 
 
 class CustomWindow(QWidget):
@@ -522,7 +538,7 @@ class CustomWindow(QWidget):
             new_group_name = edit_group_dialog.get_group_name()
             if new_group_name:
                 SF.edit_group(group_name, new_group_name=new_group_name)
-                group_label_widget.setText(new_group_name)
+                self.rerender_groups()
 
     def create_new_group(self):
         new_group_dialog = NewGroupDialog(self)
@@ -548,12 +564,14 @@ class CustomWindow(QWidget):
         return delete_button
 
     def delete_group(self, group_name, group_layout: QVBoxLayout):
-        SF.Group(group_name).delete()
-        self.rerender_groups()
+        if ConfirmationDialog(self, f'Delete "{group_name}" group?').exec():
+            SF.Group(group_name).delete()
+            self.rerender_groups()
         
     def delete_task(self, group_name, task, task_layout: QVBoxLayout):
-        SF.Task(group_name, task).delete()
-        self.rerender_groups()
+        if ConfirmationDialog(self, f'Delete "{task}" task from "{group_name}" group?').exec():
+            SF.Task(group_name, task).delete()
+            self.rerender_groups()
         
     def rerender_groups(self):
         self.clearLayout(self.parent_layout)
@@ -563,10 +581,6 @@ class CustomWindow(QWidget):
     def render_groups(self):
 
         groups = SF.get_groups()
-        
-        # add space between the logo and the list of groups
-        if groups:
-            self.parent_layout.addSpacing(20)
         
         self.edit_widgets = []
         for group in groups:
@@ -604,6 +618,7 @@ class CustomWindow(QWidget):
             self.edit_widgets.append(delete_group_button)
             self.edit_widgets.append(edit_group_button)
 
+            self.parent_layout.addSpacing(24)
             group_layout.addLayout(header_layout)
 
 
@@ -657,6 +672,7 @@ class CustomWindow(QWidget):
                 self.edit_widgets.append(delete_task_button)
                 self.edit_widgets.append(edit_task_button)
                 
+                group_layout.addSpacing(12)
                 group_layout.addLayout(task_layout)
 
             self.parent_layout.addLayout(group_layout)
