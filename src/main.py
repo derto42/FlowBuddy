@@ -1,19 +1,20 @@
-import sys
-import json
-import webbrowser
 import os
+import sys
 import time
-import keyboard
-from typing import Callable
+import webbrowser
 from functools import partial
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QGraphicsDropShadowEffect, QDialog, QLineEdit, QFileDialog, QMessageBox
-from PyQt5.QtGui import QFont, QColor, QPainter, QPainterPath, QPalette, QPen, QFontMetrics, QPixmap, QIcon, QFontDatabase
-from PyQt5.QtCore import QRectF, QEvent, QSize
-from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
-from PyQt5.QtCore import QThread
-from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtGui import QKeyEvent
+from typing import Callable
+
+import keyboard
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QRectF, QSize, Qt
+from PyQt5.QtGui import (QColor, QFont, QFontDatabase, QFontMetrics, QIcon,
+                         QKeyEvent, QPainter, QPainterPath, QPen)
+from PyQt5.QtWidgets import (QApplication, QDialog, QFileDialog,
+                             QGraphicsDropShadowEffect, QHBoxLayout, QLabel,
+                             QLineEdit, QMenu, QPushButton, QSizePolicy,
+                             QSpacerItem, QSystemTrayIcon, QVBoxLayout,
+                             QWidget)
 
 # local imports
 import FileSystem as FS
@@ -28,12 +29,11 @@ DEFAULT_FONT_SIZE = 16
 
 
 
-def get_custom_font(font_name: str = DEFAULT_FONT, size: int = DEFAULT_FONT_SIZE) -> QFont:
+def get_custom_font(font_name: str = DEFAULT_FONT,
+                    size: int = DEFAULT_FONT_SIZE) -> QFont:
     font_file = FS.font(font_name)
     font_id = QFontDatabase.addApplicationFont(font_file)
-    font_families = QFontDatabase.applicationFontFamilies(font_id)
-
-    if font_families:
+    if font_families := QFontDatabase.applicationFontFamilies(font_id):
         font = QFont(font_families[0], size)
         if "Bold" in font_name:
             font.setWeight(QFont.Bold)
@@ -45,10 +45,7 @@ def get_custom_font(font_name: str = DEFAULT_FONT, size: int = DEFAULT_FONT_SIZE
         return QFont("Helvetica", size)
 
 
-
-
-
-class CustomButton(QPushButton): 
+class CustomButton(QPushButton):
     def __init__(self, text, padding=22):
         super().__init__(text)
         self.setFont(get_custom_font(size=16))
@@ -56,7 +53,6 @@ class CustomButton(QPushButton):
         self.setStyleSheet("background-color: #DADADA;")
         self.padding = padding
         self.setCursor(Qt.PointingHandCursor)
-
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -76,8 +72,7 @@ class CustomButton(QPushButton):
         font_metrics = QFontMetrics(self.font())
         text_width = font_metrics.width(self.text())
         button_width = text_width + self.padding * 2  # Adding padding to both sides
-        size = QSize(button_width, 44)  # Setting fixed height including top and bottom padding
-        return size
+        return QSize(button_width, 44)
 
 
 class NewGroupDialog(QDialog):
@@ -191,7 +186,7 @@ class NewGroupDialog(QDialog):
             self.move(event.globalPos() - self.offset)
 
     def keyPressEvent(self, a0: QKeyEvent) -> None:
-        if a0.key() == Qt.Key.Key_Enter or a0.key() == Qt.Key.Key_Return:
+        if a0.key() in [Qt.Key.Key_Enter, Qt.Key.Key_Return]:
             self.validate_and_accept()
         elif a0.key() == Qt.Key.Key_Escape:
             self.reject()
@@ -212,7 +207,7 @@ class NewTaskDialog(QDialog):
         layout.setSpacing(10)
         self.setLayout(layout)
 
-        title_label = QLabel(f"New Task")
+        title_label = QLabel("New Task")
         title_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
@@ -280,7 +275,7 @@ class NewTaskDialog(QDialog):
         shadow.setOffset(0)
         self.setGraphicsEffect(shadow)  # set shadow effect on dialog
 
-        
+
 
         if self.task_data:
             self.text_input.setText(self.task_data["text"])
@@ -323,8 +318,7 @@ class NewTaskDialog(QDialog):
         }
 
     def validate_and_accept(self):
-        task_data = self.get_task_data()
-        if task_data:
+        if self.get_task_data():
             self.accept()
 
     def mousePressEvent(self, event):
@@ -337,7 +331,7 @@ class NewTaskDialog(QDialog):
             self.move(event.globalPos() - self.offset)
 
     def keyPressEvent(self, a0: QKeyEvent) -> None:
-        if a0.key() == Qt.Key.Key_Enter or a0.key() == Qt.Key.Key_Return:
+        if a0.key() in [Qt.Key.Key_Enter, Qt.Key.Key_Return]:
             self.validate_and_accept()
         elif a0.key() == Qt.Key.Key_Escape:
             self.reject()
@@ -493,16 +487,13 @@ class CustomWindow(QWidget):
                         break
 
     def edit_task(self, group_name, task_name):
-        task_data = SF.get_task(group_name, task_name).get_json()
-
-        if task_data:
+        if task_data := SF.get_task(group_name, task_name).get_json():
             edit_task_dialog = NewTaskDialog(self, group_name, task_data)
             edit_task_dialog.setModal(True)
             result = edit_task_dialog.exec()
 
             if result == QDialog.Accepted:
-                updated_task_data = edit_task_dialog.get_task_data()
-                if updated_task_data:
+                if updated_task_data := edit_task_dialog.get_task_data():
                     # Generate a unique task name based on the current timestamp
                     unique_task_name = f"{group_name}{int(time.time())}"
                     updated_task_data["name"] = unique_task_name
@@ -518,8 +509,7 @@ class CustomWindow(QWidget):
         result = new_task_dialog.exec()
 
         if result == QDialog.Accepted:
-            task_data = new_task_dialog.get_task_data()
-            if task_data:
+            if task_data := new_task_dialog.get_task_data():
                 # Generate a unique task name based on the current timestamp
                 unique_task_name = f"{group_name}{int(time.time())}"
                 task_data["name"] = unique_task_name
@@ -535,8 +525,7 @@ class CustomWindow(QWidget):
         result = edit_group_dialog.exec()
 
         if result == QDialog.Accepted:
-            new_group_name = edit_group_dialog.get_group_name()
-            if new_group_name:
+            if new_group_name := edit_group_dialog.get_group_name():
                 SF.edit_group(group_name, new_group_name=new_group_name)
                 self.rerender_groups()
 
@@ -546,8 +535,7 @@ class CustomWindow(QWidget):
         result = new_group_dialog.exec()
 
         if result == QDialog.Accepted:
-            group_name = new_group_dialog.get_group_name()
-            if group_name:
+            if group_name := new_group_dialog.get_group_name():
                 SF.new_group(group_name)
             self.rerender_groups()
 
@@ -722,34 +710,38 @@ class CustomWindow(QWidget):
             event.accept()
 
 
-
 def show_tray_icon(parent: QApplication, activate_action: Callable):
     tray_icon = QSystemTrayIcon(QIcon(FS.icon("icon.png")), parent=parent)
     tray_icon.setToolTip(TITLE)
-    tray_icon.activated.connect(lambda reason: activate_action() if not reason == QSystemTrayIcon.ActivationReason.Context else None)
+    tray_icon.activated.connect(
+        lambda reason: activate_action()
+        if reason != QSystemTrayIcon.ActivationReason.Context
+        else None
+    )
     tray_icon.show()
-    
+
     menu = QMenu()
     quit_action = menu.addAction("Quit")
     quit_action.triggered.connect(parent.quit)
     tray_icon.setContextMenu(menu)
-    
+
+
 def main():
     app = QApplication(sys.argv)
-    
+
     window = CustomWindow()
     # showing the window for first time to construct the window
     # (Avoid cunstruct from the thread, which does crashes)
     window.show()
-    if not any([x.lower() == '-showui' for x in app.arguments()]):
+    if all(x.lower() != '-showui' for x in app.arguments()):
         window.hide()
-    
+
     toggle_window = lambda: window.show() if window.isHidden() else window.hide()
-    
+
     show_tray_icon(app, toggle_window)
-    
+
     keyboard.add_hotkey("ctrl+`", toggle_window)
-    
+
     sys.exit(app.exec_())
 
 
