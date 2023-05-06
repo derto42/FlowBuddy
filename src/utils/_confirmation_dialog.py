@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -52,16 +52,13 @@ class CustomButton(QPushButton):
         font_metrics = QFontMetrics(self.font())
         text_width = font_metrics.width(self.text())
         button_width = text_width + self.padding * 2  # Adding padding to both sides
-        size = QtCore.QSize(button_width, 44)  # Setting fixed height including top and bottom padding
-        return size
+        return QtCore.QSize(button_width, 44)
 
 
 def get_custom_font(font_name: str, size: int) -> QFont:
     font_file = FileSystem.font(font_name)
     font_id = QFontDatabase.addApplicationFont(font_file)
-    font_families = QFontDatabase.applicationFontFamilies(font_id)
-
-    if font_families:
+    if font_families := QFontDatabase.applicationFontFamilies(font_id):
         font = QFont(font_families[0], size)
         if "Bold" in font_name:
             font.setWeight(QFont.Bold)
@@ -103,11 +100,13 @@ class ConfirmationDialog(QDialog):
         cancel_button.setProperty("hover_color", "#FFA0A0")
         cancel_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
         cancel_button.setFixedSize(75, 24)
+        cancel_button.setDefault(False)
         cancel_button.clicked.connect(self.reject)
 
         ok_button.setProperty("hover_color", "#ACFFBE")
         ok_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
         ok_button.setFixedSize(75, 24)
+        ok_button.setDefault(True)
         ok_button.clicked.connect(self.accept)
         
         
@@ -138,8 +137,7 @@ class ConfirmationDialog(QDialog):
         return super().mouseMoveEvent(a0)
     
     def keyPressEvent(self, a0: QKeyEvent) -> None:
-        if a0.key() == QtCore.Qt.Key.Key_Enter or \
-           a0.key() == QtCore.Qt.Key.Key_Return:
+        if a0.key() in [QtCore.Qt.Key.Key_Enter, QtCore.Qt.Key.Key_Return]:
             self.accept()
         elif a0.key() == QtCore.Qt.Key.Key_Escape:
             self.reject()

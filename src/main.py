@@ -8,13 +8,33 @@ from typing import Callable
 import keyboard
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRectF, QSize, Qt
-from PyQt5.QtGui import (QColor, QFont, QFontDatabase, QFontMetrics, QIcon,
-                         QKeyEvent, QPainter, QPainterPath, QPen)
-from PyQt5.QtWidgets import (QApplication, QDialog, QFileDialog,
-                             QGraphicsDropShadowEffect, QHBoxLayout, QLabel,
-                             QLineEdit, QMenu, QPushButton, QSizePolicy,
-                             QSpacerItem, QSystemTrayIcon, QVBoxLayout,
-                             QWidget)
+from PyQt5.QtGui import (
+    QColor,
+    QFont,
+    QFontDatabase,
+    QFontMetrics,
+    QIcon,
+    QKeyEvent,
+    QPainter,
+    QPainterPath,
+    QPen,
+)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QGraphicsDropShadowEffect,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QPushButton,
+    QSizePolicy,
+    QSpacerItem,
+    QSystemTrayIcon,
+    QVBoxLayout,
+    QWidget,
+)
 
 # local imports
 import FileSystem as FS
@@ -130,6 +150,7 @@ class NewGroupDialog(QDialog):
         create_button.setProperty("hover_color", "#ACFFBE")
         create_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
         create_button.setFixedSize(75, 24)
+        create_button.setDefault(True)
         create_button.clicked.connect(self.validate_and_accept)
         button_layout.addWidget(create_button)
 
@@ -269,6 +290,7 @@ class NewTaskDialog(QDialog):
         create_button.setProperty("hover_color", "#ACFFBE")
         create_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
         create_button.setFixedSize(75, 24)
+        create_button.setDefault(True)
         create_button.clicked.connect(self.validate_and_accept)
         button_layout.addWidget(create_button)
 
@@ -448,7 +470,7 @@ class CustomWindow(QWidget):
         return edit_button
 
     @staticmethod
-    def set_button_style(button, style):
+    def set_button_style(button, style, event):
         button.setStyleSheet(style)
 
     def update_ui_for_new_task(self, group_name, task_data):
