@@ -21,10 +21,10 @@ import FileSystem as FS
 import SaveFile as SF
 from utils import ConfirmationDialog
 
-
 # variables
 TITLE = "FlowBuddy"
 DEFAULT_FONT = "Montserrat-Medium.ttf"
+DEFAULT_BOLD = "Montserrat-Bold.ttf"
 DEFAULT_FONT_SIZE = 16
 
 
@@ -33,6 +33,7 @@ def get_custom_font(font_name: str = DEFAULT_FONT,
                     size: int = DEFAULT_FONT_SIZE) -> QFont:
     font_file = FS.font(font_name)
     font_id = QFontDatabase.addApplicationFont(font_file)
+
     if font_families := QFontDatabase.applicationFontFamilies(font_id):
         font = QFont(font_families[0], size)
         if "Bold" in font_name:
@@ -72,6 +73,7 @@ class CustomButton(QPushButton):
         font_metrics = QFontMetrics(self.font())
         text_width = font_metrics.width(self.text())
         button_width = text_width + self.padding * 2  # Adding padding to both sides
+        # Setting fixed height including top and bottom padding
         return QSize(button_width, 44)
 
 
@@ -79,6 +81,8 @@ class NewGroupDialog(QDialog):
     def __init__(self, parent=None, group_name=None):
         super().__init__(parent)
 
+        self.moving = None
+        self.offset = None
         self.setWindowFlags(Qt.Dialog | Qt.WindowCloseButtonHint | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
@@ -88,7 +92,7 @@ class NewGroupDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel()
-        title_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
+        title_label.setFont(get_custom_font(size=24, font_name=DEFAULT_BOLD))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -99,7 +103,7 @@ class NewGroupDialog(QDialog):
         self.group_name_input.setFixedWidth(200)
         self.group_name_input.setPlaceholderText("Group Name")
         self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;")
-        self.group_name_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
+        self.group_name_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
 
         self.group_name_input.hover_state = False
         self.group_name_input.enterEvent = lambda event: self.set_group_name_input_hover(True)
@@ -155,17 +159,18 @@ class NewGroupDialog(QDialog):
         else:
             self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
 
-    def generate_unique_name(self):
+    @staticmethod
+    def generate_unique_name():
         existing_group_names = [group.group_name() for group in SF.get_groups()]
-            
+
         base_name = "Untitled"
         counter = 1
         unique_name = base_name
-        
+
         while unique_name in existing_group_names:
             unique_name = f"{base_name}{counter}"
             counter += 1
-            
+
         return unique_name
 
     def validate_and_accept(self):
@@ -173,7 +178,7 @@ class NewGroupDialog(QDialog):
         if not group_name:
             group_name = self.generate_unique_name()
             self.group_name_input.setText(group_name)
-            
+
         self.accept()
 
     def mousePressEvent(self, event):
@@ -196,6 +201,8 @@ class NewGroupDialog(QDialog):
 class NewTaskDialog(QDialog):
     def __init__(self, parent, group_name, task_data=None):
         super().__init__(parent)
+        self.moving = None
+        self.offset = None
         self.setWindowFlags(Qt.Dialog | Qt.WindowCloseButtonHint | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.group_name = group_name
@@ -208,7 +215,7 @@ class NewTaskDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel("New Task")
-        title_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
+        title_label.setFont(get_custom_font(size=24, font_name=DEFAULT_BOLD))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         input_style = "background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;"
@@ -220,7 +227,7 @@ class NewTaskDialog(QDialog):
         self.text_input.setFixedHeight(44)
         self.text_input.setFixedWidth(200)
         self.text_input.setStyleSheet(input_style)
-        self.text_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
+        self.text_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
         layout.addWidget(self.text_input, alignment=Qt.AlignCenter)
 
         self.button_text_input = QLineEdit()
@@ -228,7 +235,7 @@ class NewTaskDialog(QDialog):
         self.button_text_input.setFixedHeight(44)
         self.button_text_input.setFixedWidth(200)
         self.button_text_input.setStyleSheet(input_style)
-        self.button_text_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
+        self.button_text_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
         layout.addWidget(self.button_text_input, alignment=Qt.AlignCenter)
 
         self.url_input = QLineEdit()
@@ -236,7 +243,7 @@ class NewTaskDialog(QDialog):
         self.url_input.setFixedHeight(44)
         self.url_input.setFixedWidth(200)
         self.url_input.setStyleSheet(input_style)
-        self.url_input.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
+        self.url_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
         layout.addWidget(self.url_input, alignment=Qt.AlignCenter)
 
         self.file_input = ""
@@ -274,8 +281,6 @@ class NewTaskDialog(QDialog):
         shadow.setColor(QColor(0, 0, 0, 80))
         shadow.setOffset(0)
         self.setGraphicsEffect(shadow)  # set shadow effect on dialog
-
-
 
         if self.task_data:
             self.text_input.setText(self.task_data["text"])
@@ -342,7 +347,8 @@ class CustomWindow(QWidget):
 
     def __init__(self):
         super().__init__()
-        
+
+        self.drag_start_position = None
         self.edit_widgets = []
         self.edit_mode = True
 
@@ -388,13 +394,13 @@ class CustomWindow(QWidget):
         top_buttons_widget.setLayout(top_buttons_layout)
         layout.addWidget(top_buttons_widget, alignment=Qt.AlignTop | Qt.AlignRight)
 
-        if (position:=SF.get_setting("position")) != "None":
+        if (position := SF.get_setting("position")) is not None:
             self.move(position[0], position[1])
 
         self.parent_layout = QVBoxLayout()
-        
+
         self.render_groups()
-        
+
         self.turn_edit_mode(False)  # edit mode is turned off in default
 
         layout.addLayout(self.parent_layout)
@@ -404,8 +410,8 @@ class CustomWindow(QWidget):
 
     def turn_edit_mode(self, mode: bool):
         for widget in self.edit_widgets:
-                widget: QPushButton = widget
-                widget.setHidden(not mode)
+            widget: QPushButton = widget
+            widget.setHidden(not mode)
         self.edit_mode = mode
 
     def create_toggle_button(self):
@@ -428,7 +434,8 @@ class CustomWindow(QWidget):
         toggle_button.clicked.connect(self.toggle_edit_window)
         return toggle_button
 
-    def create_edit_button(self):
+    @staticmethod
+    def create_edit_button():
         edit_button = QPushButton()
         edit_button.setCursor(Qt.PointingHandCursor)
         edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
@@ -440,7 +447,8 @@ class CustomWindow(QWidget):
         edit_button.setSizePolicy(size_policy)
         return edit_button
 
-    def set_button_style(self, button, style, event):
+    @staticmethod
+    def set_button_style(button, style):
         button.setStyleSheet(style)
 
     def update_ui_for_new_task(self, group_name, task_data):
@@ -463,7 +471,7 @@ class CustomWindow(QWidget):
 
                         if task_data["text"]:
                             task_text = QLabel(task_data["text"])
-                            task_text.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
+                            task_text.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
                             task_layout.addWidget(task_text)
 
                         if task_data["button_text"]:
@@ -539,7 +547,8 @@ class CustomWindow(QWidget):
                 SF.new_group(group_name)
             self.rerender_groups()
 
-    def create_delete_button(self):
+    @staticmethod
+    def create_delete_button():
         delete_button = QPushButton()
         delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
         delete_button.setFixedSize(24, 24)
@@ -555,27 +564,26 @@ class CustomWindow(QWidget):
         if ConfirmationDialog(self, f'Delete "{group_name}" group?').exec():
             SF.Group(group_name).delete()
             self.rerender_groups()
-        
+
     def delete_task(self, group_name, task, task_layout: QVBoxLayout):
         if ConfirmationDialog(self, f'Delete "{task}" task from "{group_name}" group?').exec():
             SF.Task(group_name, task).delete()
             self.rerender_groups()
-        
+
     def rerender_groups(self):
         self.clearLayout(self.parent_layout)
         self.render_groups()
         self.turn_edit_mode(self.edit_mode)
-        
-    def render_groups(self):
 
+    def render_groups(self):
         groups = SF.get_groups()
-        
+
         self.edit_widgets = []
         for group in groups:
             group_layout = QVBoxLayout()
 
             group_label = QLabel(group.group_name())
-            group_label.setFont(get_custom_font(size=24, font_name="Montserrat-Bold.ttf"))
+            group_label.setFont(get_custom_font(size=24, font_name=DEFAULT_BOLD))
 
             create_task_button = QPushButton()
             create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
@@ -584,10 +592,11 @@ class CustomWindow(QWidget):
             create_task_button.setCursor(Qt.PointingHandCursor)
             create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
             create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
+
             size_policy = create_task_button.sizePolicy()
             size_policy.setRetainSizeWhenHidden(True)
             create_task_button.setSizePolicy(size_policy)
-            
+
             delete_group_button = self.create_delete_button()
             delete_group_button.clicked.connect(partial(self.delete_group, group.group_name(), group_layout=group_layout))
 
@@ -601,14 +610,13 @@ class CustomWindow(QWidget):
             header_layout.addWidget(delete_group_button)
             header_layout.addWidget(edit_group_button)
             header_layout.addStretch(1)
-            
+
             self.edit_widgets.append(create_task_button)
             self.edit_widgets.append(delete_group_button)
             self.edit_widgets.append(edit_group_button)
 
             self.parent_layout.addSpacing(24)
             group_layout.addLayout(header_layout)
-
 
             for task in group.get_tasks():
                 task_layout = QHBoxLayout()
@@ -620,12 +628,12 @@ class CustomWindow(QWidget):
                 edit_task_button = self.create_edit_button()
                 edit_task_button.clicked.connect(partial(self.edit_task, group.group_name(), task.task_name()))
 
-                if text:=task.text():
+                if text := task.text():
                     task_text = QLabel(text)
                     task_text.setFont(get_custom_font(size=16))
                     task_layout.addWidget(task_text)
 
-                if button_text:=task.button_text():
+                if button_text := task.button_text():
                     button = CustomButton(button_text)
                     button.setProperty("normal_color", "#DADADA")
                     button.setProperty("hover_color", "#EBEBEB")
@@ -634,20 +642,18 @@ class CustomWindow(QWidget):
 
                     commands = []
 
-                    if url:=task.url():
+                    if url := task.url():
                         urls = url.split(',')
                         func_1 = lambda *x, urls=urls, name=task.task_name(): [webbrowser.open(url.strip()) for url in urls]
                         commands.append(func_1)
-                        
-                    if file:=task.file():
+
+                    if file := task.file():
                         abs_file_path = os.path.abspath(file)
                         func_2 = lambda *x, name=task.task_name(): os.startfile(abs_file_path)
                         commands.append(func_2)
 
-                        
-                        
                     button.setProperty("commands", commands)
-                        
+
                     button.clicked.connect(lambda x, btn=button: [command() for command in btn.property("commands")])
                     if not (task.url() or task.file()):
                         button.setEnabled(False)
@@ -656,15 +662,15 @@ class CustomWindow(QWidget):
                 task_layout.addWidget(delete_task_button)
                 task_layout.addWidget(edit_task_button)
                 task_layout.addStretch(1)
-                
+
                 self.edit_widgets.append(delete_task_button)
                 self.edit_widgets.append(edit_task_button)
-                
+
                 group_layout.addSpacing(12)
                 group_layout.addLayout(task_layout)
 
             self.parent_layout.addLayout(group_layout)
-        
+
         self.adjustSize()
 
     def clearLayout(self, layout):
@@ -692,7 +698,7 @@ class CustomWindow(QWidget):
         painter.drawPath(path)
 
     def save_position(self):
-            
+
         SF.set_setting("position", (self.pos().x(), self.pos().y()))
 
     def save_and_close(self):
@@ -739,7 +745,6 @@ def main():
     toggle_window = lambda: window.show() if window.isHidden() else window.hide()
 
     show_tray_icon(app, toggle_window)
-
     keyboard.add_hotkey("ctrl+`", toggle_window)
 
     sys.exit(app.exec_())
