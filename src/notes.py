@@ -2,17 +2,20 @@ import os
 import json
 
 import keyboard
-from PyQt5.QtWidgets import QApplication, QTextEdit, QVBoxLayout, QWidget, QShortcut, QTabWidget, QSizePolicy, QInputDialog, QToolButton, QTabBar, QMessageBox
+from PyQt5.QtWidgets import QApplication, QTextEdit, QVBoxLayout, QWidget, QShortcut, QTabWidget, QSizePolicy, \
+    QInputDialog, QToolButton, QTabBar, QMessageBox
 from PyQt5.QtCore import Qt, QPoint, QEvent, pyqtSignal
 from PyQt5.QtGui import QFont, QFontDatabase, QTextCursor, QPainter, QPen, QColor, QKeySequence
 
 import FileSystem
+
 
 def get_custom_font(size=16, font_name="Montserrat-Medium.ttf"):
     font_path = FileSystem.font(font_name)
     font_id = QFontDatabase.addApplicationFont(font_path)
     font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
     return QFont(font_family, size)
+
 
 class NoteTab(QTextEdit):
     def __init__(self, file_path):
@@ -38,6 +41,7 @@ class NoteTab(QTextEdit):
         with open(self.file_path, "w") as file:
             file.write(self.toPlainText())
 
+
 class CustomTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -45,6 +49,7 @@ class CustomTabWidget(QTabWidget):
         self.addTabButton.setText('+')
         self.addTabButton.clicked.connect(parent.add_new_tab)
         self.setCornerWidget(self.addTabButton, Qt.TopRightCorner)
+
 
 class JottingDownWindow(QWidget):
     def __init__(self):
@@ -115,8 +120,6 @@ class JottingDownWindow(QWidget):
             if self.tab_widget.count() == 0:
                 self.add_new_tab("notes")
 
-
-
     def save_tabs(self):
         config = {
             "files": [self.notes_folder + "/" + self.tab_widget.tabText(i) for i in range(self.tab_widget.count())],
@@ -138,7 +141,6 @@ class JottingDownWindow(QWidget):
         else:
             QMessageBox.warning(self, "File Exists", f"A file with the name {file_name} already exists.")
 
-
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.old_pos = event.globalPos()
@@ -157,11 +159,13 @@ class JottingDownWindow(QWidget):
     def closeEvent(self, event):
         self.save_tabs()
 
+
 if __name__ == "__main__":
     app = QApplication([])
     window = JottingDownWindow()
     window.show()
     window.hide()
+
 
     def toggle_window():
         if window.isHidden():
@@ -172,6 +176,7 @@ if __name__ == "__main__":
                 current_widget.setFocus()  # Set focus on the text box
         else:
             window.hide()
+
 
     keyboard.add_hotkey("ctrl+`", toggle_window)
     app.exec_()

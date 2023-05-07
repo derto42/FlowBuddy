@@ -48,7 +48,6 @@ DEFAULT_BOLD = "Montserrat-Bold.ttf"
 DEFAULT_FONT_SIZE = 16
 
 
-
 def get_custom_font(font_name: str = DEFAULT_FONT,
                     size: int = DEFAULT_FONT_SIZE) -> QFont:
     font_file = FS.font(font_name)
@@ -121,7 +120,8 @@ class NewGroupDialog(QDialog):
         self.group_name_input = QLineEdit()
         self.group_name_input.setFixedSize(220, 44)
         self.group_name_input.setPlaceholderText("Group Name")
-        self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;")
+        self.group_name_input.setStyleSheet(
+            "background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;")
         self.group_name_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
 
         self.group_name_input.hover_state = False
@@ -129,16 +129,20 @@ class NewGroupDialog(QDialog):
         self.group_name_input.leaveEvent = lambda event: self.set_group_name_input_hover(False)
         layout.addWidget(self.group_name_input, alignment=Qt.AlignCenter)
 
+        create_button = CustomButton("")
+        cancel_button = CustomButton("")
+
         if group_name:
             title_label.setText("Edit Group")
             self.group_name_input.setText(group_name)
+            create_button.setText("Edit")
         else:
             title_label.setText("New Group")
+            create_button.setText("Create")
 
         button_layout = QHBoxLayout()
         button_layout.setSpacing(10)
 
-        cancel_button = CustomButton("")
         cancel_button.setProperty("hover_color", "#FFA0A0")
         cancel_button.setStyleSheet("background-color: #FF7777; border-radius: 12px; text-align: center;")
         cancel_button.setText("Cancel")
@@ -147,10 +151,8 @@ class NewGroupDialog(QDialog):
         cancel_button.setFont(get_custom_font(size=15, font_name=DEFAULT_FONT))
         button_layout.addWidget(cancel_button)
 
-        create_button = CustomButton("")
         create_button.setProperty("hover_color", "#ACFFBE")
         create_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
-        create_button.setText("Create")
         create_button.setFixedSize(110, 50)
         create_button.setDefault(True)
         create_button.clicked.connect(self.validate_and_accept)
@@ -179,9 +181,11 @@ class NewGroupDialog(QDialog):
     def set_group_name_input_hover(self, state):
         self.group_name_input.hover_state = state
         if state:
-            self.group_name_input.setStyleSheet("background-color: #EBEBEB; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
+            self.group_name_input.setStyleSheet(
+                "background-color: #EBEBEB; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
         else:
-            self.group_name_input.setStyleSheet("background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
+            self.group_name_input.setStyleSheet(
+                "background-color: #DADADA; border-radius: 12px; padding-left: 18px; padding-right: 18px;")
 
     @staticmethod
     def generate_unique_name():
@@ -390,16 +394,20 @@ class CustomWindow(QWidget):
         exit_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
         exit_button.setFixedSize(24, 24)
         exit_button.clicked.connect(self.save_and_close)
-        exit_button.enterEvent = lambda event: exit_button.setStyleSheet("background-color: #FFA0A0; border-radius: 12px;")
-        exit_button.leaveEvent = lambda event: exit_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
+        exit_button.enterEvent = lambda event: exit_button.setStyleSheet(
+            "background-color: #FFA0A0; border-radius: 12px;")
+        exit_button.leaveEvent = lambda event: exit_button.setStyleSheet(
+            "background-color: #FF7777; border-radius: 12px;")
 
         new_group_button = QPushButton()
         new_group_button.setCursor(Qt.PointingHandCursor)
         new_group_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
         new_group_button.setFixedSize(24, 24)
         new_group_button.clicked.connect(self.create_new_group)
-        new_group_button.enterEvent = lambda event: new_group_button.setStyleSheet("background-color: #ACFFBE; border-radius: 12px;")
-        new_group_button.leaveEvent = lambda event: new_group_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
+        new_group_button.enterEvent = lambda event: new_group_button.setStyleSheet(
+            "background-color: #ACFFBE; border-radius: 12px;")
+        new_group_button.leaveEvent = lambda event: new_group_button.setStyleSheet(
+            "background-color: #71F38D; border-radius: 12px;")
 
         toggle_button = self.create_toggle_button()
 
@@ -466,8 +474,10 @@ class CustomWindow(QWidget):
         edit_button.setCursor(Qt.PointingHandCursor)
         edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
         edit_button.setFixedSize(24, 24)
-        edit_button.enterEvent = lambda event: edit_button.setStyleSheet("background-color: #FFDAA3; border-radius: 12px;")
-        edit_button.leaveEvent = lambda event: edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
+        edit_button.enterEvent = lambda event: edit_button.setStyleSheet(
+            "background-color: #FFDAA3; border-radius: 12px;")
+        edit_button.leaveEvent = lambda event: edit_button.setStyleSheet(
+            "background-color: #FFCD83; border-radius: 12px;")
         size_policy = edit_button.sizePolicy()
         size_policy.setRetainSizeWhenHidden(True)
         edit_button.setSizePolicy(size_policy)
@@ -579,8 +589,10 @@ class CustomWindow(QWidget):
         delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
         delete_button.setFixedSize(24, 24)
         delete_button.setCursor(Qt.PointingHandCursor)
-        delete_button.enterEvent = lambda event: delete_button.setStyleSheet("background-color: #FFA0A0; border-radius: 12px;")
-        delete_button.leaveEvent = lambda event: delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
+        delete_button.enterEvent = lambda event: delete_button.setStyleSheet(
+            "background-color: #FFA0A0; border-radius: 12px;")
+        delete_button.leaveEvent = lambda event: delete_button.setStyleSheet(
+            "background-color: #FF7777; border-radius: 12px;")
         size_policy = delete_button.sizePolicy()
         size_policy.setRetainSizeWhenHidden(True)
         delete_button.setSizePolicy(size_policy)
@@ -616,15 +628,18 @@ class CustomWindow(QWidget):
             create_task_button.setFixedSize(24, 24)
             create_task_button.clicked.connect(partial(self.create_new_task, group.group_name()))
             create_task_button.setCursor(Qt.PointingHandCursor)
-            create_task_button.enterEvent = partial(self.set_button_style, create_task_button, "background-color: #ACFFBE; border-radius: 12px;")
-            create_task_button.leaveEvent = partial(self.set_button_style, create_task_button, "background-color: #71F38D; border-radius: 12px;")
+            create_task_button.enterEvent = partial(self.set_button_style, create_task_button,
+                                                    "background-color: #ACFFBE; border-radius: 12px;")
+            create_task_button.leaveEvent = partial(self.set_button_style, create_task_button,
+                                                    "background-color: #71F38D; border-radius: 12px;")
 
             size_policy = create_task_button.sizePolicy()
             size_policy.setRetainSizeWhenHidden(True)
             create_task_button.setSizePolicy(size_policy)
 
             delete_group_button = self.create_delete_button()
-            delete_group_button.clicked.connect(partial(self.delete_group, group.group_name(), group_layout=group_layout))
+            delete_group_button.clicked.connect(
+                partial(self.delete_group, group.group_name(), group_layout=group_layout))
 
             edit_group_button = self.create_edit_button()
             edit_group_button.clicked.connect(partial(self.edit_group, group.group_name(), group_label))
@@ -649,7 +664,8 @@ class CustomWindow(QWidget):
                 task_layout.setSpacing(10)
 
                 delete_task_button = self.create_delete_button()
-                delete_task_button.clicked.connect(partial(self.delete_task, group.group_name(), task.task_name(), task_layout=task_layout))
+                delete_task_button.clicked.connect(
+                    partial(self.delete_task, group.group_name(), task.task_name(), task_layout=task_layout))
 
                 edit_task_button = self.create_edit_button()
                 edit_task_button.clicked.connect(partial(self.edit_task, group.group_name(), task.task_name()))
@@ -670,7 +686,8 @@ class CustomWindow(QWidget):
 
                     if url := task.url():
                         urls = url.split(',')
-                        func_1 = lambda *x, urls=urls, name=task.task_name(): [webbrowser.open(url.strip()) for url in urls]
+                        func_1 = lambda *x, urls=urls, name=task.task_name(): [webbrowser.open(url.strip()) for url in
+                                                                               urls]
                         commands.append(func_1)
 
                     if file := task.file():
