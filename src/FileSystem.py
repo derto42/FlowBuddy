@@ -12,7 +12,7 @@ FONTS_FOLDER = os.path.join(PROGRAM_DIR, FONTS_FOLDER_NAME)
 
 
 def create_save_file() -> None:
-    """Creates a empty save file."""
+    """Creates an empty save file."""
     with open(SAVE_FILE, 'w') as f:
         f.write('{"settings": {}, "data": {}}')
 
@@ -29,7 +29,7 @@ def exists(path: str):
 
 
 def icon(icon_name: str) -> str | None:
-    """Returns the absolute path of given icon. Retruns None if the icon does not exist."""
+    """Returns the absolute path of given icon. Returns None if the icon does not exist."""
     path = os.path.join(ICONS_FOLDER, icon_name)
     return os.path.abspath(path) if os.path.exists(path) else None
 
