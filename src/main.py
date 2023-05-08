@@ -432,8 +432,8 @@ class CustomWindow(QWidget):
         toggle_button.setFixedSize(58, 22)
         toggle_button.setCursor(Qt.PointingHandCursor)
         
-        toggle_icon = FS.icon("toggle.png")
-        toggle_hover_icon = FS.icon("toggle_hover.png")
+        toggle_icon = FS.icon("toggle.png").replace("\\","/")
+        toggle_hover_icon = FS.icon("toggle_hover.png").replace("\\","/")
         
         toggle_button.setStyleSheet("""
             QPushButton {
