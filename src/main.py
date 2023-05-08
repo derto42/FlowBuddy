@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import webbrowser
 from functools import partial
 from typing import Callable
 
@@ -10,8 +9,6 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRectF, QSize, Qt
 from PyQt5.QtGui import (
     QColor,
-    QFont,
-    QFontDatabase,
     QFontMetrics,
     QIcon,
     QKeyEvent,
@@ -40,35 +37,16 @@ from PyQt5.QtWidgets import (
 import FileSystem as FS
 import SaveFile as SF
 from utils import ConfirmationDialog
+from utils import get_font
 
 # variables
 TITLE = "FlowBuddy"
-DEFAULT_FONT = "Montserrat-Medium.ttf"
-DEFAULT_BOLD = "Montserrat-Bold.ttf"
-DEFAULT_FONT_SIZE = 16
-
-
-def get_custom_font(font_name: str = DEFAULT_FONT,
-                    size: int = DEFAULT_FONT_SIZE) -> QFont:
-    font_file = FS.font(font_name)
-    font_id = QFontDatabase.addApplicationFont(font_file)
-
-    if font_families := QFontDatabase.applicationFontFamilies(font_id):
-        font = QFont(font_families[0], size)
-        if "Bold" in font_name:
-            font.setWeight(QFont.Bold)
-        elif "Medium" in font_name:
-            font.setWeight(QFont.Medium)
-        return font
-    else:
-        print(f"Error: Failed to load font '{font_file}'")
-        return QFont("Helvetica", size)
 
 
 class CustomButton(QPushButton):
     def __init__(self, text, padding=22):
         super().__init__(text)
-        self.setFont(get_custom_font(size=16))
+        self.setFont(get_font(size=16))
         self.setContentsMargins(0, 0, 0, 0)
         self.setStyleSheet("background-color: #DADADA;")
         self.padding = padding
@@ -111,7 +89,7 @@ class NewGroupDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel()
-        title_label.setFont(get_custom_font(size=24, font_name=DEFAULT_BOLD))
+        title_label.setFont(get_font(size=24, weight="bold"))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         spacer = QSpacerItem(1, 15, QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -122,7 +100,7 @@ class NewGroupDialog(QDialog):
         self.group_name_input.setPlaceholderText("Group Name")
         self.group_name_input.setStyleSheet(
             "background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;")
-        self.group_name_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
+        self.group_name_input.setFont(get_font(size=16))
 
         self.group_name_input.hover_state = False
         self.group_name_input.enterEvent = lambda event: self.set_group_name_input_hover(True)
@@ -148,7 +126,7 @@ class NewGroupDialog(QDialog):
         cancel_button.setText("Cancel")
         cancel_button.setFixedSize(110, 50)
         cancel_button.clicked.connect(self.reject)
-        cancel_button.setFont(get_custom_font(size=15, font_name=DEFAULT_FONT))
+        cancel_button.setFont(get_font(size=15))
         button_layout.addWidget(cancel_button)
 
         create_button.setProperty("hover_color", "#ACFFBE")
@@ -156,7 +134,7 @@ class NewGroupDialog(QDialog):
         create_button.setFixedSize(110, 50)
         create_button.setDefault(True)
         create_button.clicked.connect(self.validate_and_accept)
-        create_button.setFont(get_custom_font(size=15, font_name=DEFAULT_FONT))
+        create_button.setFont(get_font(size=15))
         button_layout.addWidget(create_button)
 
         layout.addItem(QSpacerItem(1, 10, QSizePolicy.Minimum, QSizePolicy.Fixed))
@@ -243,7 +221,7 @@ class NewTaskDialog(QDialog):
         self.setLayout(layout)
 
         title_label = QLabel("New Task")
-        title_label.setFont(get_custom_font(size=24, font_name=DEFAULT_BOLD))
+        title_label.setFont(get_font(size=24))
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         input_style = "background-color: #DADADA; border-radius: 14px; padding-left: 18px; padding-right: 18px;"
@@ -254,21 +232,21 @@ class NewTaskDialog(QDialog):
         self.text_input.setPlaceholderText("Text")
         self.text_input.setFixedSize(220, 44)
         self.text_input.setStyleSheet(input_style)
-        self.text_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
+        self.text_input.setFont(get_font(size=16))
         layout.addWidget(self.text_input, alignment=Qt.AlignCenter)
 
         self.button_text_input = QLineEdit()
         self.button_text_input.setPlaceholderText("Button Text")
         self.button_text_input.setFixedSize(220, 44)
         self.button_text_input.setStyleSheet(input_style)
-        self.button_text_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
+        self.button_text_input.setFont(get_font(size=16))
         layout.addWidget(self.button_text_input, alignment=Qt.AlignCenter)
 
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("URL")
         self.url_input.setFixedSize(220, 44)
         self.url_input.setStyleSheet(input_style)
-        self.url_input.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
+        self.url_input.setFont(get_font(size=16))
         layout.addWidget(self.url_input, alignment=Qt.AlignCenter)
 
         self.file_input = ""
@@ -289,7 +267,7 @@ class NewTaskDialog(QDialog):
         cancel_button.setText("Cancel")
         cancel_button.setFixedSize(110, 50)
         cancel_button.clicked.connect(self.reject)
-        cancel_button.setFont(get_custom_font(size=15, font_name=DEFAULT_FONT))
+        cancel_button.setFont(get_font(size=15))
         button_layout.addWidget(cancel_button)
 
         create_button = CustomButton("")
@@ -299,7 +277,7 @@ class NewTaskDialog(QDialog):
         create_button.setFixedSize(110, 50)
         create_button.setDefault(True)
         create_button.clicked.connect(self.validate_and_accept)
-        create_button.setFont(get_custom_font(size=15, font_name=DEFAULT_FONT))
+        create_button.setFont(get_font(size=15))
         button_layout.addWidget(create_button)
 
         layout.addItem(QSpacerItem(1, 10, QSizePolicy.Minimum, QSizePolicy.Fixed))
@@ -509,7 +487,7 @@ class CustomWindow(QWidget):
 
                         if task_data["text"]:
                             task_text = QLabel(task_data["text"])
-                            task_text.setFont(get_custom_font(size=16, font_name=DEFAULT_FONT))
+                            task_text.setFont(get_font(size=16))
                             task_layout.addWidget(task_text)
 
                         if task_data["button_text"]:
@@ -623,7 +601,7 @@ class CustomWindow(QWidget):
             group_layout = QVBoxLayout()
 
             group_label = QLabel(group.group_name())
-            group_label.setFont(get_custom_font(size=24, font_name=DEFAULT_BOLD))
+            group_label.setFont(get_font(size=24, weight="bold"))
 
             create_task_button = QPushButton()
             create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
@@ -674,7 +652,7 @@ class CustomWindow(QWidget):
 
                 if text := task.text():
                     task_text = QLabel(text)
-                    task_text.setFont(get_custom_font(size=16))
+                    task_text.setFont(get_font(size=16))
                     task_layout.addWidget(task_text)
 
                 if button_text := task.button_text():
@@ -684,18 +662,7 @@ class CustomWindow(QWidget):
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
                     task_layout.addWidget(button)
 
-                    commands = []
-
-                    if url := task.url():
-                        urls = url.split(',')
-                        func_1 = lambda *x, urls=urls, name=task.task_name(): [webbrowser.open(url.strip()) for url in
-                                                                               urls]
-                        commands.append(func_1)
-
-                    if file := task.file():
-                        abs_file_path = os.path.abspath(file)
-                        func_2 = lambda *x, name=task.task_name(): os.startfile(abs_file_path)
-                        commands.append(func_2)
+                    commands = FS.open_task(task.url(), task.name(), task.file(), sys.platform)
 
                     button.setProperty("commands", commands)
 
