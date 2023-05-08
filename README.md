@@ -17,8 +17,18 @@
 
 
    <p>
-      <b>FlowBuddy is a user-friendly shortcut management application. It uses an intuitive overlay to create, edit and delete shortcuts to enhance users’ productivity.</b>
+      <b>FlowBuddy is an user-friendly shortcut management application. It provides an intuitive overlay to create, edit and delete shortcuts to enhance your workflows and productivity.</b>
    </p>
+    <p>
+      <b>Table of Contents</b>
+   </p>
+
+   * [Features](#features)
+   * [Getting Started](#getting-started)
+   * [UI Explanation](#ui-explanation)
+   * [Temporary UI Design](#temporary-ui-design)
+   * [Demo](#demo)
+
    <br>
 </div>
 
@@ -27,19 +37,21 @@
 
 ## Features
 
-1. **Manage custom shortcut groups**
-2. **Manage shortcuts for URLs and files**
+1. **Manage custom groups for your shortcuts in one place**
+2. **Clean your clutter with shortcuts for files and URLs with a single click **
 3. **Save the window position**
    - FlowBuddy saves the overlay layout exactly how you want it
 4. **Runs in the background**
    - Open overlay at any time by pressing the <kbd>Ctrl</kbd>+<kbd>`</kbd> keys
    - Quit easily through system tray
-5. **Toggle between Edit and Normal Modes**
-6. **Quick tool for taking notes.**
+5. **Easily Toggle between Edit and Normal Modes**
+6. **Take notes  organised in a smart way**
 
 ## Getting Started
 
-1. Install Python 3.10
+To get started with FlowBuddy, follow these steps:
+
+1. Install Python 3.10 
 2. Run `pip install -r requirements.txt`
 3. Open `main.py`
 4. Press the <kbd>Ctrl</kbd>+<kbd>`</kbd> keys to access the overlay
