@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import webbrowser
 from functools import partial
 from typing import Callable
 
@@ -682,21 +681,7 @@ class CustomWindow(QWidget):
                     button.setStyleSheet("background-color: #DADADA; border-radius: 12px;")
                     task_layout.addWidget(button)
 
-                    commands = []
-
-                    if url := task.url():
-                        urls = url.split(',')
-                        func_1 = lambda *x, urls=urls, name=task.task_name(): [webbrowser.open(url.strip()) for url in
-                                                                               urls]
-                        commands.append(func_1)
-
-                    if file := task.file():
-                        abs_file_path = os.path.abspath(file)
-                        if sys.platform in ('win32',):
-                            func_2 = lambda *x, name=task.task_name(): os.startfile(abs_file_path)
-                        elif sys.platform in ('linux', 'darwin'):
-                            func_2 = lambda *x, name=task.task_name(): os.system(f'xdg-open {abs_file_path}')
-                        commands.append(func_2)
+                    commands = FS.open_task(task.url(), task.name(), task.file(), sys.platform)
 
                     button.setProperty("commands", commands)
 
