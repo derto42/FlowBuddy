@@ -17,7 +17,7 @@
 
 
    <p>
-      <b>FlowBuddy is an user-friendly shortcut management application. It provides an intuitive overlay to create, edit and delete shortcuts to enhance your workflows and productivity.</b>
+      <b>FlowBuddy is a user-friendly shortcut management application. It provides an intuitive overlay to create, edit and delete shortcuts to enhance your workflows and productivity.</b>
    </p>
     <p>
       <b>Table of Contents</b>
@@ -38,7 +38,7 @@
 ## Features
 
 1. **Manage custom groups for your shortcuts in one place**
-2. **Clean your clutter with shortcuts for files and URLs with a single click **
+2. **Access all of your important files and websites in one click **
 3. **Save the window position**
    - FlowBuddy saves the overlay layout exactly how you want it
 4. **Runs in the background**
