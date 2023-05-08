@@ -22,6 +22,9 @@
    <br>
 </div>
 
+
+![Animation](https://user-images.githubusercontent.com/125327962/236888361-c172fb52-747e-4f4c-9da0-0ecd4c9d4a12.gif)
+
 ## Features
 
 1. **Manage custom shortcut groups**
