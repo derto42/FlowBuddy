@@ -9,20 +9,14 @@ from PyQt5.QtGui import QFont, QFontDatabase, QTextCursor, QPainter, QPen, QColo
 
 import FileSystem
 
-
-def get_custom_font(size=16, font_name="Montserrat-Medium.ttf"):
-    font_path = FileSystem.font(font_name)
-    font_id = QFontDatabase.addApplicationFont(font_path)
-    font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-    return QFont(font_family, size)
-
+from utils import get_font
 
 class NoteTab(QTextEdit):
     def __init__(self, file_path):
         super().__init__()
         self.file_path = file_path
         self.load_text_from_file()
-        self.setFont(get_custom_font(size=16, font_name="Montserrat-Medium.ttf"))
+        self.setFont(get_font(size=16))
         self.textChanged.connect(self.save_text_to_file)
         self.setStyleSheet("""
             QTextEdit {

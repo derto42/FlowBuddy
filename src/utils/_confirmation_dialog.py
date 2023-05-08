@@ -20,15 +20,13 @@ from PyQt5.QtGui import (
     QKeyEvent,
 )
 
-
-import FileSystem
-
+from ._get_font import get_font
 
 
 class CustomButton(QPushButton): 
     def __init__(self, text, padding=22):
         super().__init__(text)
-        self.setFont(get_custom_font("Montserrat-Medium.ttf", size=16))
+        self.setFont(get_font(size=16))
         self.setContentsMargins(0, 0, 0, 0)
         self.setStyleSheet("background-color: #DADADA;")
         self.padding = padding
@@ -55,21 +53,6 @@ class CustomButton(QPushButton):
         return QtCore.QSize(button_width, 44)
 
 
-def get_custom_font(font_name: str, size: int) -> QFont:
-    font_file = FileSystem.font(font_name)
-    font_id = QFontDatabase.addApplicationFont(font_file)
-    if font_families := QFontDatabase.applicationFontFamilies(font_id):
-        font = QFont(font_families[0], size)
-        if "Bold" in font_name:
-            font.setWeight(QFont.Bold)
-        elif "Medium" in font_name:
-            font.setWeight(QFont.Medium)
-        return font
-    else:
-        print(f"Error: Failed to load font '{font_file}'")
-        return QFont("Helvetica", size)
-
-
 class ConfirmationDialog(QDialog):
     def __init__(self, parent: QWidget | None = None,
                  text: str = "Confirmation",
@@ -86,7 +69,7 @@ class ConfirmationDialog(QDialog):
         layout.setSpacing(10)
 
         layout.addWidget(title_label := QLabel(), alignment=QtCore.Qt.AlignCenter)
-        title_label.setFont(get_custom_font("Montserrat-Bold.ttf", 12))
+        title_label.setFont(get_font(size=12, weight="bold"))
         title_label.setText(text)
 
         layout.addLayout(button_layout := QHBoxLayout())
