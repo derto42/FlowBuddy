@@ -450,20 +450,22 @@ class CustomWindow(QWidget):
 
     def create_toggle_button(self):
         toggle_button = QPushButton()
-        toggle_button.setIcon(QIcon("icons/toggle.png"))
         toggle_button.setIconSize(QSize(58, 22))
         toggle_button.setFixedSize(58, 22)
         toggle_button.setCursor(Qt.PointingHandCursor)
-
+        
+        toggle_icon = FS.icon("toggle.png")
+        toggle_hover_icon = FS.icon("toggle_hover.png")
+        
         toggle_button.setStyleSheet("""
             QPushButton {
                 border: none;
-                icon: url(icons/toggle.png);
+                icon: url(%s);
             }
             QPushButton:hover {
-                icon: url(icons/toggle_hover.png);
+                icon: url(%s);
             }
-        """)
+        """%(toggle_icon, toggle_hover_icon))
 
         toggle_button.clicked.connect(self.toggle_edit_window)
         return toggle_button
