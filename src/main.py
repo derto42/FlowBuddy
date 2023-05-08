@@ -692,7 +692,10 @@ class CustomWindow(QWidget):
 
                     if file := task.file():
                         abs_file_path = os.path.abspath(file)
-                        func_2 = lambda *x, name=task.task_name(): os.startfile(abs_file_path)
+                        if sys.platform in ('win32',):
+                            func_2 = lambda *x, name=task.task_name(): os.startfile(abs_file_path)
+                        elif sys.platform in ('linux', 'darwin'):
+                            func_2 = lambda *x, name=task.task_name(): os.system(f'xdg-open {abs_file_path}')
                         commands.append(func_2)
 
                     button.setProperty("commands", commands)
