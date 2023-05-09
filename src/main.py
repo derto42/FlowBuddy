@@ -368,6 +368,7 @@ class CustomWindow(QWidget):
         self.setLayout(layout)
 
         exit_button = QPushButton()
+        exit_button.setToolTip("Exit")
         exit_button.setCursor(Qt.PointingHandCursor)
         exit_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
         exit_button.setFixedSize(24, 24)
@@ -378,6 +379,7 @@ class CustomWindow(QWidget):
             "background-color: #FF7777; border-radius: 12px;")
 
         new_group_button = QPushButton()
+        new_group_button.setToolTip("New Group")
         new_group_button.setCursor(Qt.PointingHandCursor)
         new_group_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
         new_group_button.setFixedSize(24, 24)
@@ -428,6 +430,7 @@ class CustomWindow(QWidget):
 
     def create_toggle_button(self):
         toggle_button = QPushButton()
+        toggle_button.setToolTip("Edit Mode")
         toggle_button.setIconSize(QSize(58, 22))
         toggle_button.setFixedSize(58, 22)
         toggle_button.setCursor(Qt.PointingHandCursor)
@@ -451,6 +454,7 @@ class CustomWindow(QWidget):
     @staticmethod
     def create_edit_button():
         edit_button = QPushButton()
+        edit_button.setToolTip("Edit Task")
         edit_button.setCursor(Qt.PointingHandCursor)
         edit_button.setStyleSheet("background-color: #FFCD83; border-radius: 12px;")
         edit_button.setFixedSize(24, 24)
@@ -566,6 +570,7 @@ class CustomWindow(QWidget):
     @staticmethod
     def create_delete_button():
         delete_button = QPushButton()
+        delete_button.setToolTip("Delete Task")
         delete_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
         delete_button.setFixedSize(24, 24)
         delete_button.setCursor(Qt.PointingHandCursor)
@@ -604,6 +609,7 @@ class CustomWindow(QWidget):
             group_label.setFont(get_font(size=24, weight="bold"))
 
             create_task_button = QPushButton()
+            create_task_button.setToolTip("Create Task")
             create_task_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
             create_task_button.setFixedSize(24, 24)
             create_task_button.clicked.connect(partial(self.create_new_task, group.group_name()))

@@ -82,12 +82,14 @@ class ConfirmationDialog(QDialog):
         button_layout.addStretch(1)
         
         cancel_button.setProperty("hover_color", "#FFA0A0")
+        cancel_button.setToolTip("Cancel")
         cancel_button.setStyleSheet("background-color: #FF7777; border-radius: 12px;")
         cancel_button.setFixedSize(75, 24)
         cancel_button.setDefault(False)
         cancel_button.clicked.connect(self.reject)
 
         ok_button.setProperty("hover_color", "#ACFFBE")
+        ok_button.setToolTip("Ok")
         ok_button.setStyleSheet("background-color: #71F38D; border-radius: 12px;")
         ok_button.setFixedSize(75, 24)
         ok_button.setDefault(True)
