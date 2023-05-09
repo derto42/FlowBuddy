@@ -60,4 +60,9 @@ def get_font(font_name: str = DEFAULT_FONT,
         
     _family_name = QFontDatabase.applicationFontFamilies(loaded_fonts[font_name])[0]
 
+    system_fonts = QFontDatabase ().families ()
+    if "Montserrat" in system_fonts:
+        _family_name = "Montserrat"
+        _weight = SHORT_NAME_TO_WEIGHT[weight.title()]
+        
     return QFont(_family_name, _size, _weight, _italic)
