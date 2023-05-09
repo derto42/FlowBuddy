@@ -8,6 +8,7 @@ import FileSystem as FS
 
 FILE_PATH = FS.SAVE_FILE
 
+_save_dict = False
 
 class AutoSaveDict(dict):
     def __init__(self, *args, **kwargs):
@@ -27,6 +28,8 @@ class AutoSaveDict(dict):
         return ret
     
     def _save_contents(self) -> None:
+        if not _save_dict:
+            return
         with contextlib.suppress(NameError):
             _contents["settings"] = _settings
             _contents["data"] = _groups
@@ -59,6 +62,7 @@ def _get_data() -> Dict[Literal["settings", "data"], Dict[str, Dict]]:
 _contents = _get_data()
 _settings = AutoSaveDict(_contents["settings"])
 _groups: Dict[str, Dict[str, Dict[str, str]]] = AutoSaveDict(_contents["data"])
+_save_dict = True
 
 
 @overload
@@ -98,8 +102,8 @@ def setting(name: str, value: Any) -> None: ...
 def add_group(group_name: str) -> None:
     global _groups
     if group_name in _groups:
-        return Found(group_name)
-    _groups[group_name] = AutoSaveDict({"order": 0})
+        raise Found(group_name)
+    _groups[group_name] = AutoSaveDict()
 
 def delete_group(group_name: str) -> None:
     if group_name not in _groups:
@@ -121,7 +125,7 @@ def add_task(group_name: str, task_name: str) -> None:
     if group_name not in _groups:
         raise NotFound(group_name)
     if task_name not in _groups[group_name]:
-        _groups[group_name][task_name] = AutoSaveDict({"order": 0})
+        _groups[group_name][task_name] = AutoSaveDict()
     else:
         Found(task_name)
 
@@ -202,11 +206,15 @@ def delete_setting(name: str) -> None:
 if __name__ == '__main__':
     add_group("group 1")
     add_group("group 2")
+    add_group("group 3")
+    add_group("group 4")
     delete_group("group 1")
     edit_group("group 2", new_group_name="group 1")
+    edit_group("group 3", new_group_name="group 5")
     edit_group("group 1", new_group_data={"None": "None"})
     
-    add_task("group 3", "task 1")
+    try: add_task("group 3", "task 1")
+    except NotFound as e: print(e)
     add_task("group 1", "task 1")
     add_task("group 1", "task 2")
     delete_task("group 1", "task 1")
@@ -230,4 +238,6 @@ if __name__ == '__main__':
     s = setting("position")
     
     delete_group("group 1")
+    delete_group("group 4")
+    delete_group("group 5")
     delete_setting("position")
