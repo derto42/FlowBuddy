@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import sys
 import webbrowser
 
 
@@ -12,6 +13,8 @@ PROGRAM_DIR = os.path.dirname(os.path.abspath(__file__))
 SAVE_FILE = os.path.join(PROGRAM_DIR, SAVE_FILE_NAME)
 ICONS_FOLDER = os.path.join(PROGRAM_DIR, ICONS_FOLDER_NAME)
 FONTS_FOLDER = os.path.join(PROGRAM_DIR, FONTS_FOLDER_NAME)
+
+PLATFORM = sys.platform
 
 
 def create_save_file() -> None:
@@ -42,23 +45,11 @@ def font(font_name: str) -> str | None:
     path = os.path.join(FONTS_FOLDER, font_name)
     return os.path.abspath(path) if os.path.exists(path) else None
 
-def open_task(task_url: str, task_name: str, task_file, platform: str):
-    commands = []
-
-    if url := task_url:
-        urls = url.split(',')
-        func_1 = lambda *x, urls=urls, name=task_name: [webbrowser.open(url.strip()) for url in
-                                                                urls]
-        commands.append(func_1)
-
-    if file := task_file:
-        abs_file_path = os.path.abspath(file)
-        if platform in ('win32',):
-            func_2 = lambda *x, name=task_name: os.startfile(abs_file_path)
-        elif platform in ('linux', 'darwin'):
-            func_2 = lambda *x, name=task_name: os.system(f'xdg-open {abs_file_path}')
-        commands.append(func_2)
-    return commands
+def open_file(file_path: str) -> None:
+    if PLATFORM in ('win32',):
+        os.startfile(file_path)
+    elif PLATFORM in ('linux', 'darwin'):
+        os.system(f'xdg-open {file_path}')
 
 
 # for testing purposes
