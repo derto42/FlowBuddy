@@ -18,8 +18,8 @@ from PyQt5.QtGui import (
     QKeyEvent
 )
 
-from utils import get_font
-from ._custom_button import CustomButton
+from .get_font import get_font
+from .custom_button import CustomButton
 
 class NewTaskDialog(QDialog):
     def __init__(self, parent, group_name, task_data=None):

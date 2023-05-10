@@ -21,7 +21,7 @@ from PyQt5.QtGui import (
     QKeyEvent,
 )
 
-from ._get_font import get_font
+from .get_font import get_font
 
 
 class CustomButton(QPushButton): 

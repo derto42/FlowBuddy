@@ -17,8 +17,8 @@ from PyQt5.QtGui import (
 )
 
 import SaveFile as SF
-from utils import get_font
-from ._custom_button import CustomButton
+from .get_font import get_font
+from .custom_button import CustomButton
 
 
 class NewGroupDialog(QDialog):

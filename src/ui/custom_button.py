@@ -6,7 +6,7 @@ from PyQt5.QtGui import (
     QFontMetrics
 )
 
-from utils import get_font
+from .get_font import get_font
 
 class CustomButton(QPushButton):
     def __init__(self, text, padding=22):

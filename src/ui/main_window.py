@@ -22,12 +22,12 @@ from PyQt5.QtWidgets import (
 import FileSystem as FS
 import SaveFile as SF
 
-from utils import ConfirmationDialog
-from utils import get_font
+from .get_font import get_font
 
-from ._custom_button import CustomButton
-from ._new_group_dialog import NewGroupDialog
-from ._new_task_dialog import NewTaskDialog
+from .custom_button import CustomButton
+from .new_group_dialog import NewGroupDialog
+from .new_task_dialog import NewTaskDialog
+from .confirmation_dialog import ConfirmationDialog
 
 
 
