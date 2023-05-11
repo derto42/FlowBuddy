@@ -3,7 +3,7 @@ import webbrowser
 from typing import Optional
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QMouseEvent, QShowEvent
+from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
 
 
 import SaveFile as Data
-from FileSystem import open_task
+from FileSystem import open_file
 
 from .base_window import BaseWindow
 from .utils import get_font
@@ -155,7 +155,7 @@ class TaskNode(BaseNode):
         if self._url is not None:
             [webbrowser.open(url.strip()) for url in self._url.split(",")]
         if self._file_path is not None:
-            open_task(self._file_path)
+            open_file(self._file_path)
     
     
     def _edit_data(self, dialog: TaskDialog) -> None:
