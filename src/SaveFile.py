@@ -102,8 +102,8 @@ def setting(name: str, value: Any) -> None: ...
 def add_group(group_name: str) -> None:
     global _groups
     if group_name in _groups:
-        return Found(group_name)
-    _groups[group_name] = AutoSaveDict({"order": 0})
+        raise Found(group_name)
+    _groups[group_name] = AutoSaveDict()
 
 def delete_group(group_name: str) -> None:
     if group_name not in _groups:
@@ -125,7 +125,7 @@ def add_task(group_name: str, task_name: str) -> None:
     if group_name not in _groups:
         raise NotFound(group_name)
     if task_name not in _groups[group_name]:
-        _groups[group_name][task_name] = AutoSaveDict({"order": 0})
+        _groups[group_name][task_name] = AutoSaveDict()
     else:
         Found(task_name)
 
