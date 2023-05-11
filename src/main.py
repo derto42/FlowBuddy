@@ -2,11 +2,13 @@ import sys
 from typing import Callable
 
 import keyboard
+from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication,
     QMenu,
     QSystemTrayIcon,
+    QShortcut
 )
 
 import FileSystem as FS
@@ -36,16 +38,16 @@ def main():
     app = QApplication(sys.argv)
 
     window = MainWindow()
-    # showing the window for first time to construct the window
-    # (Avoid cunstruct from the thread, which does crashes)
-    window.show()
-    if all(x.lower() != '-showui' for x in app.arguments()):
-        window.hide()
 
-    toggle_window = lambda: window.show() if window.isHidden() else window.hide()
+    if any(x.lower() == '-showui' for x in app.arguments()):
+        QApplication.instance().processEvents()
+        window.update()
+        window.show()
+        
+        # QTimer.singleShot(10, window.window_toggle_signal.emit)
 
-    show_tray_icon(app, toggle_window)
-    keyboard.add_hotkey("ctrl+`", toggle_window)
+    show_tray_icon(app, window.window_toggle_signal.emit)
+    keyboard.add_hotkey("ctrl+`", window.window_toggle_signal.emit)
 
     sys.exit(app.exec_())
 

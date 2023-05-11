@@ -1,40 +1,141 @@
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QPushButton
+from typing import Optional, Literal
+from PyQt5.QtCore import Qt, QSize, QVariantAnimation, QEasingCurve
+from PyQt5.QtWidgets import QPushButton, QWidget
 from PyQt5.QtGui import (
     QPainter,
     QColor,
-    QFontMetrics
+    QFontMetrics,
+    QPaintEvent,
+    QShowEvent,
 )
 
-from .get_font import get_font
 
-class CustomButton(QPushButton):
-    def __init__(self, text, padding=22):
-        super().__init__(text)
+from FileSystem import icon as icon_path
+from .utils import get_font
+from .settings import CORNER_RADIUS
+
+
+BUTTON_SIZE = {
+    "radial": QSize(20, 20),
+    "long": QSize(75, 24),
+}
+
+
+class Button(QPushButton):
+    def __init__(self, parent: Optional[QWidget] = None,
+                 button_type: Literal["long", "radial"] = "radial",
+                 custom_size: QSize = None):
+        super().__init__(parent=parent)
+        
+        self._size = custom_size if custom_size is not None else BUTTON_SIZE[button_type]
+        self._button_type = button_type
+        self.animate = False
+        
+        self.setCursor(Qt.PointingHandCursor)
+        self.setFixedSize(self._size.width(), self._size.height())
+        self.setIconSize(self._size)
+        
+        self.animation = QVariantAnimation()
+        self.animation.valueChanged.connect(self.set_size)
+        self.easing_curve = QEasingCurve.OutBack
+        self.duration = 500
+
+        
+    def set_icons(self, icon_name: str) -> None:
+        suffix = ("_long" if self._button_type == "long" else "") + ".png"
+        self.setStyleSheet(
+            (
+                """
+            QPushButton {
+                border: none;
+                icon: url(%s);
+                margin: 0px;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                icon: url(%s);
+                margin: 0px;
+                padding: 0px;
+            }
+        """
+                % (
+                    icon_path(f"{icon_name}{suffix}"),
+                    icon_path(f"{icon_name}_hover{suffix}"),
+                )
+            )
+        )
+    
+    def animate_resize(self, hidden: bool):
+        if not self.animate:
+            return
+        zeero = QSize(1, 1)
+        target_size = self._size
+        if hidden:
+            zeero, target_size = target_size, zeero
+        self.animation.setStartValue(zeero)
+        self.animation.setEndValue(target_size)
+
+        self.animation.setEasingCurve(self.easing_curve)
+        self.animation.setDuration(self.duration)
+
+        self.animation.start()
+
+    def set_size(self, size):
+        self.setIconSize(size)
+        
+    def showEvent(self, a0: QShowEvent) -> None:
+        self.animate_resize(hidden=False)
+        return super().showEvent(a0)
+    
+    def setHidden(self, hidden: bool) -> None:
+        self.animate_resize(hidden)
+        return super().setHidden(hidden)
+
+
+class RedButton(Button):
+    def __init__(self, parent: Optional[QWidget] = None,
+                 button_type: Literal["long", "radial"] = "radial"):
+        super().__init__(parent = parent, button_type = button_type)
+        self.set_icons("red_button")
+
+
+class YelButton(Button):
+    def __init__(self, parent: Optional[QWidget] = None,
+                 button_type: Literal["long", "radial"] = "radial"):
+        super().__init__(parent = parent, button_type = button_type)
+        self.set_icons("yellow_button")
+
+
+class GrnButton(Button):
+    def __init__(self, parent: Optional[QWidget] = None,
+                 button_type: Literal["long", "radial"] = "radial"):
+        super().__init__(parent = parent, button_type = button_type)
+        self.set_icons("green_button")
+
+
+class TextButton(QPushButton):
+    def __init__(self, parent: Optional[QWidget] = None,
+                 text: str = "Text Button"):
+        super().__init__(parent, text=text)
+        self.setCursor(Qt.PointingHandCursor)
+        self.x_padding = 27 -2
+        self.y_padding = 11 -6
         self.setFont(get_font(size=16))
         self.setContentsMargins(0, 0, 0, 0)
-        self.setStyleSheet("background-color: #DADADA;")
-        self.padding = padding
-        self.setCursor(Qt.PointingHandCursor)
-
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setPen(Qt.NoPen)
-
-        if self.underMouse():
-            painter.setBrush(QColor(self.property("hover_color")))
-        else:
-            painter.setBrush(self.palette().button())
-
-        painter.drawRoundedRect(self.rect(), 14, 14)
-        painter.setPen(self.palette().buttonText().color())
-        painter.drawText(self.rect(), Qt.AlignCenter, self.text())
-
+        
     def sizeHint(self):
         font_metrics = QFontMetrics(self.font())
         text_width = font_metrics.width(self.text())
-        button_width = text_width + self.padding * 2  # Adding padding to both sides
-        # Setting fixed height including top and bottom padding
-        return QSize(button_width, 44)
+        text_height = font_metrics.height()
+        button_width = text_width + self.x_padding * 2  # *2 for Adding padding to both sides
+        button_height = text_height + self.y_padding * 2
+        return QSize(button_width, button_height)
+        
+    def paintEvent(self, a0: QPaintEvent):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor("#EBEBEB" if self.underMouse() else "#DADADA"))
+        painter.drawRoundedRect(self.rect(), CORNER_RADIUS, CORNER_RADIUS)
+        painter.setPen(self.palette().buttonText().color())
+        painter.drawText(self.rect(), Qt.AlignCenter, self.text())

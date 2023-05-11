@@ -19,7 +19,7 @@ from PyQt5.QtGui import (
 )
 
 from .get_font import get_font
-from .custom_button import CustomButton
+from .custom_button import *
 
 class NewTaskDialog(QDialog):
     def __init__(self, parent, group_name, task_data=None):

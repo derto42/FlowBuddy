@@ -1,0 +1,172 @@
+from typing import Optional, Tuple, Any
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+    QWidget,
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QFileDialog,
+)
+from PyQt5.QtGui import QKeyEvent, QShowEvent
+
+
+from .settings import CORNER_RADIUS
+from .custom_button import TextButton, RedButton, GrnButton
+from .utils import get_font
+from .base_window import BaseWindow
+
+
+ENTRY_BOX_STYLE = f"""
+    background-color: #DADADA;
+    border-radius: {CORNER_RADIUS}px;
+    padding-left: {27 - 4}px;
+    padding-right: {27 - 4}px;
+    """
+ACCEPTED = QDialog.Accepted
+REJECTED = QDialog.Rejected
+
+
+class Entry(QLineEdit):
+    def __init__(self, parent: QWidget = None, place_holder: str = "Text") -> None:
+        super().__init__(parent)
+        self.setPlaceholderText(place_holder)
+        self.setFixedSize(200, 40)
+        self.setFont(get_font(size=16))
+        self.setStyleSheet(ENTRY_BOX_STYLE)
+
+
+class BaseDialog(QDialog, BaseWindow):
+    def __init__(self, title: str = "Title",
+                 parent: QWidget | None = None,) -> None:
+        super().__init__(add_tab = False, parent = parent)
+        
+        self._layout = QVBoxLayout()
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(15, 15, 15, 15)
+        
+        self._title = QLabel(title, self)
+        self._layout.addWidget(self._title)
+        self._title.setFont(get_font(size=24, weight="semibold"))
+        self._title.setAlignment(Qt.AlignCenter)
+        
+        self._main_layout = QWidget(self)
+        self._layout.addWidget(self._main_layout)
+        
+        self._layout.insertLayout
+        self._layout.addLayout(button_layout:=QHBoxLayout())
+        
+        button_layout.addStretch()
+        button_layout.addWidget(reject_button:=RedButton(self, "long"))
+        button_layout.addSpacing(7)
+        button_layout.addWidget(accept_button:=GrnButton(self, "long"))
+        button_layout.addStretch()
+        accept_button.clicked.connect(lambda : self.accept())
+        reject_button.clicked.connect(lambda : self.reject())
+        
+        self.setLayout = self._main_layout.setLayout
+        self.layout = self._main_layout.layout
+        
+        self.setModal(True)
+        
+        # self.setFixedSize(100, 100)
+        
+        
+    def setTitle(self, title: str) -> None:
+        self._title.setText(title)
+        
+    
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        if a0.key() in [Qt.Key.Key_Enter, Qt.Key.Key_Return]:
+            self.accept()
+        elif a0.key() is Qt.Key.Key_Escape:
+            self.reject()
+        return super().keyPressEvent(a0)
+    
+    def showEvent(self, a0: QShowEvent) -> None:
+        self.adjustSize()
+        return super().showEvent(a0)
+
+
+class GroupDialog(BaseDialog):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__("New Group", parent)
+
+        self.setLayout(layout:=QVBoxLayout())
+        
+        self._name_entry = Entry(self, "Group Name")
+        layout.addWidget(self._name_entry)
+        
+    def for_edit(self, name: str):
+        self.setTitle("Edit Group")
+        self._name_entry.setText(name)
+        
+        
+    def result(self) -> str | QDialog.DialogCode:
+        return self._name_entry.text() if super().result() == ACCEPTED else super().result()
+
+    def exec(self) -> Any:
+        super().exec()
+        return self.result()
+    
+    def exec_(self) -> int:
+        return self.exec()
+
+
+class TaskDialog(BaseDialog):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__("New Task", parent)
+        
+        self._file_path = None
+        
+        self.setLayout(layout:=QVBoxLayout())
+
+        self._name_entry = Entry(self, "Task Name")
+        self._button_entry = Entry(self, "Button Text")
+        self._url_entry = Entry(self, "URL")
+        file_choose_button = TextButton(self, "Choose File")
+        file_choose_button.clicked.connect(self._choose_file)
+
+        layout.addWidget(self._name_entry)
+        layout.addWidget(self._button_entry)
+        layout.addWidget(self._url_entry)
+        layout.addWidget(file_choose_button)
+
+    def _choose_file(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.ReadOnly
+        self._file_path, _ = QFileDialog.getOpenFileName(self, "Choose File", "",
+                                                         "All Files (*)", options=options)
+
+    def for_edit(self, name: str, button_text: str, url: str, file_path: str) -> None:
+        self.setTitle("Edit Task")
+        self._name_entry.setText(name if name is not None else "")
+        self._button_entry.setText(button_text if button_text is not None else "")
+        self._url_entry.setText(url if url is not None else "")
+        self._file_path = file_path if file_path is not None else ""
+
+    def result(self) -> Tuple[Optional[str]]:
+        if (ret:=super().result()) != ACCEPTED:
+            return ret
+        namet, buttont = self._name_entry.text(), self._button_entry.text()
+        urlt, filet = self._url_entry.text(), self._file_path
+        name = namet if namet else None
+        button_text = buttont if buttont else None
+        url = urlt if urlt else None
+        file_path = filet if filet else None
+        return name, button_text, url, file_path
+
+    def exec(self) -> Any:
+        super().exec()
+        return self.result()
+    
+    def exec_(self) -> int:
+        return self.exec()
+
+
+class ConfirmationDialog(BaseDialog):
+    def __init__(self, title: str = "Title", parent: QWidget | None = None) -> None:
+        super().__init__(title, parent)
+        
+        self._title.setFont(get_font(size=16))

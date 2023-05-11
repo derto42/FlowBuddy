@@ -34,13 +34,13 @@ def exists(path: str):
 def icon(icon_name: str) -> str | None:
     """Returns the absolute path of given icon. Returns None if the icon does not exist."""
     path = os.path.join(ICONS_FOLDER, icon_name)
-    return os.path.abspath(path) if os.path.exists(path) else None
+    return os.path.abspath(path).replace('\\', '/') if os.path.exists(path) else None
 
 
 def font(font_name: str) -> str | None:
     """Returns the absolute path of given font. Returns None if the font does not exist."""
     path = os.path.join(FONTS_FOLDER, font_name)
-    return os.path.abspath(path) if os.path.exists(path) else None
+    return os.path.abspath(path).replace('\\', '/') if os.path.exists(path) else None
 
 def open_task(task_url: str, task_name: str, task_file, platform: str):
     commands = []
@@ -53,9 +53,9 @@ def open_task(task_url: str, task_name: str, task_file, platform: str):
 
     if file := task_file:
         abs_file_path = os.path.abspath(file)
-        if platform in ('win32',):
+        if platform in {'win32'}:
             func_2 = lambda *x, name=task_name: os.startfile(abs_file_path)
-        elif platform in ('linux', 'darwin'):
+        elif platform in {'linux', 'darwin'}:
             func_2 = lambda *x, name=task_name: os.system(f'xdg-open {abs_file_path}')
         commands.append(func_2)
     return commands
