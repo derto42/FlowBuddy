@@ -72,6 +72,7 @@ class InnerPart(QWidget):
             title_layout.setSpacing(0)
             # title_layout.addWidget(self._title_label)
             title_layout.addStretch()
+            title_layout.addSpacing(15)
             title_layout.addWidget(self.edit_button)
             title_layout.addSpacing(7)
             title_layout.addWidget(self.close_button)

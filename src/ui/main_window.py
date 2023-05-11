@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 
 
 import SaveFile as Data
+import contextlib
 from FileSystem import open_file
 
 from .base_window import BaseWindow
@@ -196,16 +197,16 @@ class MainWindow(BaseWindow):
     window_toggle_signal = pyqtSignal()
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(True, parent)
-        
+
         self._edit_mode = False
         self._editors: list[QWidget] = []
         self._nodes = {}
-        
+
         self.window_toggle_signal.connect(self.toggle_window)
-        
+
         self.setLayout(layout:=QVBoxLayout())
         layout.setAlignment(Qt.AlignTop)
-        
+
 
         for group_name in Data.get_name_list():
             self.create_group(group_name)
@@ -227,7 +228,7 @@ class MainWindow(BaseWindow):
         add_group_label = QLabel("Add New Group", self)
         add_group_label.setFont(get_font(size=24, weight="semibold"))
         add_group_label.setStyleSheet("color: #ABABAB")
-        
+
         add_group_button = GrnButton(self, "radial")
         add_group_button.clicked.connect(self.add_group)
 
@@ -235,10 +236,14 @@ class MainWindow(BaseWindow):
         add_group_layout.addSpacing(10)
         add_group_layout.addWidget(add_group_button)
         add_group_layout.addStretch()
-        
+
         self.add_to_editors(add_group_button, add_group_label)
-        
-        if (position := Data.setting("position")) is not None:
+
+        try:
+            position = Data.setting("position")
+        except Data.NotFound:
+            pass
+        else:
             self.move(position[0], position[1])
         self.toggle_edit_mode(False)
         self.animate = True

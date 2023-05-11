@@ -192,7 +192,9 @@ def is_exist(group_name: str, task_name: Optional[str] = None) -> bool:
 
 def setting(name: str, value: Optional[Any] = None) -> Optional[Any]:
     if value is None:
-        return _settings[name] if name in _settings else NotFound(name)
+        if name not in _settings:
+            raise NotFound(name)
+        return _settings[name]
     else:
         _settings[name] = value
         
