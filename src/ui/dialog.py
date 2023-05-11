@@ -44,7 +44,7 @@ class BaseDialog(QDialog, BaseWindow):
         
         self._layout = QVBoxLayout()
         self.setLayout(self._layout)
-        self._layout.setContentsMargins(15, 15, 15, 15)
+        self._layout.setContentsMargins(0, 0, 0, 0)
         
         self._title = QLabel(title, self)
         self._layout.addWidget(self._title)

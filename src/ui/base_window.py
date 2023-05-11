@@ -29,6 +29,8 @@ class MainLayer(QWidget):
         shadow.setOffset(0, -10)
         shadow.setBlurRadius(35)
         self.setGraphicsEffect(shadow)
+        
+        self.setContentsMargins(15, 15, 15, 15)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         
