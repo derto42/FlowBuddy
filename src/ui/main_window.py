@@ -232,6 +232,7 @@ class MainWindow(BaseWindow):
         add_group_button = GrnButton(self, "radial")
         add_group_button.clicked.connect(self.add_group)
 
+        add_group_layout.addStretch()
         add_group_layout.addWidget(add_group_label)
         add_group_layout.addSpacing(10)
         add_group_layout.addWidget(add_group_button)
