@@ -37,13 +37,13 @@ def exists(path: str):
 def icon(icon_name: str) -> str | None:
     """Returns the absolute path of given icon. Returns None if the icon does not exist."""
     path = os.path.join(ICONS_FOLDER, icon_name)
-    return os.path.abspath(path) if os.path.exists(path) else None
+    return os.path.abspath(path).replace('\\', '/') if os.path.exists(path) else None
 
 
 def font(font_name: str) -> str | None:
     """Returns the absolute path of given font. Returns None if the font does not exist."""
     path = os.path.join(FONTS_FOLDER, font_name)
-    return os.path.abspath(path) if os.path.exists(path) else None
+    return os.path.abspath(path).replace('\\', '/') if os.path.exists(path) else None
 
 def open_file(file_path: str) -> None:
     if PLATFORM in ('win32',):
