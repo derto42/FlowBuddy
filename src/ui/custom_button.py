@@ -119,7 +119,7 @@ class TextButton(QPushButton):
         super().__init__(parent, text=text)
         self.setCursor(Qt.PointingHandCursor)
         self.x_padding = 35
-        self.y_padding = 10
+        self.y_padding = 7
         self.setFont(get_font(size=16))
         self.setContentsMargins(0, 0, 0, 0)
         

@@ -25,12 +25,12 @@ class MainLayer(QWidget):
         super().__init__(parent)
         
         shadow = QGraphicsDropShadowEffect(self)
-        shadow.setColor(QColor(0, 0, 0, 25))
-        shadow.setOffset(0, -10)
-        shadow.setBlurRadius(35)
+        shadow.setColor(QColor(118, 118, 118, 25))
+        shadow.setOffset(0, -4.33)
+        shadow.setBlurRadius(27)
         self.setGraphicsEffect(shadow)
         
-        self.setContentsMargins(20, 20, 20, 20)
+        self.setContentsMargins(20, 12, 20, 20)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         
@@ -70,15 +70,15 @@ class InnerPart(QWidget):
             self.close_button = RedButton(self)
             
             layout.addLayout(title_layout:=QHBoxLayout())
-            title_layout.setContentsMargins(0, 7, 0, 7)
+            title_layout.setContentsMargins(0, 10, 0, 10)
             title_layout.setSpacing(0)
             # title_layout.addWidget(self._title_label)
             title_layout.addStretch()
             title_layout.addSpacing(15)
             title_layout.addWidget(self.edit_button)
-            title_layout.addSpacing(7)
+            title_layout.addSpacing(9)
             title_layout.addWidget(self.close_button)
-            title_layout.addSpacing(15)
+            title_layout.addSpacing(20)
             
             
         layout.addWidget(self._main_layer)
@@ -95,7 +95,7 @@ class InnerPart(QWidget):
         
         path = QPainterPath()
         path.addRoundedRect(QRectF(self.rect()), CORNER_RADIUS, CORNER_RADIUS)
-        painter.fillPath(path, QColor("#FFFFFF"))
+        painter.fillPath(path, QColor("#F6F6F6"))
 
         return super().paintEvent(a0)
 

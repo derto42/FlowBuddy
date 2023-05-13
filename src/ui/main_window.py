@@ -228,7 +228,7 @@ class MainWindow(BaseWindow):
 
 
         layout.addStretch()
-        layout.addSpacing(33)
+        layout.addSpacing(0)
         layout.addLayout(add_group_layout := QHBoxLayout())
 
         add_group_label = QLabel("Add New Group", self)
@@ -290,7 +290,7 @@ class MainWindow(BaseWindow):
         for index, (_, group_node) in enumerate(self._nodes.items()):
             if index == len(self._nodes) - 1:
                 group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 0)
-            group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 25)
+            group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 29)
                 
         QApplication.instance().processEvents()
         self.update()
