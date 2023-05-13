@@ -46,7 +46,7 @@ class GroupNode(BaseNode):
     def __init__(self, parent: QWidget, group_name: str) -> None:
         super().__init__(parent, group_name)
 
-        self._layout.setContentsMargins(0, 25, 0, 0)
+        self._layout.setContentsMargins(0, 33, 0, 0)
         
         self._name_label = QLabel(group_name, self)
         self._name_label.setFont(get_font(size=24, weight="semibold"))
@@ -61,11 +61,11 @@ class GroupNode(BaseNode):
         self._parent.add_to_editors(new_task_button, edit_group_button, delete_group_button)
         
         self._layout.addWidget(self._name_label)
-        self._layout.addSpacing(10)
+        self._layout.addSpacing(13)
         self._layout.addWidget(new_task_button)
-        self._layout.addSpacing(7)
+        self._layout.addSpacing(9)
         self._layout.addWidget(edit_group_button)
-        self._layout.addSpacing(7)
+        self._layout.addSpacing(9)
         self._layout.addWidget(delete_group_button)
         self._layout.addStretch()
         
@@ -111,18 +111,18 @@ class TaskNode(BaseNode):
 
         self._text_button = None
         
-        self._layout.setContentsMargins(0, 12, 0, 0)
+        self._layout.setContentsMargins(0, 16, 0, 0)
         
         self._name_label = QLabel(task_name, self)
         self._name_label.setFont(get_font(size=16))
         self._layout.addWidget(self._name_label)
-        self._layout.addSpacing(10)
+        self._layout.addSpacing(13)
         
         self._text_button = TextButton(self, self._button_text)
         self._text_button.setFont(get_font(size=16))
         self._text_button.clicked.connect(self.on_text_button)
         self._layout.addWidget(self._text_button)
-        self._layout.addSpacing(10)
+        self._layout.addSpacing(13)
         if self._button_text is None:
             self._text_button.hide()
 
@@ -135,7 +135,7 @@ class TaskNode(BaseNode):
         self._parent.add_to_editors(edit_group_button, delete_group_button)
         
         self._layout.addWidget(edit_group_button)
-        self._layout.addSpacing(7)
+        self._layout.addSpacing(9)
         self._layout.addWidget(delete_group_button)
         self._layout.addStretch()
         
@@ -221,7 +221,7 @@ class MainWindow(BaseWindow):
 
 
         layout.addStretch()
-        layout.addSpacing(25)
+        layout.addSpacing(33)
         layout.addLayout(add_group_layout := QHBoxLayout())
         add_group_layout.setAlignment(Qt.AlignTop)
 
@@ -234,7 +234,7 @@ class MainWindow(BaseWindow):
 
         add_group_layout.addStretch()
         add_group_layout.addWidget(add_group_label)
-        add_group_layout.addSpacing(10)
+        add_group_layout.addSpacing(13)
         add_group_layout.addWidget(add_group_button)
         add_group_layout.addStretch()
 

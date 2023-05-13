@@ -16,8 +16,8 @@ from .settings import CORNER_RADIUS
 
 
 BUTTON_SIZE = {
-    "radial": QSize(20, 20),
-    "long": QSize(75, 24),
+    "radial": QSize(28, 28),
+    "long": QSize(104, 28),
 }
 
 

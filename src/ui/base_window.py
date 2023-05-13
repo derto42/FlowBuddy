@@ -30,7 +30,7 @@ class MainLayer(QWidget):
         shadow.setBlurRadius(35)
         self.setGraphicsEffect(shadow)
         
-        self.setContentsMargins(15, 15, 15, 15)
+        self.setContentsMargins(20, 20, 20, 20)
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         
@@ -51,9 +51,9 @@ class InnerPart(QWidget):
         super().__init__(parent)
 
         shadow = QGraphicsDropShadowEffect(self)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 0)
-        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(118, 118, 118, 70))
+        shadow.setOffset(0, 10)
+        shadow.setBlurRadius(60)
         self.setGraphicsEffect(shadow)
 
         self.setLayout(layout:=QVBoxLayout(self))
