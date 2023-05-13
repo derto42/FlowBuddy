@@ -9,7 +9,7 @@ from PyQt5.QtGui import QFont, QFontDatabase, QTextCursor, QPainter, QPen, QColo
 
 import FileSystem
 
-from utils import get_font
+from ui.utils import get_font
 
 class NoteTab(QTextEdit):
     def __init__(self, file_path):
