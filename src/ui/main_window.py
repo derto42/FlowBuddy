@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (
 
 
 import SaveFile as Data
-import contextlib
 from FileSystem import open_file
 
 from .base_window import BaseWindow
@@ -46,7 +45,8 @@ class GroupNode(BaseNode):
     def __init__(self, parent: QWidget, group_name: str) -> None:
         super().__init__(parent, group_name)
 
-        self._layout.setContentsMargins(0, 25, 0, 0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
         
         self._name_label = QLabel(group_name, self)
         self._name_label.setFont(get_font(size=24, weight="semibold"))
@@ -88,7 +88,9 @@ class GroupNode(BaseNode):
         dialog = ConfirmationDialog(f"Delete '{self._group_name}'?", self)
         if dialog.exec() == ACCEPTED:
             Data.delete_group(self._group_name)
-            self._parent.clear_group(self._group_name)
+            self._parent.clearLayout(self.layout())
+            self.hide()
+            self.deleteLater()
             QApplication.instance().processEvents()
             self._parent.update()
             self._parent.adjustSize()
@@ -188,6 +190,9 @@ class TaskNode(BaseNode):
         if dialog.exec() == ACCEPTED:
             Data.delete_task(self._group_name, self._task_name)
             self._parent.clearLayout(self.layout())
+            self.hide()
+            self.deleteLater()
+            del self._parent._nodes[self._group_name][self._task_name]
             QApplication.instance().processEvents()
             self._parent.update()
             self._parent.adjustSize()
@@ -205,6 +210,8 @@ class MainWindow(BaseWindow):
         self.window_toggle_signal.connect(self.toggle_window)
 
         self.setLayout(layout:=QVBoxLayout())
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         layout.setAlignment(Qt.AlignTop)
 
 
@@ -233,7 +240,7 @@ class MainWindow(BaseWindow):
         add_group_button.clicked.connect(self.add_group)
 
         add_group_layout.addStretch()
-        add_group_layout.addWidget(add_group_label)
+        add_group_layout.addWidget(add_group_label, alignment=Qt.AlignTop)
         add_group_layout.addSpacing(10)
         add_group_layout.addWidget(add_group_button)
         add_group_layout.addStretch()
@@ -270,6 +277,8 @@ class MainWindow(BaseWindow):
 
     def create_group(self, group_name: str) -> None:
         group_layout = QVBoxLayout()
+        group_layout.setContentsMargins(0, 0, 0, 0)
+        group_layout.setSpacing(0)
         group_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.layout().insertLayout(len(self._nodes), group_layout)
         group_layout.addWidget(group_node:=GroupNode(self, group_name))
@@ -277,6 +286,13 @@ class MainWindow(BaseWindow):
         group_node.delete_group_layer = self.delete_group_layer
         group_node.add_to_editors = self.add_to_editors
         self._nodes[group_name] = {0: group_layout}
+        
+        # adding ContentsMargins to layout of groups.
+        for index, (_, group_node) in enumerate(self._nodes.items()):
+            if index == len(self._nodes) - 1:
+                group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 0)
+            group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 25)
+                
         QApplication.instance().processEvents()
         self.update()
         self.adjustSize()

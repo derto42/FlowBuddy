@@ -64,6 +64,7 @@ class BaseDialog(QDialog, BaseWindow):
         button_layout.addStretch()
         accept_button.clicked.connect(lambda : self.accept())
         reject_button.clicked.connect(lambda : self.reject())
+        accept_button.setDefault(True)
         
         self.setLayout = self._main_layout.setLayout
         self.layout = self._main_layout.layout
@@ -141,7 +142,7 @@ class TaskDialog(BaseDialog):
 
     def for_edit(self, name: str, button_text: str, url: str, file_path: str) -> None:
         self.setTitle("Edit Task")
-        self._name_entry.setText(name if name is not None else "")
+        self._name_entry.setText(name)
         self._button_entry.setText(button_text if button_text is not None else "")
         self._url_entry.setText(url if url is not None else "")
         self._file_path = file_path if file_path is not None else ""
@@ -151,7 +152,7 @@ class TaskDialog(BaseDialog):
             return ret
         namet, buttont = self._name_entry.text(), self._button_entry.text()
         urlt, filet = self._url_entry.text(), self._file_path
-        name = namet if namet else None
+        name = namet
         button_text = buttont if buttont else None
         url = urlt if urlt else None
         file_path = filet if filet else None
