@@ -230,7 +230,6 @@ class MainWindow(BaseWindow):
         layout.addStretch()
         layout.addSpacing(33)
         layout.addLayout(add_group_layout := QHBoxLayout())
-        add_group_layout.setAlignment(Qt.AlignTop)
 
         add_group_label = QLabel("Add New Group", self)
         add_group_label.setFont(get_font(size=24, weight="semibold"))
@@ -239,8 +238,8 @@ class MainWindow(BaseWindow):
         add_group_button = GrnButton(self, "radial")
         add_group_button.clicked.connect(self.add_group)
 
-        add_group_layout.addStretch()
-        add_group_layout.addWidget(add_group_label, alignment=Qt.AlignTop)
+        
+        add_group_layout.addWidget(add_group_label)
         add_group_layout.addSpacing(13)
         add_group_layout.addWidget(add_group_button)
         add_group_layout.addStretch()

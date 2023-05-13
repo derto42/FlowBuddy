@@ -5,7 +5,8 @@ from PyQt5.QtGui import QFont, QFontDatabase
 import FileSystem as File
 
 
-DEFAULT_FONT = "Montserrat-Medium.ttf"
+DEFAULT_REGULAR = "Montserrat-Regular.ttf"
+DEFAULT_MEDIUM = "Montserrat-Medium.ttf"
 DEFAULT_SEMI_BOLD = "Montserrat-SemiBold.ttf"
 DEFAULT_BOLD = "Montserrat-Bold.ttf"
 DEFAULT_FONT_SIZE = 16
@@ -22,7 +23,7 @@ SHORT_NAME_TO_WEIGHT = {
     "Thin": QFont.Thin,
     "Extralight": QFont.ExtraLight,
     "Light": QFont.Light,
-    "Normal": QFont.Normal,
+    "Regular": QFont.Normal,
     "Medium": QFont.Medium,
     "Semibold": QFont.DemiBold,
     "Bold": QFont.Bold,
@@ -31,28 +32,31 @@ SHORT_NAME_TO_WEIGHT = {
 }
 
 
-def get_font(font_name: str = DEFAULT_FONT,
+def get_font(font_name: str = DEFAULT_REGULAR,
              size: int = DEFAULT_FONT_SIZE,
-             weight: Literal["medium", "semibold", "bold"] = "medium") -> QFont:
+             weight: Literal["medium", "semibold", "bold", "regular"] = "regular") -> QFont:
 
     global _default_fonts_loaded
     
     _size = size
     _italic = False
     
-    if font_name == DEFAULT_FONT:
+    if font_name == DEFAULT_REGULAR:
         if not _default_fonts_loaded:
-            _loaded_fonts[DEFAULT_FONT] = QFontDatabase.addApplicationFont(File.font(DEFAULT_FONT))
+            _loaded_fonts[DEFAULT_MEDIUM] = QFontDatabase.addApplicationFont(File.font(DEFAULT_MEDIUM))
             _loaded_fonts[DEFAULT_BOLD] = QFontDatabase.addApplicationFont(File.font(DEFAULT_BOLD))
             _loaded_fonts[DEFAULT_SEMI_BOLD] = QFontDatabase.addApplicationFont(File.font(DEFAULT_SEMI_BOLD))
+            _loaded_fonts[DEFAULT_REGULAR] = QFontDatabase.addApplicationFont(File.font(DEFAULT_REGULAR))
             _default_fonts_loaded = True
-        if weight == "medium":
-            font_name = DEFAULT_FONT
+        if weight == "regular":
+            font_name = DEFAULT_REGULAR
+        elif weight == "medium":
+            font_name = DEFAULT_MEDIUM
         elif weight == "semibold":
             font_name = DEFAULT_SEMI_BOLD
         elif weight == "bold":
             font_name = DEFAULT_BOLD
-        _weight = SHORT_NAME_TO_WEIGHT["Normal"]
+        _weight = SHORT_NAME_TO_WEIGHT["Regular"]
             
     elif font_name not in _loaded_fonts:
         # add font to application.

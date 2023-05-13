@@ -118,8 +118,8 @@ class TextButton(QPushButton):
                  text: str = "Text Button"):
         super().__init__(parent, text=text)
         self.setCursor(Qt.PointingHandCursor)
-        self.x_padding = 27 -2
-        self.y_padding = 11 -6
+        self.x_padding = 35
+        self.y_padding = 10
         self.setFont(get_font(size=16))
         self.setContentsMargins(0, 0, 0, 0)
         
@@ -135,7 +135,7 @@ class TextButton(QPushButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor("#EBEBEB" if self.underMouse() else "#DADADA"))
+        painter.setBrush(QColor("#DADADA" if self.underMouse() else "#ECECEC"))
         painter.drawRoundedRect(self.rect(), CORNER_RADIUS, CORNER_RADIUS)
         painter.setPen(self.palette().buttonText().color())
         painter.drawText(self.rect(), Qt.AlignCenter, self.text())
