@@ -3,3 +3,6 @@ keyboard==0.13.5
 pyqt5==5.15.9
 pyqt5-qt5==5.15.2
 pyqt5-sip==12.12.1
+black # formatter
+ruff  # linter
+pytest # for unittesting
