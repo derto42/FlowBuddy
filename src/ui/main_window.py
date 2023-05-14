@@ -100,12 +100,14 @@ class TaskNode(BaseNode):
     def __init__(self,
                  parent: QWidget,
                  group_name: str = None,
+                 task_id: str = None,
                  task_name: str = None,
                  button_text: Optional[str] = None,
                  url: Optional[str] = None,
                  file_path: Optional[str] = None) -> None:
         super().__init__(parent, group_name)
         
+        self._task_id = task_id
         self._task_name = task_name
         self._button_text = button_text
         self._url = url
@@ -163,7 +165,8 @@ class TaskNode(BaseNode):
     
     def _edit_data(self, dialog: TaskDialog) -> None:
         task_name, button_text, url, file_path = dialog.result()
-        Data.edit_task(self._group_name, self._task_name, new_task_name=task_name, new_task_data={
+        Data.edit_task(self._group_name, self._task_id, new_task_data={
+            "task_name": task_name,
             "button_text": button_text,
             "url": url,
             "file_path": file_path,
@@ -188,11 +191,11 @@ class TaskNode(BaseNode):
     def delete(self) -> None:
         dialog = ConfirmationDialog(f"Delete '{self._task_name}' from '{self._group_name}'?", self)
         if dialog.exec() == ACCEPTED:
-            Data.delete_task(self._group_name, self._task_name)
+            Data.delete_task(self._group_name, self._task_id)
             self._parent.clearLayout(self.layout())
             self.hide()
             self.deleteLater()
-            del self._parent._nodes[self._group_name][self._task_name]
+            del self._parent._nodes[self._group_name][self._task_id]
             QApplication.instance().processEvents()
             self._parent.update()
             self._parent.adjustSize()
@@ -215,16 +218,17 @@ class MainWindow(BaseWindow):
         layout.setAlignment(Qt.AlignTop)
 
 
-        for group_name in Data.get_name_list():
+        for group_name in Data.get_list():
             self.create_group(group_name)
 
-            for task_name in Data.get_name_list(group_name):
+            for task_id in Data.get_list(group_name):
 
-                button_text = Data.task_property(group_name, task_name, "button_text")
-                url = Data.task_property(group_name, task_name, "url")
-                file_path = Data.task_property(group_name, task_name, "file_path")
+                task_name = Data.task_property(group_name, task_id, "task_name")
+                button_text = Data.task_property(group_name, task_id, "button_text")
+                url = Data.task_property(group_name, task_id, "url")
+                file_path = Data.task_property(group_name, task_id, "file_path")
 
-                self.create_task(group_name, task_name, button_text, url, file_path)
+                self.create_task(group_name, task_id, task_name, button_text, url, file_path)
 
 
         layout.addStretch()
@@ -311,20 +315,21 @@ class MainWindow(BaseWindow):
         dialog = TaskDialog(self)
         if dialog.exec() != REJECTED:
             task_name, button_text, url, file_path = dialog.result()
-            Data.add_task(group_name, task_name)
-            Data.edit_task(group_name, task_name, new_task_data={
+            task_id = Data.add_task(group_name, task_name)
+            Data.edit_task(group_name, task_id, new_task_data={
+                "task_name": task_name,
                 "button_text": button_text,
                 "url": url,
                 "file_path": file_path
             })
             
-            self.create_task(group_name, task_name, button_text, url, file_path)
+            self.create_task(group_name, task_id, task_name, button_text, url, file_path)
     
-    def create_task(self, group_name: str, task_name: str, button_text: str, url: str, file_path: str) -> None:
-        task_node = TaskNode(self, group_name, task_name, button_text, url, file_path)
+    def create_task(self, group_name: str, task_id: str, task_name: str, button_text: str, url: str, file_path: str) -> None:
+        task_node = TaskNode(self, group_name, task_id, task_name, button_text, url, file_path)
         task_node.add_to_editors = self.add_to_editors
         self._nodes[group_name][NAME_TO_INT["group_layout"]].addWidget(task_node)
-        self._nodes[group_name][task_name] = task_node
+        self._nodes[group_name][task_id] = task_node
         QApplication.instance().processEvents()
         self.update()
         self.adjustSize()

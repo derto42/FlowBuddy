@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import contextlib
 import json
-from collections import OrderedDict
-from dataclasses import dataclass
 from typing import Any, Dict, List, Literal, Optional, overload
 
 import FileSystem as FS
@@ -30,25 +27,24 @@ class AutoSaveDict(dict):
 
     def __setitem__(self, __key: Any, __value: Any) -> None:
         ret = super().__setitem__(__key, __value)
-        self._save_contents()
+        self._save_data()
         return ret
 
     def __delitem__(self, __key: Any) -> None:
         ret = super().__delitem__(__key)
-        self._save_contents()
+        self._save_data()
         return ret
 
-    def _save_contents(self) -> None:
+    def _save_data(self) -> None:
         if not _save_dict:
             return
-        with contextlib.suppress(NameError):
-            _contents["settings"] = _settings
-            _contents["data"] = _groups
-            with open(FILE_PATH, 'w') as f:
-                json.dump(_contents, f, indent=4)
+        _contents["settings"] = _settings
+        _contents["data"] = _groups
+        with open(FILE_PATH, 'w') as f:
+            json.dump(_contents, f, indent=4)
 
 
-def _get_data() -> Dict[Literal["settings", "data"], Dict[str, Dict]]:
+def _load_data() -> Dict[Literal["settings", "data"], Dict[str, Dict]]:
     try:
         if not FS.exists(FILE_PATH):
             raise FileNotFoundError
@@ -59,10 +55,10 @@ def _get_data() -> Dict[Literal["settings", "data"], Dict[str, Dict]]:
             return contents
     except (json.JSONDecodeError, FileNotFoundError, KeyError):
         FS.create_save_file()
-        return _get_data()
+        return _load_data()
 
 
-_contents = _get_data()
+_contents = _load_data()
 _settings = AutoSaveDict(_contents["settings"])
 _groups: Dict[str, Dict[str, Dict[str, str]]] = AutoSaveDict(_contents["data"])
 _save_dict = True
@@ -70,9 +66,9 @@ _save_dict = True
 
 #  region overloades
 @overload
-def get_name_list() -> List[str]: ...
+def get_list() -> List[str]: ...
 @overload
-def get_name_list(group_name: str) -> List[str]: ...
+def get_list(group_name: str) -> List[str]: ...
 
 @overload
 def length() -> int: ...
@@ -84,19 +80,19 @@ def order_number(group_name: str) -> int: ...
 @overload
 def order_number(group_name: str, number: int) -> None: ...
 @overload
-def order_number(group_name: str, task_name: str) -> int: ...
+def order_number(group_name: str, task_id: str) -> int: ...
 @overload
-def order_number(group_name: str, task_name: str, number: int) -> None: ...
+def order_number(group_name: str, task_id: str, number: int) -> None: ...
 
 @overload
 def is_exist(group_name: str) -> bool: ...
 @overload
-def is_exist(group_name: str, task_name: str) -> bool: ...
+def is_exist(group_name: str, task_id: str) -> bool: ...
 
 @overload
-def task_property(group_name: str, task_name: str, property: Literal["button_text", "url", "file_path"]) -> Any: ...
+def task_property(group_name: str, task_id: str, property: Literal["button_text", "url", "file_path"]) -> Any: ...
 @overload
-def task_property(group_name: str, task_name: str, property: Literal["button_text", "url", "file_path"], value: Any = None) -> None: ...
+def task_property(group_name: str, task_id: str, property: Literal["button_text", "url", "file_path"], value: Any = None) -> None: ...
 
 @overload
 def setting(name: str) -> Any: ...
@@ -135,56 +131,49 @@ def edit_group(group_name: str, *,
             continue
         _groups[_group_name] = _data
 
-def add_task(group_name: str, task_name: str) -> None:
+def add_task(group_name: str, task_name: str) -> int:
+    """Add a task to the group given. return the task id."""
     if group_name not in _groups:
         raise NotFound(group_name)
-    if task_name not in _groups[group_name]:
-        _groups[group_name][task_name] = AutoSaveDict()
-    else:
-        Found(task_name)
+    # task_{len(_groups[group_name])}, where len(_groups[group_name]) retrieves the number of
+    # tasks already stored in the group and increments it by 1 to assign a new number to the new task.
+    add = 0
+    while (task_id := f"task_{len(_groups[group_name]) + add}") in _groups[group_name]:
+        add += 1
+    _groups[group_name][task_id] = AutoSaveDict({"task_name": task_name})
+    return task_id
 
-def delete_task(group_name: str, task_name: str) -> None:
+def delete_task(group_name: str, task_id: str) -> None:
     if group_name not in _groups:
         raise NotFound(group_name)
-    if task_name not in _groups[group_name]:
-        raise NotFound(task_name)
-    del _groups[group_name][task_name]
+    if task_id not in _groups[group_name]:
+        raise NotFound(task_id)
+    del _groups[group_name][task_id]
 
-def edit_task(group_name: str, task_name: str, *,
-              new_task_name: Optional[str] = None,
-              new_task_data: Optional[dict] = None) -> None:
+def edit_task(group_name: str, task_id: str,
+              new_task_data: dict) -> None:
     global _groups
     if group_name not in _groups:
         raise NotFound(group_name)
-    if task_name not in _groups[group_name]:
-        raise NotFound(task_name)
-    data = _groups[group_name][task_name]
-    name = new_task_name if new_task_name is not None else task_name
-    if new_task_data is not None:
-        data = AutoSaveDict(new_task_data)
-    old_tasks: dict = _groups[group_name]
-    tasks = AutoSaveDict()
-    for _task, _data in old_tasks.items():
-        if task_name == _task:
-            tasks[name] = data
-            continue
-        tasks[_task] = _data
-    _groups[group_name] = tasks
+    if task_id not in _groups[group_name]:
+        raise NotFound(task_id)
+    
+    _groups[group_name][task_id] = AutoSaveDict(new_task_data)
 
-def task_property(group_name: str, task_name: str,
+def task_property(group_name: str, task_id: str,
                   property: str, value: Optional[Any] = None) -> Optional[Any]:
     if group_name not in _groups:
         raise NotFound(group_name)
-    if task_name not in _groups[group_name]:
-        raise NotFound(task_name)
+    if task_id not in _groups[group_name]:
+        raise NotFound(task_id)
     if value is not None:
-        _groups[group_name][task_name][property] = value
-    elif property in _groups[group_name][task_name]:
-        return _groups[group_name][task_name][property]
+        _groups[group_name][task_id][property] = value
+    elif property in _groups[group_name][task_id]:
+        return _groups[group_name][task_id][property]
     else:
         raise NotFound(property)
 
-def get_name_list(group_name: Optional[str] = None) -> List[str]:
+def get_list(group_name: Optional[str] = None) -> List[str]:
     if group_name is None:
         return list(_groups.keys())
     elif group_name not in _groups:
@@ -200,19 +189,19 @@ def length(group_name: Optional[str] = None) -> int:
     else:
         return len(_groups[group_name])
 
-def order_number(group_name: str, task_name: Optional[str] = None,
+def order_number(group_name: str, task_id: Optional[str] = None,
                  number: Optional[int] = None) -> Optional[int]:
     global _groups
     if group_name not in _groups:
         raise NotFound(group_name)
-    if isinstance(task_name, str) and task_name not in _groups[group_name]:
-        raise NotFound(task_name)
+    if isinstance(task_id, str) and task_id not in _groups[group_name]:
+        raise NotFound(task_id)
     
-    match group_name, task_name, number:
+    match group_name, task_id, number:
         case str(), None, None:
             return list(_groups).index(group_name)
         case str(), str(), None:
-            return list(_groups[group_name]).index(task_name)
+            return list(_groups[group_name]).index(task_id)
         
         case str(), int() as number, None:
             old_groups: dict = dict(_groups)
@@ -225,21 +214,21 @@ def order_number(group_name: str, task_name: Optional[str] = None,
                 
         case str(), str(), int():
             old_tasks: dict = dict(_groups[group_name])
-            data = old_tasks.pop(task_name)
+            data = old_tasks.pop(task_id)
             tasks = AutoSaveDict()
             for index, (_task_name, _data) in enumerate(_groups[group_name].items()):
                 if index == number:
-                    tasks[task_name] = data
+                    tasks[task_id] = data
                 tasks[_task_name] = _data
             _groups[group_name] = tasks
 
-def is_exist(group_name: str, task_name: Optional[str] = None) -> bool:
-    if task_name is None:
+def is_exist(group_name: str, task_id: Optional[str] = None) -> bool:
+    if task_id is None:
         return group_name in _groups
     elif group_name not in _groups:
         raise NotFound(group_name)
     else:
-        return task_name in _groups[group_name]
+        return task_id in _groups[group_name]
 
 def setting(name: str, value: Optional[Any] = None) -> Optional[Any]:
     if value is None:
@@ -268,36 +257,36 @@ if __name__ == '__main__':
 
     try: add_task("group 3", "task 1")
     except NotFound as e: print(e)
-    add_task("group 1", "task 1")
-    add_task("group 1", "task 2")
-    add_task("group 1", "task 3")
-    delete_task("group 1", "task 1")
-    edit_task("group 1", "task 2", new_task_name="task 1", new_task_data={"None": "None"})
-    edit_task("group 1", "task 1", new_task_data={"Name": "Nothing"})
+    task1_id = add_task("group 1", "task 1")
+    task2_id = add_task("group 1", "task 2")
+    task3_id = add_task("group 1", "task 3")
+    delete_task("group 1", task1_id)
+    edit_task("group 1", task2_id, new_task_data={"task_name": "task 1", "none": "empty"})
+    edit_task("group 1", task3_id, new_task_data={"Name": "Nothing"})
 
-    task_property("group 1", "task 1", "text", "description")
-    task_property("group 1", "task 1", "text")
+    task_property("group 1", task2_id, "text", "description")
+    p = task_property("group 1", task2_id, "text")
 
     n = order_number("group 1")
-    n = order_number("group 1", "task 1")
+    n = order_number("group 1", task2_id)
     order_number("group 5", 1)
-    order_number("group 1", "task 3", 0)
+    order_number("group 1", task3_id, 0)
 
-    x = get_name_list()
-    x = get_name_list("group 1")
+    x = get_list()
+    x = get_list("group 1")
 
     l = length()
     l = length("group 1")
 
     e = is_exist("group 1")
     e = is_exist("group 2")
-    e = is_exist("group 1", "task 1")
-    e = is_exist("group 1", "task 2")
+    e = is_exist("group 1", task2_id)
+    e = is_exist("group 1", task3_id)
 
-    setting("position", [5, 5])
-    s = setting("position")
+    setting("setting 1", [5, 5])
+    s = setting("setting 1")
 
     delete_group("group 1")
     delete_group("group 4")
     delete_group("group 5")
-    delete_setting("position")
+    delete_setting("setting 1")
