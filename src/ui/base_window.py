@@ -1,4 +1,5 @@
-from PyQt5.QtCore import Qt, QRectF, QVariantAnimation, QEasingCurve
+from __future__ import annotations
+from PyQt5.QtCore import Qt, QRectF, QVariantAnimation, QEasingCurve, QPoint
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -21,7 +22,7 @@ from .utils import get_font
 
 
 class MainLayer(QWidget):
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent: InnerPart) -> None:
         super().__init__(parent)
         
         shadow = QGraphicsDropShadowEffect(self)
@@ -47,8 +48,10 @@ class MainLayer(QWidget):
 class InnerPart(QWidget):
     def __init__(self,
                  add_tab: bool = False,
-                 parent: QWidget | None = None) -> None:
+                 parent: BaseWindow = None) -> None:
         super().__init__(parent)
+
+        self._parent = parent
 
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setColor(QColor(118, 118, 118, 70))
@@ -99,6 +102,21 @@ class InnerPart(QWidget):
 
         return super().paintEvent(a0)
 
+    def mousePressEvent(self, a0: QMouseEvent) -> None:
+        if a0.button() == Qt.LeftButton:
+            self._parent._offset = a0.pos()
+        return super().mousePressEvent(a0)
+    
+    def mouseMoveEvent(self, a0: QMouseEvent) -> None:
+        if self._parent._offset is not None and a0.buttons() == Qt.LeftButton:
+            margin_offset = QPoint(self._parent._margin_for_shadow, self._parent._margin_for_shadow)
+            self._parent.move(a0.globalPos() - self._parent._offset - margin_offset)
+        return super().mouseMoveEvent(a0)
+
+    def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
+        self._parent._offset = None
+        return super().mouseReleaseEvent(a0)
+    
 
 class BaseWindow(QWidget):
     def __init__(self,
@@ -108,8 +126,11 @@ class BaseWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         
         self._offset = None
+        self._margin_for_shadow = mrgn = 25
         
         self.setLayout(layout:=QVBoxLayout(self))
+        layout.setContentsMargins(mrgn, mrgn, mrgn, mrgn) # margin for shadow
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         layout.addWidget(inner:=InnerPart(add_tab, self))
         
         self.setLayout = inner._main_layer.setLayout
@@ -146,20 +167,6 @@ class BaseWindow(QWidget):
         self._animation.start()
 
 
-    def mousePressEvent(self, a0: QMouseEvent) -> None:
-        if a0.button() == Qt.LeftButton:
-            self._offset = a0.pos()
-        return super().mousePressEvent(a0)
-    
-    def mouseMoveEvent(self, a0: QMouseEvent) -> None:
-        if self._offset is not None and a0.buttons() == Qt.LeftButton:
-            self.move(a0.globalPos() - self._offset)
-        return super().mouseMoveEvent(a0)
-
-    def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
-        self._offset = None
-        return super().mouseReleaseEvent(a0)
-    
     def adjustSize(self) -> None:
         self.animate_resize()
         return super().adjustSize()
