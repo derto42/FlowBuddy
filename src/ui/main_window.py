@@ -37,7 +37,7 @@ class BaseNode(QWidget):
         self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
         self._layout.setSpacing(0)
-        
+
 
 class GroupNode(BaseNode):
     def __init__(self, parent: QWidget, group_name: str) -> None:
@@ -46,7 +46,6 @@ class GroupNode(BaseNode):
         self._group_name = group_name
         
         self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
         
         self._name_label = QLabel(group_name, self)
         self._name_label.setFont(get_font(size=24, weight="semibold"))
@@ -90,15 +89,17 @@ class GroupNode(BaseNode):
             self.delete()
         
     def delete(self):
+        group_layout = self._parent._nodes[self._group_name].pop(NAME_TO_INT["group_layout"])
+        del self._parent._nodes[self._group_name]
+        self._parent.clearLayout(group_layout)
         self.hide()
         self.deleteLater()
-        self._parent.clearLayout(self._parent._nodes[self._group_name][NAME_TO_INT["group_layout"]])
-        del self._parent._nodes[self._group_name]
+        self._parent.adjust_group_layouts()
         QApplication.instance().processEvents()
         QApplication.instance().processEvents()
         self._parent.update()
         self._parent.adjustSize()
-            
+
 
 class TaskNode(BaseNode):
     def __init__(self,
@@ -127,11 +128,17 @@ class TaskNode(BaseNode):
         self._layout.addWidget(self._name_label)
         self._layout.addSpacing(13)
         
-        self._text_button = TextButton(self, self._button_text)
-        self._text_button.setFont(get_font(size=16))
-        self._text_button.clicked.connect(self.on_text_button)
+        self._text_button = QWidget()
+        self._text_button.setLayout(text_button_layout := QHBoxLayout())
+        text_button_layout.setContentsMargins(0, 0, 13, 0)
+        text_button_layout.setSpacing(0)
+        
+        text_button = TextButton(self, self._button_text)
+        text_button.setFont(get_font(size=16))
+        text_button.clicked.connect(self.on_text_button)
+        self._text_button.setText = text_button.setText
+        text_button_layout.addWidget(text_button)
         self._layout.addWidget(self._text_button)
-        self._layout.addSpacing(13)
         if self._button_text is None:
             self._text_button.hide()
 
@@ -203,7 +210,7 @@ class TaskNode(BaseNode):
         QApplication.instance().processEvents()
         self._parent.update()
         self._parent.adjustSize()
-        
+
 
 class MainWindow(BaseWindow):
     window_toggle_signal = pyqtSignal()
@@ -237,7 +244,13 @@ class MainWindow(BaseWindow):
 
         layout.addStretch()
         layout.addSpacing(0)
-        layout.addLayout(add_group_layout := QHBoxLayout())
+
+        layout.addWidget(add_group_widget := QWidget(self))
+        add_group_widget.setContentsMargins(0, 29, 0, 0)
+
+        add_group_widget.setLayout(add_group_layout := QHBoxLayout())
+        add_group_layout.setContentsMargins(0, 0, 0, 0)
+        add_group_layout.setSpacing(0)
 
         add_group_label = QLabel("Add New Group", self)
         add_group_label.setFont(get_font(size=24, weight="semibold"))
@@ -252,7 +265,7 @@ class MainWindow(BaseWindow):
         add_group_layout.addWidget(add_group_button)
         add_group_layout.addStretch()
 
-        self.add_to_editors(add_group_button, add_group_label)
+        self.add_to_editors(add_group_widget)
 
         try:
             position = Data.setting("position")
@@ -290,30 +303,14 @@ class MainWindow(BaseWindow):
         self.layout().insertLayout(len(self._nodes), group_layout)
         group_layout.addWidget(group_node:=GroupNode(self, group_name))
         group_node.on_new_task = self.add_task
-        group_node.delete_group_layer = self.delete_group_layer
-        group_node.add_to_editors = self.add_to_editors
         self._nodes[group_name] = {0: group_layout}
         
-        # adding ContentsMargins to layout of groups.
-        for index, (_, _group_node) in enumerate(self._nodes.items()):
-            if index == len(self._nodes) - 1:
-                _group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 0)
-            _group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 29)
-                
+        self.adjust_group_layouts()
+        
         QApplication.instance().processEvents()
         self.update()
         self.adjustSize()
         return group_node
-
-    def clear_group(self, group_name: str) -> None:
-        self.clearLayout(self._nodes[group_name][NAME_TO_INT["group_layout"]])
-
-    def delete_group_layer(self, group_name: str) -> None:
-        self.clearLayout(self._nodes[group_name][NAME_TO_INT["group_layout"]])
-        del self._nodes[group_name]
-        QApplication.instance().processEvents()
-        self.update()
-        self.adjustSize()
 
 
     def add_task(self, group_node: GroupNode) -> None:
@@ -351,8 +348,16 @@ class MainWindow(BaseWindow):
                     self.clearLayout(item.layout())
             layout.deleteLater()
         QApplication.instance().processEvents()
-        
-        
+    
+    def adjust_group_layouts(self) -> None:
+        # adding ContentsMargins to layout of groups.
+        for index, (_, _group_node) in enumerate(self._nodes.items()):
+            if index == len(self._nodes) - 1:
+                _group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 0)
+            else:
+                _group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 29)
+
+
     def add_to_editors(self, *widgets: QWidget) -> None:
         self._editors += [*widgets]
         
@@ -376,4 +381,3 @@ class MainWindow(BaseWindow):
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
         Data.setting("position", [self.pos().x(), self.pos().y()])
         return super().mouseReleaseEvent(a0)
-    
