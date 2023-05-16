@@ -47,7 +47,7 @@ class GroupNode(BaseNode):
         
         self._layout.setContentsMargins(0, 0, 0, 0)
         
-        self._name_label = QLabel(group_name, self)
+        self._name_label = QLabel(Data.remove_group_id(group_name), self)
         self._name_label.setFont(get_font(size=24, weight="semibold"))
 
         new_task_button = GrnButton(self, "radial")
@@ -73,17 +73,17 @@ class GroupNode(BaseNode):
     
     def on_edit_group(self, event) -> None:
         dialog = GroupDialog(self)
-        dialog.for_edit(self._group_name)
+        dialog.for_edit(Data.remove_group_id(self._group_name))
         dialog.setTitle("Edit Group")
         if dialog.exec() != REJECTED:
-            group_name = dialog.result()
+            group_name = Data.give_group_id(dialog.result())
             Data.edit_group(self._group_name, new_group_name=group_name)
-            self._name_label.setText(group_name)
+            self._name_label.setText(Data.remove_group_id(group_name))
             self._parent._nodes[group_name] = self._parent._nodes.pop(self._group_name)
             self._group_name = group_name
     
     def on_delete_group(self, event) -> None:
-        dialog = ConfirmationDialog(f"Delete '{self._group_name}'?", self)
+        dialog = ConfirmationDialog(f"Delete '{Data.remove_group_id(self._group_name)}'?", self)
         if dialog.exec() == ACCEPTED:
             Data.delete_group(self._group_name)
             self.delete()
@@ -166,9 +166,10 @@ class TaskNode(BaseNode):
             self._parent.adjustSize()
 
     def on_delete_task(self, event) -> None:
-        dialog = ConfirmationDialog(f"Delete '{self._task_name}' from '{self._group_node._group_name}'?", self)
+        group_name = self._group_node._group_name
+        dialog = ConfirmationDialog(f"Delete '{self._task_name}' from '{Data.remove_group_id(group_name)}'?", self)
         if dialog.exec() == ACCEPTED:
-            Data.delete_task(self._group_node._group_name, self._task_id)
+            Data.delete_task(group_name, self._task_id)
             self.delete()
     
     def on_text_button(self, evet) -> None:
@@ -291,7 +292,7 @@ class MainWindow(BaseWindow):
     def add_group(self) -> None:
         dialog = GroupDialog(self)
         if dialog.exec() != REJECTED:
-            group_name = dialog.result()
+            group_name = Data.give_group_id(dialog.result())
             Data.add_group(group_name)
             self.create_group(group_name)
 

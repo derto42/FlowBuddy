@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Literal, Optional, overload
 import FileSystem as FS
 
 FILE_PATH = FS.SAVE_FILE
+GROUP_ID_DELIMITER = '#'
 
 _save_dict = False
 
@@ -100,6 +101,32 @@ def setting(name: str) -> Any: ...
 def setting(name: str, value: Any) -> None: ...
 # endregion
 
+def _make_unique_id(group_name):
+    ids = []
+    for group in _groups:
+        if remove_group_id(group) == group_name:
+            # Get all group ids with the same name in `ids`
+            ids.append(get_group_id(group))
+    if ids:
+        # If groups with same name exists, add 1 to the last's id
+        return ids[-1] + 1
+    # No groups with same name found so we give `0` for id
+    return 0
+
+def get_group_id(group_name: str, id_delimiter: str = GROUP_ID_DELIMITER) -> int:
+    return int(group_name[group_name.rfind(id_delimiter) + 1])
+
+def remove_group_id(group_name: str, id_delimiter: str = GROUP_ID_DELIMITER) -> str:
+    if id_delimiter in group_name:
+        return group_name[:group_name.rfind(id_delimiter)]
+    return group_name
+
+def give_group_id(group_name: str) -> str:
+    found = 0
+    for group in _groups:
+        if group_name == remove_group_id(group):
+            found += 1
+    return f"{group_name}#{_make_unique_id(group_name)}"
 
 def add_group(group_name: str) -> None:
     global _groups
