@@ -118,17 +118,16 @@ class TextButton(QPushButton):
                  text: str = "Text Button"):
         super().__init__(parent, text=text)
         self.setCursor(Qt.PointingHandCursor)
-        self.x_padding = 35
-        self.y_padding = 7
+        self._x_padding = 35
+        self._y_padding = 7
         self.setFont(get_font(size=16))
-        self.setContentsMargins(0, 0, 0, 0)
         
     def sizeHint(self):
         font_metrics = QFontMetrics(self.font())
         text_width = font_metrics.width(self.text())
         text_height = font_metrics.height()
-        button_width = text_width + self.x_padding * 2  # *2 for Adding padding to both sides
-        button_height = text_height + self.y_padding * 2
+        button_width = text_width + self._x_padding * 2  # *2 for Adding padding to both sides
+        button_height = text_height + self._y_padding * 2
         return QSize(button_width, button_height)
         
     def paintEvent(self, a0: QPaintEvent):
