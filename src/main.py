@@ -16,19 +16,16 @@ from ui import MainWindow
 TITLE = "FlowBuddy"
 
 
-
 def show_tray_icon(parent: QApplication, activate_action: Callable):
-
-    """Here in the code below  Displays the tray icon along with tooltip of the 
+    """Here in the code below  Displays the tray icon along with tooltip of the
         application
     Args:
         parent (QApplication): The parent application to which the tray icon belongs.
-        activate_action (Callable): A callable function to be triggered when the tray 
+        activate_action (Callable): A callable function to be triggered when the tray
         icon is activated.
 
     Returns:
-        None
-"""
+        None"""
     tray_icon = QSystemTrayIcon(QIcon(FS.icon("icon.png")), parent=parent)
     tray_icon.setToolTip(TITLE)
     tray_icon.activated.connect(
@@ -44,23 +41,13 @@ def show_tray_icon(parent: QApplication, activate_action: Callable):
     tray_icon.setContextMenu(menu)
 
 
-"""This trigggers the main function of the application
-    Args:
-        None
-        After the main function is executed, it runs  a series of events like 
-            updating , showing and hiding the tray icon. adding a hotkey shortcut to 
-            window"""
-
-
 def main():
-
     """This trigggers the main function of the application
     Args:
         None
-        After the main function is executed, it runs  a series of events like 
-            updating , showing and hiding the tray icon. adding a hotkey shortcut to 
+        After the main function is executed, it runs  a series of events like
+            updating , showing and hiding the tray icon. adding a hotkey shortcut to
             window"""
-
 
     app = QApplication(sys.argv)
 
