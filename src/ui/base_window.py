@@ -71,6 +71,9 @@ class InnerPart(QWidget):
             
             self.edit_button = YelButton(self)
             self.close_button = RedButton(self)
+
+            self.edit_button.setToolTip("Edit Window")
+            self.close_button.setToolTip("Close Window")
             
             layout.addLayout(title_layout:=QHBoxLayout())
             title_layout.setContentsMargins(0, 10, 0, 10)
