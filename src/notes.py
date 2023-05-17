@@ -149,7 +149,7 @@ class JottingDownWindow(QWidget):
         with open(self.config_file, "w") as file:
             json.dump(config, file)
 
-    def delete_tab_text_file(self,file_name):
+    def delete_tab_text_file(self, file_name):
         file_path = os.path.join(self.notes_folder, file_name)
         if os.path.exists(file_path):
             os.remove(file_path)
