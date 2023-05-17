@@ -56,6 +56,9 @@ class GroupNode(BaseNode):
         new_task_button.clicked.connect(self.on_new_task)
         edit_group_button.clicked.connect(self.on_edit_group)
         delete_group_button.clicked.connect(self.on_delete_group)
+        new_task_button.setToolTip("Add Task")
+        edit_group_button.setToolTip("Edit Group")
+        delete_group_button.setToolTip("Delete Group")
         
         self._parent.add_to_editors(new_task_button, edit_group_button, delete_group_button)
         
@@ -142,17 +145,20 @@ class TaskNode(BaseNode):
         if self._button_text is None:
             self._text_button.hide()
 
-        edit_group_button = YelButton(self, "radial")
-        delete_group_button = RedButton(self, "radial")
+        edit_task_button = YelButton(self, "radial")
+        delete_task_button = RedButton(self, "radial")
         
-        edit_group_button.clicked.connect(self.on_edit_task)
-        delete_group_button.clicked.connect(self.on_delete_task)
+        edit_task_button.clicked.connect(self.on_edit_task)
+        delete_task_button.clicked.connect(self.on_delete_task)
         
-        self._parent.add_to_editors(edit_group_button, delete_group_button)
+        edit_task_button.setToolTip("Edit Task")
+        delete_task_button.setToolTip("Delete Task")
         
-        self._layout.addWidget(edit_group_button)
+        self._parent.add_to_editors(edit_task_button, delete_task_button)
+        
+        self._layout.addWidget(edit_task_button)
         self._layout.addSpacing(9)
-        self._layout.addWidget(delete_group_button)
+        self._layout.addWidget(delete_task_button)
         self._layout.addStretch()
         
         
@@ -259,6 +265,7 @@ class MainWindow(BaseWindow):
 
         add_group_button = GrnButton(self, "radial")
         add_group_button.clicked.connect(self.add_group)
+        add_group_button.setToolTip("Add Group")
 
         
         add_group_layout.addWidget(add_group_label)
