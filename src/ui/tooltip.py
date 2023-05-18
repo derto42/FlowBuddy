@@ -65,8 +65,8 @@ class ToolTip(QWidget):
         self._hide_connection = None
         self._alpha: int = 0
         
-        self.show()
-        self.hide()
+        # self.show()
+        # self.hide()
         
         
     def _set_alpha(self, alpha: int) -> None:
