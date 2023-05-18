@@ -20,8 +20,7 @@ PLATFORM = sys.platform
 def create_save_file() -> None:
     """Creates an empty save file."""
     with open(SAVE_FILE, 'w') as f:
-        f.write('{"settings": {}, "data": {}}')
-
+        f.write('{"settings": {}, "groups": {}, "tasks": {}}')
 
 def abspath(path: str) -> str:
     """Returns the absolute path. Returns None if the path does not exist."""
@@ -45,11 +44,15 @@ def font(font_name: str) -> str | None:
     path = os.path.join(FONTS_FOLDER, font_name)
     return os.path.abspath(path).replace('\\', '/') if os.path.exists(path) else None
 
-def open_file(file_path: str) -> None:
-    if PLATFORM in ('win32',):
-        os.startfile(file_path)
-    elif PLATFORM in ('linux', 'darwin'):
-        os.system(f'xdg-open {file_path}')
+def open_file(file_path: str | None) -> None:
+    if file_path is not None:
+        if PLATFORM in ('win32',):
+            os.startfile(file_path)
+        elif PLATFORM in ('linux', 'darwin'):
+            os.system(f'xdg-open {file_path}')
+
+if not exists(SAVE_FILE):
+    create_save_file()
 
 
 # for testing purposes

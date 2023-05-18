@@ -155,7 +155,7 @@ class TaskDialog(BaseDialog):
         self.setTitle("Edit Task")
         self._name_entry.setText(name)
         self._button_entry.setText(button_text if button_text is not None else "")
-        self._url_entry.setText(url if url is not None else "")
+        self._url_entry.setText(', '.join(url) if url is not None else "")
         self._file_path = file_path if file_path is not None else ""
 
     def result(self) -> Tuple[Optional[str]]:
