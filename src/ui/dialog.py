@@ -98,6 +98,7 @@ class GroupDialog(BaseDialog):
         
         self._name_entry = Entry(self, "Group Name")
         layout.addWidget(self._name_entry)
+        self._name_entry.setFocus()
         
     def for_edit(self, name: str):
         self.setTitle("Edit Group")
@@ -133,6 +134,8 @@ class TaskDialog(BaseDialog):
         layout.addWidget(self._button_entry)
         layout.addWidget(self._url_entry)
         layout.addWidget(file_choose_button)
+
+        self._name_entry.setFocus()
 
     def _choose_file(self):
         options = QFileDialog.Options()
