@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QLayout,
-    QApplication
+    QApplication,
 )
 
 import src.SaveFile as Data
@@ -58,7 +58,9 @@ class GroupNode(BaseNode):
         edit_group_button.setToolTip("Edit Group")
         delete_group_button.setToolTip("Delete Group")
 
-        self._parent.add_to_editors(new_task_button, edit_group_button, delete_group_button)
+        self._parent.add_to_editors(
+            new_task_button, edit_group_button, delete_group_button
+        )
 
         self._layout.addWidget(self._name_label)
         self._layout.addSpacing(13)
@@ -79,7 +81,9 @@ class GroupNode(BaseNode):
         if dialog.exec() != REJECTED:
             self._group_class.group_name = dialog.result()
             self._name_label.setText(self._group_class.group_name)
-            self._parent._nodes[self._group_class.group_id] = self._parent._nodes.pop(self._group_class.group_id)
+            self._parent._nodes[self._group_class.group_id] = self._parent._nodes.pop(
+                self._group_class.group_id
+            )
 
     def on_delete_group(self, event) -> None:
         dialog = ConfirmationDialog(f"Delete '{self._group_class.group_name}'?", self)
@@ -88,7 +92,9 @@ class GroupNode(BaseNode):
             self.delete()
 
     def delete(self):
-        group_layout = self._parent._nodes[self._group_class.group_id].pop(NAME_TO_INT["group_layout"])
+        group_layout = self._parent._nodes[self._group_class.group_id].pop(
+            NAME_TO_INT["group_layout"]
+        )
         del self._parent._nodes[self._group_class.group_id]
         self._parent.clearLayout(group_layout)
         self.hide()
@@ -101,10 +107,7 @@ class GroupNode(BaseNode):
 
 
 class TaskNode(BaseNode):
-    def __init__(self,
-                 parent: MainWindow,
-                 group_node: GroupNode,
-                 task: Data.TaskClass):
+    def __init__(self, parent: MainWindow, group_node: GroupNode, task: Data.TaskClass):
         super().__init__(parent)
 
         self._group_node = group_node
@@ -151,7 +154,12 @@ class TaskNode(BaseNode):
 
     def on_edit_task(self, event) -> None:
         dialog = TaskDialog(self)
-        dialog.for_edit(self._task.task_name, self._task.button_text, self._task.url, self._task.file_path)
+        dialog.for_edit(
+            self._task.task_name,
+            self._task.button_text,
+            self._task.url,
+            self._task.file_path,
+        )
         dialog.setTitle("Edit Task")
         if dialog.exec() != REJECTED:
             self._edit_data(dialog)
@@ -160,7 +168,9 @@ class TaskNode(BaseNode):
 
     def on_delete_task(self) -> None:
         dialog = ConfirmationDialog(
-            f"Delete '{self._task.task_name}' from '{self._group_node._group_class.group_name}'?", self)
+            f"Delete '{self._task.task_name}' from '{self._group_node._group_class.group_name}'?",
+            self,
+        )
         if dialog.exec() == ACCEPTED:
             self._group_node._group_class.delete_task(self._task.task_id)
             self.delete()
@@ -171,11 +181,14 @@ class TaskNode(BaseNode):
 
     def _edit_data(self, dialog: TaskDialog) -> None:
         task_name, button_text, url, file_path = dialog.result()
-        self._task.edit_task(task_name=task_name, button_text=button_text, url=url, file_path=file_path)
+        self._task.edit_task(
+            task_name=task_name, button_text=button_text, url=url, file_path=file_path
+        )
 
         self._name_label.setText(task_name)
         if button_text is not None:
-            if self._text_button.isHidden(): self._text_button.show()
+            if self._text_button.isHidden():
+                self._text_button.show()
             self._text_button.setText(button_text)
         elif not self._text_button.isHidden():
             self._text_button.hide()
@@ -188,7 +201,9 @@ class TaskNode(BaseNode):
     def delete(self) -> None:
         self.hide()
         self.deleteLater()
-        del self._parent._nodes[self._group_node._group_class.group_id][self._task.task_id]
+        del self._parent._nodes[self._group_node._group_class.group_id][
+            self._task.task_id
+        ]
         QApplication.instance().processEvents()
         self._parent.update()
         self._parent.adjustSize()
@@ -289,14 +304,20 @@ class MainWindow(BaseWindow):
         dialog = TaskDialog(self)
         if dialog.exec() != REJECTED:
             task_name, button_text, url, file_path = dialog.result()
-            new_task = group_node._group_class.create_task(task_name=task_name, button_text=button_text,
-                                                           url=url, file_path=file_path)
+            new_task = group_node._group_class.create_task(
+                task_name=task_name,
+                button_text=button_text,
+                url=url,
+                file_path=file_path,
+            )
 
             self.create_task(group_node, new_task)
 
     def create_task(self, group_node: GroupNode, task: Data.TaskClass) -> None:
         task_node = TaskNode(self, group_node, task)
-        self._nodes[group_node._group_class.group_id][NAME_TO_INT["group_layout"]].addWidget(task_node)
+        self._nodes[group_node._group_class.group_id][
+            NAME_TO_INT["group_layout"]
+        ].addWidget(task_node)
         self._nodes[group_node._group_class.group_id][task.task_id] = task_node
         QApplication.instance().processEvents()
         self.update()
