@@ -1,5 +1,5 @@
 from typing import Optional, Literal
-from PyQt5.QtCore import Qt, QSize, QVariantAnimation, QEasingCurve
+from PyQt5.QtCore import Qt, QSize, QVariantAnimation, QEasingCurve, QEvent
 from PyQt5.QtWidgets import QPushButton, QWidget
 from PyQt5.QtGui import (
     QPainter,
@@ -13,6 +13,7 @@ from PyQt5.QtGui import (
 from FileSystem import icon as icon_path
 from .utils import get_font
 from .settings import CORNER_RADIUS
+from .tooltip import ToolTip
 
 
 BUTTON_SIZE = {
@@ -39,6 +40,9 @@ class Button(QPushButton):
         self.animation.valueChanged.connect(self.set_size)
         self.easing_curve = QEasingCurve.OutBack
         self.duration = 500
+        
+        self._tooltip = ToolTip("")
+        self._tooltip_text = None
 
         
     def set_icons(self, icon_name: str) -> None:
@@ -90,6 +94,20 @@ class Button(QPushButton):
     def setHidden(self, hidden: bool) -> None:
         self.animate_resize(hidden)
         return super().setHidden(hidden)
+    
+    def enterEvent(self, a0: QEvent) -> None:
+        if self._tooltip_text is not None:
+            self._tooltip._show()
+        return super().enterEvent(a0)
+    
+    def leaveEvent(self, a0: QEvent) -> None:
+        if self._tooltip_text is not None:
+            self._tooltip._hide()
+        return super().leaveEvent(a0)
+    
+    def setToolTip(self, a0: str) -> None:
+        self._tooltip_text = a0
+        self._tooltip.setText(a0)
 
 
 class RedButton(Button):
