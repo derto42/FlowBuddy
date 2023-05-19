@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 
-import src.FileSystem as FS
+import FileSystem as FS
 
 FILE_PATH = FS.SAVE_FILE
 GROUP_ID_DELIMITER = "#"
@@ -52,21 +52,21 @@ class TaskClass:
         """
         Class to hold all the required details that a task requires.
         Task name should always be provided.
-        All other parameters are optional and can be added/updated
-        at a later date.
+        All other parameters are optional and can be added/updated at a later date.
 
         :param task_name: Name of task
         :param task_id: unique id Of task (automatically assigned if not given)
         :param button_text: text to show on button
-        :param url: string of url, if separated by comma they will be split
-                    into string for saving
+        :param url: string of url, if separated by comma they will be split into string for saving
         :param file_path: filepath string
         :param directory_path: directory path string
         """
         if task_id is None:
-            self.task_id = id(self)
+            self.task_id = f'T_{id(self)}'
+            count = 1
             while is_id_used(self.task_id):
-                self.task_id += 1
+                self.task_id = f'T_{id(self)}-{str(count)}'
+                count += 1
         else:
             self.task_id = task_id
 
@@ -108,8 +108,7 @@ class TaskClass:
 
         :param task_name: Name of task
         :param button_text: text to show on button
-        :param url: string of url, if separated by comma they will be split
-                    into string for saving
+        :param url: string of url, if separated by comma they will be split into string for saving
         :param file_path: filepath string
         :param directory_path: directory path string
         """
@@ -143,8 +142,7 @@ class TaskClass:
     def delete_task(self) -> None:
         """
         Will delete the task from the Save_File.
-        Does not search for any associated groups so should only be used when
-        deleting the parent group.
+        Does not search for any associated groups so should only be used when deleting the parent group.
         """
         with open(FILE_PATH, "r") as save_file:
             json_data = json.load(save_file)
@@ -157,8 +155,7 @@ class TaskClass:
     def save_task(self) -> None:
         """
         Saves task to the Save_file.
-        Does not search for any associated groups so should only be used when
-        saving the parent group.
+        Does not search for any associated groups so should only be used when saving the parent group.
         """
         with open(FILE_PATH, "r") as save_file:
             json_data = json.load(save_file)
@@ -179,11 +176,9 @@ class GroupClass:
         """
         Class to hold all the required details that a group requires.
         Group name should always be provided.
-        All other parameters are optional and can be added/updated
-        at a later date.
+        All other parameters are optional and can be added/updated at a later date.
 
-        GroupClass can be treated as an iterable. Using in such a way will
-        access the group_task list for easy addition
+        GroupClass can be treated as an iterable. Using in such a way will access the group_task list for easy addition
         or removal of tasks to the group.
 
         :param group_name: logical name for the group
@@ -191,7 +186,11 @@ class GroupClass:
         :param group_tasks: list of associated task ids
         """
         if group_id is None:
-            self.group_id = id(self)
+            self.group_id = f'G_{id(self)}'
+            count = 1
+            while is_id_used(self.group_id):
+                self.group_id = f'G_{id(self)}-{str(count)}'
+                count += 1
         else:
             self.group_id = group_id
 
@@ -309,22 +308,17 @@ class GroupClass:
         directory_path: str | None = None,
     ) -> TaskClass:
         """
-        Create a task from within the group_class space. All parameters are the
-        same as would be when creating a
-        standalone task. This method also appends the task_id to the group_task
-        list.
+        Create a task from within the group_class space. All parameters are the same as would be when creating a
+        standalone task. This method also appends the task_id to the group_task list.
 
         :param task_name: Name of task
         :param task_id: unique id Of task (automatically assigned if not given)
         :param button_text: text to show on button
-        :param url: string of url, if separated by comma they will be split
-                    into string for saving
+        :param url: string of url, if separated by comma they will be split into string for saving
         :param file_path: filepath string
         :param directory_path: directory path string
         """
-        new_task = TaskClass(
-            task_name, task_id, button_text, url, file_path, directory_path
-        )
+        new_task = TaskClass(task_name, task_id, button_text, url, file_path, directory_path)
 
         self.group_tasks.append(new_task.task_id)
         self.save_group()
@@ -361,7 +355,7 @@ class GroupClass:
 
         json_data["groups"].update(
             {
-                self.group_id: {
+                str(self.group_id): {
                     "group_name": self.group_name,
                     "group_tasks": self.group_tasks,
                 }
@@ -414,7 +408,7 @@ def get_group_by_id(group_id: str) -> GroupClass:
     return GroupClass(
         group_name=group_data["group_name"],
         group_id=str(group_id),
-        group_tasks=[str(i) for i in group_data["group_tasks"]],
+        group_tasks=[i for i in group_data["group_tasks"]],
     )
 
 
@@ -423,7 +417,7 @@ def delete_task_by_id(task_id: str) -> None:
     Delete a task from the SaveFile by using its id as a lookup.
     :param task_id: id of the task to be deleted.
     """
-    get_task_by_id(str(task_id)).delete_task()
+    get_task_by_id(task_id).delete_task()
 
 
 def delete_group_by_id(group_id: str) -> None:
@@ -442,7 +436,7 @@ def is_id_used(_id: str | int) -> bool:
     """
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
-    if _id in json_data or int(_id) in json_data:
+    if _id in json_data:
         return True
 
 
@@ -454,7 +448,7 @@ def load_groups() -> list:
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
 
-    return [str(group) for group in json_data["groups"]]
+    return [group for group in json_data["groups"]]
 
 
 def load_tasks() -> list:
@@ -465,13 +459,12 @@ def load_tasks() -> list:
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
 
-    return [str(task) for task in json_data["tasks"]]
+    return [task for task in json_data["tasks"]]
 
 
 def apply_settings(name: str, value=None) -> None:
     """
-    apply the given settings to the name key in the 'settings' dictionary
-    within the SaveFile.
+    apply the given settings to the name key in the 'settings' dictionary within the SaveFile.
     :param name: key name for the setting to be applied
     :param value: value for the setting to be applied
     """
@@ -486,8 +479,7 @@ def apply_settings(name: str, value=None) -> None:
 
 def get_setting(name: str) -> dict:
     """
-    Retrieves the key value dictionary for the given key from the 'settings'
-    dictionary within the SaveFile.
+    Retrieves the key value dictionary for the given key from the 'settings' dictionary within the SaveFile.
     :param name: key for dictionary to be returned
     :return: dictionary with key given and value found
     """
