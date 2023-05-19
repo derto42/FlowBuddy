@@ -1,6 +1,6 @@
 import os
 import json
-
+from ui.custom_button import RedButton
 import keyboard
 from PyQt5.QtWidgets import (
     QApplication,
@@ -129,14 +129,21 @@ class JottingDownWindow(QWidget):
             self.tab_widget.setCurrentIndex(config["last_active"])
         else:
             # If config file doesn't exist, load tabs by iterating over files in the notes folder
-            for file_name in os.listdir(self.notes_folder):
+
+            for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
                     self.tab_widget.addTab(NoteTab(file_path), file_name)
-
+                    self.add_button_to_tab(tabno)
             # If no tabs are found after loading existing .txt files, add the default "notes" file
             if self.tab_widget.count() == 0:
                 self.add_new_tab("notes")
+
+    def add_button_to_tab(self, tabno):
+        self.button = RedButton(self.tab_widget, "radial")
+        self.tab_widget.tabBar().setTabButton(tabno, 2, self.button)
+        self.button.setObjectName(str(tabno + 1))
+        self.button.clicked.connect(self.delete_tab)
 
     def save_tabs(self):
         config = {
@@ -157,7 +164,8 @@ class JottingDownWindow(QWidget):
             QMessageBox.warning(self, "File Exists", f"{file_path} does not exist.")
 
     def delete_tab(self):
-        tabid = self.tab_widget.currentIndex()
+        sending_button = self.sender()
+        tabid = int(sending_button.objectName()) - 1
         file_name = self.tab_widget.tabText(tabid)
         qm = QMessageBox
         ret = qm.question(
@@ -182,18 +190,16 @@ class JottingDownWindow(QWidget):
         file_path = os.path.join(self.notes_folder, file_name)
         if not os.path.exists(file_path):
             self.tab_widget.addTab(NoteTab(file_path), file_name)
+            self.add_button_to_tab(len(self.tab_widget) - 1)
+
         else:
             QMessageBox.warning(
                 self, "File Exists", f"A file with the name {file_name} already exists."
             )
-        for i in range(3):
-            print(self.tab_widget.tabText(i))
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.old_pos = event.globalPos()
-        if event.button() == Qt.RightButton:
-            self.delete_tab()
 
     def mouseMoveEvent(self, event):
         if not self.old_pos:
