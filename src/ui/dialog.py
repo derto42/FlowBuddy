@@ -64,6 +64,8 @@ class BaseDialog(QDialog, BaseWindow):
         button_layout.addStretch()
         accept_button.clicked.connect(lambda : self.accept())
         reject_button.clicked.connect(lambda : self.reject())
+        accept_button.setToolTip("Ok")
+        reject_button.setToolTip("Cancel")
         accept_button.setDefault(True)
         
         self.setLayout = self._main_layout.setLayout
@@ -98,10 +100,12 @@ class GroupDialog(BaseDialog):
         
         self._name_entry = Entry(self, "Group Name")
         layout.addWidget(self._name_entry)
+        self._name_entry.setFocus()
         
     def for_edit(self, name: str):
         self.setTitle("Edit Group")
         self._name_entry.setText(name)
+        self._name_entry.setToolTip("Group Name")
         
         
     def result(self) -> str | QDialog.DialogCode:
@@ -129,10 +133,17 @@ class TaskDialog(BaseDialog):
         file_choose_button = TextButton(self, "Choose File")
         file_choose_button.clicked.connect(self._choose_file)
 
+        self._name_entry.setToolTip("Task Name")
+        self._button_entry.setToolTip("Button Text")
+        self._url_entry.setToolTip("URL")
+        file_choose_button.setToolTip("Choose File")
+
         layout.addWidget(self._name_entry)
         layout.addWidget(self._button_entry)
         layout.addWidget(self._url_entry)
         layout.addWidget(file_choose_button)
+
+        self._name_entry.setFocus()
 
     def _choose_file(self):
         options = QFileDialog.Options()
