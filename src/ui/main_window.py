@@ -84,6 +84,12 @@ class GroupNode(BaseNode):
             self._name_label.setText(Data.remove_group_id(group_name))
             self._parent._nodes[group_name] = self._parent._nodes.pop(self._group_name)
             self._group_name = group_name
+            self.update()
+            self.adjustSize()
+            self._parent.update()
+            QApplication.instance().processEvents()
+            QApplication.instance().processEvents()
+            self._parent.adjustSize()
     
     def on_delete_group(self, event) -> None:
         dialog = ConfirmationDialog(f"Delete '{Data.remove_group_id(self._group_name)}'?", self)
@@ -179,7 +185,17 @@ class TaskNode(BaseNode):
         dialog.setTitle("Edit Task")
         if dialog.exec() != REJECTED:
             self._edit_data(dialog)
+            
+            # i don't know why pyqt5 needs 10 lines of codes just for update the ui.
+            self.update()
+            self.adjustSize()
             self._parent.update()
+            QApplication.instance().processEvents()
+            QApplication.instance().processEvents()
+            self._parent.adjustSize()
+            self._parent.update()
+            QApplication.instance().processEvents()
+            QApplication.instance().processEvents()
             self._parent.adjustSize()
 
     def on_delete_task(self, event) -> None:
@@ -217,11 +233,6 @@ class TaskNode(BaseNode):
             if self._name_label.isHidden(): self._name_label.show()
         elif not self._name_label.isHidden(): self._name_label.hide()
         
-        QApplication.instance().processEvents()
-        self.update()
-        self.adjustSize()
-        self._parent.update()
-        self._parent.adjustSize()
         self._task_name = task_name
         self._button_text = button_text
         self._url = url
