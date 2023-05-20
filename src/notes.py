@@ -121,7 +121,7 @@ class JottingDownWindow(QWidget):
                 if os.path.exists(file_path):
                     file_name = os.path.basename(file_path)
                     self.tab_widget.addTab(NoteTab(file_path), file_name)
-                    self.add_button_to_tab(tabno-1)
+                    self.add_button_to_tab(tabno)
 
             self.tab_widget.setCurrentIndex(config["last_active"])
         else:
@@ -179,6 +179,7 @@ class JottingDownWindow(QWidget):
             self.tab_widget.removeTab(tabid)
             self.delete_tab_text_file(file_name)
             self.rename_remaining_buttons()
+            self.save_tabs()
 
     def add_new_tab(self, file_name=""):
         if not file_name:
