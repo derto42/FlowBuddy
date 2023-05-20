@@ -117,7 +117,7 @@ class JottingDownWindow(QWidget):
                 config = json.load(file)
 
             # Load tabs based on the order in config["files"]
-            for tabno,file_path in enumerate(config["files"]):
+            for tabno, file_path in enumerate(config["files"]):
                 if os.path.exists(file_path):
                     file_name = os.path.basename(file_path)
                     self.tab_widget.addTab(NoteTab(file_path), file_name)
