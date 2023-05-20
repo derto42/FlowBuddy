@@ -250,13 +250,13 @@ class GroupClass:
         with open(FILE_PATH, "r") as save_file:
             json_data = json.load(save_file)
 
-        for task in self.group_tasks:
-            delete_task_by_id(task)
-
         json_data["groups"].pop(str(self.group_id))
 
         with open(FILE_PATH, "w") as save_file:
             json.dump(json_data, save_file, indent=4)
+
+        for task in self.group_tasks:
+            get_task_by_id(task).delete_task()
 
     def insert(self, index, new_task_id: str) -> None:
         """
