@@ -12,13 +12,10 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
     QInputDialog,
     QToolButton,
-    QTabBar,
     QMessageBox,
 )
-from PyQt5.QtCore import Qt, QPoint, QEvent, pyqtSignal
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import (
-    QFont,
-    QFontDatabase,
     QTextCursor,
     QPainter,
     QPen,
@@ -26,7 +23,6 @@ from PyQt5.QtGui import (
     QKeySequence,
 )
 
-import FileSystem
 
 from ui.utils import get_font
 
