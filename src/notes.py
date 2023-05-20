@@ -33,7 +33,7 @@ class NoteTab(QTextEdit):
         self.file_path = file_path
         self.load_text_from_file()
         self.setFont(get_font(size=16))
-        self.textChanged.connect(self.save_text_to_file)
+        self.save_text_to_file()
         self.setStyleSheet(
             """
             QTextEdit {
