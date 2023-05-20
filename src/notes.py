@@ -12,13 +12,10 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
     QInputDialog,
     QToolButton,
-    QTabBar,
     QMessageBox,
 )
-from PyQt5.QtCore import Qt, QPoint, QEvent, pyqtSignal
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import (
-    QFont,
-    QFontDatabase,
     QTextCursor,
     QPainter,
     QPen,
@@ -26,7 +23,6 @@ from PyQt5.QtGui import (
     QKeySequence,
 )
 
-import FileSystem
 
 from ui.utils import get_font
 
@@ -37,7 +33,7 @@ class NoteTab(QTextEdit):
         self.file_path = file_path
         self.load_text_from_file()
         self.setFont(get_font(size=16))
-        self.textChanged.connect(self.save_text_to_file)
+        self.save_text_to_file()
         self.setStyleSheet(
             """
             QTextEdit {
@@ -121,10 +117,11 @@ class JottingDownWindow(QWidget):
                 config = json.load(file)
 
             # Load tabs based on the order in config["files"]
-            for file_path in config["files"]:
+            for tabno, file_path in enumerate(config["files"]):
                 if os.path.exists(file_path):
                     file_name = os.path.basename(file_path)
                     self.tab_widget.addTab(NoteTab(file_path), file_name)
+                    self.add_button_to_tab(tabno)
 
             self.tab_widget.setCurrentIndex(config["last_active"])
         else:
@@ -136,8 +133,8 @@ class JottingDownWindow(QWidget):
                     self.tab_widget.addTab(NoteTab(file_path), file_name)
                     self.add_button_to_tab(tabno)
             # If no tabs are found after loading existing .txt files, add the default "notes" file
-            if self.tab_widget.count() == 0:
-                self.add_new_tab("notes")
+        if self.tab_widget.count() == 0:
+            self.add_new_tab("notes")
 
     def add_button_to_tab(self, tabno):
         self.button = RedButton(self.tab_widget, "radial")
@@ -156,6 +153,10 @@ class JottingDownWindow(QWidget):
         with open(self.config_file, "w") as file:
             json.dump(config, file)
 
+    def rename_remaining_buttons(self):
+        for tabno in range(self.tab_widget.count()):
+            self.button.setObjectName(str(tabno + 1))
+
     def delete_tab_text_file(self, file_name):
         file_path = os.path.join(self.notes_folder, file_name)
         if os.path.exists(file_path):
@@ -171,12 +172,14 @@ class JottingDownWindow(QWidget):
         ret = qm.question(
             self,
             "",
-            f"Are you sure you want to delete tab {file_name}?",
+            f"Are you sure you want to delete tab  {file_name}?",
             qm.Yes | qm.No,
         )
         if ret == qm.Yes:
             self.tab_widget.removeTab(tabid)
             self.delete_tab_text_file(file_name)
+            self.rename_remaining_buttons()
+            self.save_tabs()
 
     def add_new_tab(self, file_name=""):
         if not file_name:
@@ -191,6 +194,7 @@ class JottingDownWindow(QWidget):
         if not os.path.exists(file_path):
             self.tab_widget.addTab(NoteTab(file_path), file_name)
             self.add_button_to_tab(len(self.tab_widget) - 1)
+            self.save_tabs()
 
         else:
             QMessageBox.warning(
