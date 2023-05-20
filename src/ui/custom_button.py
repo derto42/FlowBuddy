@@ -12,12 +12,12 @@ from PyQt5.QtGui import (
 
 from FileSystem import icon as icon_path
 from .utils import get_font
-from .settings import CORNER_RADIUS
+from .settings import CORNER_RADIUS, UI_SCALE
 
 
 BUTTON_SIZE = {
-    "radial": QSize(28, 28),
-    "long": QSize(104, 28),
+    "radial": QSize(int(28 * UI_SCALE), int(28 * UI_SCALE)),
+    "long": QSize(int(104 * UI_SCALE), int(28 * UI_SCALE)),
 }
 
 
@@ -117,9 +117,9 @@ class TextButton(QPushButton):
                  text: str = "Text Button"):
         super().__init__(parent, text=text)
         self.setCursor(Qt.PointingHandCursor)
-        self._x_padding = 35
-        self._y_padding = 7
-        self.setFont(get_font(size=16))
+        self._x_padding = int(35 * UI_SCALE)
+        self._y_padding = int(7 * UI_SCALE)
+        self.setFont(get_font(size=int(16 * UI_SCALE)))
         
     def sizeHint(self):
         font_metrics = QFontMetrics(self.font())
@@ -134,6 +134,6 @@ class TextButton(QPushButton):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor("#DADADA" if self.underMouse() else "#ECECEC"))
-        painter.drawRoundedRect(self.rect(), CORNER_RADIUS, CORNER_RADIUS)
+        painter.drawRoundedRect(self.rect(), CORNER_RADIUS * UI_SCALE, CORNER_RADIUS * UI_SCALE)
         painter.setPen(self.palette().buttonText().color())
         painter.drawText(self.rect(), Qt.AlignCenter, self.text())
