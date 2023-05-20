@@ -19,7 +19,7 @@ from PyQt5.QtGui import (
 
 
 from .custom_button import RedButton, GrnButton, Button
-from .settings import CORNER_RADIUS
+from .settings import CORNER_RADIUS, UI_SCALE
 
 
 class Buddy(QWidget):
@@ -28,17 +28,17 @@ class Buddy(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         
         self.setLayout(layout:=QVBoxLayout(self))
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setContentsMargins(int(10 * UI_SCALE), int(10 * UI_SCALE), int(10 * UI_SCALE), int(10 * UI_SCALE))
         layout.setSpacing(0)
         
         layout.addLayout(eye_layout:=QHBoxLayout())
         eye_layout.addWidget(l_button:=RedButton(self))
-        eye_layout.addSpacing(12)
+        eye_layout.addSpacing(int(12 * UI_SCALE))
         eye_layout.addWidget(r_button:=GrnButton(self))
 
-        layout.addSpacing(10)
+        layout.addSpacing(int(10 * UI_SCALE))
 
-        layout.addWidget(smile:=Button(self, custom_size=QSize(47, 18)), alignment=Qt.AlignCenter)
+        layout.addWidget(smile:=Button(self, custom_size=QSize(int(47 * UI_SCALE), int(18 * UI_SCALE))), alignment=Qt.AlignCenter)
         smile.set_icons("edit_button")
         
         smile.clicked.connect(self.spawn)
@@ -56,7 +56,7 @@ class Buddy(QWidget):
     def spawn(self) -> None:
         pos = self.pos()
         self._spawner.setStartValue(pos)
-        pos.setY(pos.y()-100)
+        pos.setY(pos.y()-int(100 * UI_SCALE))
         self._spawner.setEndValue(pos)
         self._spawner.start()
 

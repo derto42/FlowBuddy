@@ -31,7 +31,7 @@ class MainLayer(QWidget):
         shadow.setBlurRadius(27)
         self.setGraphicsEffect(shadow)
         
-        self.setContentsMargins(20, 12, 20, 20)
+        self.setContentsMargins(int(20 * UI_SCALE), int(12 * UI_SCALE), int(20 * UI_SCALE), int(20 * UI_SCALE))
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         
@@ -76,15 +76,15 @@ class InnerPart(QWidget):
             self.close_button.setToolTip("Close Window")
             
             layout.addLayout(title_layout:=QHBoxLayout())
-            title_layout.setContentsMargins(0, 10, 0, 10)
+            title_layout.setContentsMargins(0, int(10 * UI_SCALE), 0, int(10 * UI_SCALE))
             title_layout.setSpacing(0)
             # title_layout.addWidget(self._title_label)
             title_layout.addStretch()
-            title_layout.addSpacing(15)
+            title_layout.addSpacing(int(15 * UI_SCALE))
             title_layout.addWidget(self.edit_button)
-            title_layout.addSpacing(9)
+            title_layout.addSpacing(int(9 * UI_SCALE))
             title_layout.addWidget(self.close_button)
-            title_layout.addSpacing(20)
+            title_layout.addSpacing(int(20 * UI_SCALE))
             
             
         layout.addWidget(self._main_layer)
@@ -100,7 +100,7 @@ class InnerPart(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         
         path = QPainterPath()
-        path.addRoundedRect(QRectF(self.rect()), CORNER_RADIUS, CORNER_RADIUS)
+        path.addRoundedRect(QRectF(self.rect()), CORNER_RADIUS * UI_SCALE, CORNER_RADIUS * UI_SCALE)
         painter.fillPath(path, QColor("#F6F6F6"))
 
         return super().paintEvent(a0)

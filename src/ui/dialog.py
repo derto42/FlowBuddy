@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QKeyEvent, QShowEvent
 
 
-from .settings import CORNER_RADIUS
+from .settings import CORNER_RADIUS, UI_SCALE
 from .custom_button import TextButton, RedButton, GrnButton
 from .utils import get_font
 from .base_window import BaseWindow
@@ -21,8 +21,8 @@ from .base_window import BaseWindow
 ENTRY_BOX_STYLE = f"""
     background-color: #DADADA;
     border-radius: {CORNER_RADIUS}px;
-    padding-left: {27 - 4}px;
-    padding-right: {27 - 4}px;
+    padding-left: {int((27 - 4) * UI_SCALE)}px;
+    padding-right: {int((27 - 4) * UI_SCALE)}px;
     """
 ACCEPTED = QDialog.Accepted
 REJECTED = QDialog.Rejected
@@ -32,8 +32,8 @@ class Entry(QLineEdit):
     def __init__(self, parent: QWidget = None, place_holder: str = "Text") -> None:
         super().__init__(parent)
         self.setPlaceholderText(place_holder)
-        self.setFixedSize(200, 40)
-        self.setFont(get_font(size=16))
+        self.setFixedSize(int(200 * UI_SCALE), int(40 * UI_SCALE))
+        self.setFont(get_font(size=int(16 * UI_SCALE)))
         self.setStyleSheet(ENTRY_BOX_STYLE)
 
 
@@ -48,7 +48,7 @@ class BaseDialog(QDialog, BaseWindow):
         
         self._title = QLabel(title, self)
         self._layout.addWidget(self._title)
-        self._title.setFont(get_font(size=24, weight="semibold"))
+        self._title.setFont(get_font(size=int(24 * UI_SCALE), weight="semibold"))
         self._title.setAlignment(Qt.AlignCenter)
         
         self._main_layout = QWidget(self)
@@ -59,7 +59,7 @@ class BaseDialog(QDialog, BaseWindow):
         
         button_layout.addStretch()
         button_layout.addWidget(reject_button:=RedButton(self, "long"))
-        button_layout.addSpacing(7)
+        button_layout.addSpacing(int(7 * UI_SCALE))
         button_layout.addWidget(accept_button:=GrnButton(self, "long"))
         button_layout.addStretch()
         accept_button.clicked.connect(lambda : self.accept())
@@ -181,4 +181,4 @@ class ConfirmationDialog(BaseDialog):
     def __init__(self, title: str = "Title", parent: QWidget | None = None) -> None:
         super().__init__(title, parent)
         
-        self._title.setFont(get_font(size=16))
+        self._title.setFont(get_font(size=int(16 * UI_SCALE)))

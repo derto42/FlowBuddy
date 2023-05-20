@@ -20,6 +20,7 @@ from .base_window import BaseWindow
 from .utils import get_font
 from .custom_button import RedButton, GrnButton, YelButton, TextButton
 from .dialog import TaskDialog, GroupDialog, ConfirmationDialog, ACCEPTED, REJECTED
+from .settings import UI_SCALE
 
 NAME_TO_INT = {
     "group_layout": 0,
@@ -46,7 +47,7 @@ class GroupNode(BaseNode):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         self._name_label = QLabel(group_class.group_name, self)
-        self._name_label.setFont(get_font(size=24, weight="semibold"))
+        self._name_label.setFont(get_font(size=int(24 * UI_SCALE), weight="semibold"))
 
         new_task_button = GrnButton(self, "radial")
         edit_group_button = YelButton(self, "radial")
@@ -61,11 +62,11 @@ class GroupNode(BaseNode):
         self._parent.add_to_editors(new_task_button, edit_group_button, delete_group_button)
 
         self._layout.addWidget(self._name_label)
-        self._layout.addSpacing(13)
+        self._layout.addSpacing(int(13 * UI_SCALE))
         self._layout.addWidget(new_task_button)
-        self._layout.addSpacing(9)
+        self._layout.addSpacing(int(9 * UI_SCALE))
         self._layout.addWidget(edit_group_button)
-        self._layout.addSpacing(9)
+        self._layout.addSpacing(int(9 * UI_SCALE))
         self._layout.addWidget(delete_group_button)
         self._layout.addStretch()
 
@@ -115,20 +116,20 @@ class TaskNode(BaseNode):
 
         self._text_button = None
 
-        self._layout.setContentsMargins(0, 16, 0, 0)
+        self._layout.setContentsMargins(0, int(16 * UI_SCALE), 0, 0)
 
         self._name_label = QLabel(task.task_name, self)
-        self._name_label.setFont(get_font(size=16))
+        self._name_label.setFont(get_font(size=int(16 * UI_SCALE)))
         self._layout.addWidget(self._name_label)
-        self._layout.addSpacing(13)
+        self._layout.addSpacing(int(13 * UI_SCALE))
 
         self._text_button = QWidget()
         self._text_button.setLayout(text_button_layout := QHBoxLayout())
-        text_button_layout.setContentsMargins(0, 0, 13, 0)
+        text_button_layout.setContentsMargins(0, 0, int(13 * UI_SCALE), 0)
         text_button_layout.setSpacing(0)
 
         text_button = TextButton(self, task.button_text)
-        text_button.setFont(get_font(size=16))
+        text_button.setFont(get_font(size=int(16 * UI_SCALE)))
         text_button.clicked.connect(self.on_text_button)
         self._text_button.setText = text_button.setText
         text_button_layout.addWidget(text_button)
@@ -148,7 +149,7 @@ class TaskNode(BaseNode):
         self._parent.add_to_editors(edit_task_button, delete_task_button)
 
         self._layout.addWidget(edit_task_button)
-        self._layout.addSpacing(9)
+        self._layout.addSpacing(int(9 * UI_SCALE))
         self._layout.addWidget(delete_task_button)
         self._layout.addStretch()
 
@@ -244,14 +245,14 @@ class MainWindow(BaseWindow):
         layout.addSpacing(0)
 
         layout.addWidget(add_group_widget := QWidget(self))
-        add_group_widget.setContentsMargins(0, 29, 0, 0)
+        add_group_widget.setContentsMargins(0, int(29 * UI_SCALE), 0, 0)
 
         add_group_widget.setLayout(add_group_layout := QHBoxLayout())
         add_group_layout.setContentsMargins(0, 0, 0, 0)
         add_group_layout.setSpacing(0)
 
         add_group_label = QLabel("Add New Group", self)
-        add_group_label.setFont(get_font(size=24, weight="semibold"))
+        add_group_label.setFont(get_font(size=int(24 * UI_SCALE), weight="semibold"))
         add_group_label.setStyleSheet("color: #ABABAB")
 
         add_group_button = GrnButton(self, "radial")
@@ -260,7 +261,7 @@ class MainWindow(BaseWindow):
 
 
         add_group_layout.addWidget(add_group_label)
-        add_group_layout.addSpacing(13)
+        add_group_layout.addSpacing(int(13 * UI_SCALE))
         add_group_layout.addWidget(add_group_button)
         add_group_layout.addStretch()
 
@@ -348,7 +349,7 @@ class MainWindow(BaseWindow):
             if index == len(self._nodes) - 1:
                 _group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 0)
             else:
-                _group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, 29)
+                _group_node[NAME_TO_INT["group_layout"]].setContentsMargins(0, 0, 0, int(29 * UI_SCALE))
 
     def add_to_editors(self, *widgets: QWidget) -> None:
         self._editors += [*widgets]
