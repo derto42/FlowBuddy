@@ -1,7 +1,6 @@
 from __future__ import annotations
 import os
 import sys
-import webbrowser
 
 
 SAVE_FILE_NAME = "save.json"
@@ -51,11 +50,3 @@ def open_file(file_path: str | None) -> None:
         elif PLATFORM in ('linux', 'darwin'):
             os.system(f'xdg-open {file_path}')
 
-if not exists(SAVE_FILE):
-    create_save_file()
-
-
-# for testing purposes
-if __name__ == "__main__":
-    print(os.path.exists(abspath("icons/icon.png")))
-    print(os.path.exists(icon("toggle.png")))

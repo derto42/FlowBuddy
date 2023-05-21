@@ -32,7 +32,7 @@ class Button(QPushButton):
         self.animate = False
         
         self.setCursor(Qt.PointingHandCursor)
-        self.setFixedSize(self._size.width(), self._size.height())
+        self.setFixedSize(self._size)
         self.setIconSize(self._size)
         
         self.animation = QVariantAnimation()

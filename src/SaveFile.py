@@ -3,10 +3,18 @@ import json
 
 import FileSystem as FS
 
-FILE_PATH = FS.SAVE_FILE
-GROUP_ID_DELIMITER = "#"
 
-_save_dict = False
+FILE_PATH = FS.SAVE_FILE
+
+
+# If there are any exceptions related to JSON decoding, file not found, or missing keys,
+# a save file is created using the FS module.
+try:
+    with open(FILE_PATH) as f:
+        data = json.load(f)
+    _, _, _ = data["settings"], data["groups"], data["tasks"]
+except (json.JSONDecodeError, FileNotFoundError, KeyError):
+    FS.create_save_file()
 
 
 class NotFound(Exception):
@@ -200,7 +208,6 @@ class GroupClass:
             self.group_tasks = []
         else:
             self.group_tasks = group_tasks
-        pass
 
         self.save_group()
 
@@ -489,3 +496,15 @@ def get_setting(name: str) -> dict:
     if name in json_data:
         return json_data[name]
     raise NotFound(name)
+
+def remove_setting(name: str) -> None:
+    with open(FILE_PATH, "r") as save_file:
+        json_data = json.load(save_file)
+        
+    if name in json_data["settings"]:
+        del json_data["settings"][name]
+        with open(FILE_PATH, "w") as save_file:
+            json.dump(json_data, save_file, indent=4)
+
+    raise NotFound(name)
+        

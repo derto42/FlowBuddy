@@ -39,7 +39,7 @@ class MainLayer(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         
         path = QPainterPath()
-        path.addRoundedRect(QRectF(self.rect()), CORNER_RADIUS, CORNER_RADIUS)
+        path.addRoundedRect(QRectF(self.rect()), CORNER_RADIUS * UI_SCALE, CORNER_RADIUS * UI_SCALE)
         painter.fillPath(path, QColor("#FFFFFF"))
         
         return super().paintEvent(a0)
