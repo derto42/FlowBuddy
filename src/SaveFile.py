@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 
-import FileSystem as FS
+import src.FileSystem as FS
 
 
 FILE_PATH = FS.SAVE_FILE
@@ -458,6 +458,38 @@ def load_groups() -> list:
     return [group for group in json_data["groups"]]
 
 
+def reorder_groups(new_order: list) -> None:
+    """
+    Will reorder the groups in the save file to the new order list.
+    :param new_order: List of group ids for the new order
+    """
+    with open(FILE_PATH, "r") as save_file:
+        json_data = json.load(save_file)
+
+    original_groups_dict = json_data['groups']
+
+    json_data['groups'] = {k: original_groups_dict[k] for k in new_order}
+
+    with open(FILE_PATH, "w") as save_file:
+        json.dump(json_data, save_file, indent=4)
+
+
+def reorder_items(new_order: list) -> None:
+    """
+    Will reorder the items in the save file to the new order list.
+    :param new_order: List of item ids for the new order
+    """
+    with open(FILE_PATH, "r") as save_file:
+        json_data = json.load(save_file)
+
+    original_items_dict = json_data['items']
+
+    json_data['items'] = {k: original_items_dict[k] for k in new_order}
+
+    with open(FILE_PATH, "w") as save_file:
+        json.dump(json_data, save_file, indent=4)
+
+
 def load_tasks() -> list:
     """
     loads a list of task ids currently in the SaveFile.
@@ -496,6 +528,7 @@ def get_setting(name: str) -> dict:
     if name in json_data:
         return json_data[name]
     raise NotFound(name)
+
 
 def remove_setting(name: str) -> None:
     with open(FILE_PATH, "r") as save_file:
