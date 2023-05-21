@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QLineEdit,
     QFileDialog,
+    QMessageBox
 )
 from PyQt5.QtGui import QKeyEvent, QShowEvent
 
@@ -168,3 +169,5 @@ class ConfirmationDialog(BaseDialog):
         super().__init__(title, parent)
         
         self._title.setFont(get_font(size=int(16 * UI_SCALE)))
+
+
