@@ -118,10 +118,20 @@ class TaskNode(BaseNode):
 
         self._layout.setContentsMargins(0, int(16 * UI_SCALE), 0, 0)
 
-        self._name_label = QLabel(task.task_name, self)
-        self._name_label.setFont(get_font(size=int(16 * UI_SCALE)))
+        self._name_label = QWidget()
+        self._name_label.setLayout(layout := QHBoxLayout())
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        name_label = QLabel(task.task_name, self)
+        name_label.setFont(get_font(size=int(16 * UI_SCALE)))
+        layout.addWidget(name_label)
+        layout.addSpacing(int(13 * UI_SCALE))
+        # making setText and text of name_label accessible from self._name_label
+        self._name_label.setText = name_label.setText
+        self._name_label.text = name_label.text
         self._layout.addWidget(self._name_label)
-        self._layout.addSpacing(int(13 * UI_SCALE))
+        if not task.task_name:
+            self._name_label.hide()
 
         self._text_button = QWidget()
         self._text_button.setLayout(text_button_layout := QHBoxLayout())
@@ -195,12 +205,19 @@ class TaskNode(BaseNode):
         self._task.edit_task(task_name=task_name, button_text=button_text, url=url, file_path=file_path)
 
         self._name_label.setText(task_name)
+        
         if button_text is not None:
             if self._text_button.isHidden():
                 self._text_button.show()
             self._text_button.setText(button_text)
+            
         elif not self._text_button.isHidden():
             self._text_button.hide()
+            
+        if task_name:
+            if self._name_label.isHidden(): self._name_label.show()
+        elif not self._name_label.isHidden(): self._name_label.hide()
+            
         QApplication.instance().processEvents()
         self.update()
         self.adjustSize()
