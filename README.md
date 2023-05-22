@@ -62,10 +62,10 @@ To get started with FlowBuddy, follow these steps:
 **Green button** — Add Group/Task  
 **Orange button** — Edit Mode  
 
-## Temporary UI Design
+## Demo
 
-![Frame 80](https://user-images.githubusercontent.com/125327962/236720054-46ae7ad9-afb8-4664-9f67-bdbd98d3d750.png)
 
-## Demo (OLD UI, Same Features, Bug Fixes)
 
-https://user-images.githubusercontent.com/125327962/235811057-804cc63e-d1c5-421f-9d5c-dccff8dfc9eb.mp4`
+https://github.com/derto42/FlowBuddy/assets/125327962/a6f2ebf4-20b3-4566-9d69-141a67c17d6b
+
+
