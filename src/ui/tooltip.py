@@ -37,6 +37,7 @@ class ToolTip(QWidget):
         self.text = text
         
         self.setFont(get_font(size=8))
+        self.setStyleSheet("color: #282828")
         
         self.setContentsMargins(20, 20, 20, 20)
 

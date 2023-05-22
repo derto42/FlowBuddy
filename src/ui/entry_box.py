@@ -17,4 +17,5 @@ class Entry(QLineEdit):
         self.setPlaceholderText(place_holder)
         self.setFixedSize(int(200 * UI_SCALE), int(40 * UI_SCALE))
         self.setFont(get_font(size=int(16 * UI_SCALE)))
+        self.setStyleSheet("color: #282828")
         self.setStyleSheet(ENTRY_BOX_STYLE)
