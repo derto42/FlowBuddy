@@ -1,6 +1,8 @@
 from __future__ import annotations
 import webbrowser
 from typing import Optional
+import requests
+import requests.exceptions
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QMouseEvent
@@ -199,8 +201,41 @@ class TaskNode(BaseNode):
             self.delete()
 
     def on_text_button(self) -> None:
-        [webbrowser.open(url) for url in self._task.url]
+        for url in self._task.url:
+            if (_url := self.verify_url_root(url)) is not None:
+                webbrowser.open(_url)
+            else:
+                dialog = ConfirmationDialog(f'{url} is invalid\n Ok to continue, Cancel to end')
+                if dialog.exec() == ACCEPTED:
+                    continue
+                else:
+                    break
+
         open_file(self._task.file_path)
+
+    @staticmethod
+    def verify_url_root(url: str) -> str | None:
+        """
+        Uses requests to verify the url being opened.
+        http will be added if required to ensure default browser is opened
+        http vs https will also be checked
+        :param url: the url to check
+        :return: the fixed url or None for error handling
+        """
+        if 'http' not in url[:4]:
+            url = 'http://' + url
+
+        try:
+            _req = requests.get(url)
+        except requests.exceptions.RequestException:
+            return None
+
+        if not _req.history:
+            return url
+        if _req.history[0].is_redirect:
+            return _req.url
+
+        return None
 
     def _edit_data(self, dialog: TaskDialog) -> None:
         task_name, button_text, url, file_path = dialog.result()
