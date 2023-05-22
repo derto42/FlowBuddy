@@ -120,6 +120,7 @@ class TextButton(QPushButton):
         self._x_padding = int(35 * UI_SCALE)
         self._y_padding = int(7 * UI_SCALE)
         self.setFont(get_font(size=int(16 * UI_SCALE)))
+        self.setStyleSheet("color: #282828")
         
     def sizeHint(self):
         font_metrics = QFontMetrics(self.font())
