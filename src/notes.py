@@ -22,6 +22,7 @@ from PyQt5.QtGui import (
     QColor,
     QKeySequence,
 )
+from ui.dialog import ConfirmationDialog
 
 
 from ui.utils import get_font
@@ -169,18 +170,14 @@ class JottingDownWindow(QWidget):
         sending_button = self.sender()
         tabid = int(sending_button.objectName()) - 1
         file_name = self.tab_widget.tabText(tabid)
-        qm = QMessageBox
-        ret = qm.question(
-            self,
-            "",
-            f"Are you sure you want to delete tab  {file_name}?",
-            qm.Yes | qm.No,
-        )
-        if ret == qm.Yes:
-            self.tab_widget.removeTab(tabid)
-            self.delete_tab_text_file(file_name)
-            self.rename_remaining_buttons()
-            self.save_tabs()
+        dialog = ConfirmationDialog(f"Delete tab {file_name}?")
+        res=dialog.exec()
+        if res:
+            return
+        self.tab_widget.removeTab(tabid)
+        self.delete_tab_text_file(file_name)
+        self.rename_remaining_buttons()
+        self.save_tabs()
 
     def add_new_tab(self, file_name=""):
         if not file_name:
