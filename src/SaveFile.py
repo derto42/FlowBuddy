@@ -50,7 +50,7 @@ class NotFoundInFile(Exception):
 
 class InvalidURL(Exception):
     def __init__(self, _url: str):
-        super().__init__(f'{_url} is invalid')
+        super().__init__(f"{_url} is invalid")
 
 
 class TaskClass:
@@ -76,10 +76,10 @@ class TaskClass:
         :param directory_path: directory path string
         """
         if task_id is None:
-            self.task_id = f'T_{id(self)}'
+            self.task_id = f"T_{id(self)}"
             count = 1
             while is_id_used(self.task_id):
-                self.task_id = f'T_{id(self)}-{str(count)}'
+                self.task_id = f"T_{id(self)}-{str(count)}"
                 count += 1
         else:
             self.task_id = task_id
@@ -136,8 +136,8 @@ class TaskClass:
         :param url_check: the url to check
         :return: the fixed url or None for error handling
         """
-        if 'http' not in url_check[:4]:
-            url_check = 'http://' + url_check
+        if "http" not in url_check[:4]:
+            url_check = "http://" + url_check
 
         try:
             _req = requests.get(url_check)
@@ -238,10 +238,10 @@ class GroupClass:
         :param group_tasks: list of associated task ids
         """
         if group_id is None:
-            self.group_id = f'G_{id(self)}'
+            self.group_id = f"G_{id(self)}"
             count = 1
             while is_id_used(self.group_id):
-                self.group_id = f'G_{id(self)}-{str(count)}'
+                self.group_id = f"G_{id(self)}-{str(count)}"
                 count += 1
         else:
             self.group_id = group_id
@@ -487,8 +487,9 @@ def is_id_used(_id: str | int) -> bool:
     """
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
-    if _id in json_data:
+    if _id in json_data["groups"] or _id in json_data["tasks"]:
         return True
+    return False
 
 
 def load_groups() -> list:
@@ -510,9 +511,9 @@ def reorder_groups(new_order: list) -> None:
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
 
-    original_groups_dict = json_data['groups']
+    original_groups_dict = json_data["groups"]
 
-    json_data['groups'] = {k: original_groups_dict[k] for k in new_order}
+    json_data["groups"] = {k: original_groups_dict[k] for k in new_order}
 
     with open(FILE_PATH, "w") as save_file:
         json.dump(json_data, save_file, indent=4)
@@ -526,9 +527,9 @@ def reorder_items(new_order: list) -> None:
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
 
-    original_items_dict = json_data['items']
+    original_items_dict = json_data["items"]
 
-    json_data['items'] = {k: original_items_dict[k] for k in new_order}
+    json_data["items"] = {k: original_items_dict[k] for k in new_order}
 
     with open(FILE_PATH, "w") as save_file:
         json.dump(json_data, save_file, indent=4)
@@ -577,11 +578,10 @@ def get_setting(name: str) -> dict:
 def remove_setting(name: str) -> None:
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
-        
+
     if name in json_data["settings"]:
         del json_data["settings"][name]
         with open(FILE_PATH, "w") as save_file:
             json.dump(json_data, save_file, indent=4)
 
     raise NotFound(name)
-        

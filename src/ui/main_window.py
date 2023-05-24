@@ -177,7 +177,7 @@ class TaskNode(BaseNode):
         dialog.setTitle("Edit Task")
         if dialog.exec() != REJECTED:
             self._edit_data(dialog)
-            
+
             # i don't know why pyqt5 needs 10 lines of codes just for update the ui.
             self.update()
             self.adjustSize()
@@ -208,19 +208,21 @@ class TaskNode(BaseNode):
         self._task.edit_task(task_name=task_name, button_text=button_text, url=url, file_path=file_path)
 
         self._name_label.setText(task_name)
-        
+
         if button_text is not None:
             if self._text_button.isHidden():
                 self._text_button.show()
             self._text_button.setText(button_text)
-            
+
         elif not self._text_button.isHidden():
             self._text_button.hide()
-            
+
         if task_name:
-            if self._name_label.isHidden(): self._name_label.show()
-        elif not self._name_label.isHidden(): self._name_label.hide()
-            
+            if self._name_label.isHidden():
+                self._name_label.show()
+        elif not self._name_label.isHidden():
+            self._name_label.hide()
+
         QApplication.instance().processEvents()
         self.update()
         self.adjustSize()
@@ -278,7 +280,6 @@ class MainWindow(BaseWindow):
         add_group_button = GrnButton(self, "radial")
         add_group_button.clicked.connect(self.add_group)
         add_group_button.setToolTip("Add Group")
-
 
         add_group_layout.addWidget(add_group_label)
         add_group_layout.addSpacing(int(13 * UI_SCALE))
