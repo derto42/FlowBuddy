@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 import requests
 
-import src.FileSystem as FS
+import FileSystem as FS
 
 
 FILE_PATH = FS.SAVE_FILE

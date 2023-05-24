@@ -13,11 +13,12 @@
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   </a>
 </p>
-
-
+   <br>
+   <br>
+</div>
 
    <p>
-      <b>FlowBuddy is a user-friendly shortcut management application. It provides an intuitive overlay to create, edit and delete shortcuts to enhance your workflows and productivity.</b>
+      <b>FlowBuddy is a user-friendly productivity application. It provides the user with a shortcut management tool as well as other plugins that are still in development.</b>
    </p>
     <p>
       <b>Table of Contents</b>
@@ -25,12 +26,13 @@
 
    * [Features](#features)
    * [Getting Started](#getting-started)
+   * [Potential Future Features](#potential-future-features)
+   * [Future Vision](#future-vision)
    * [UI Explanation](#ui-explanation)
-   * [Temporary UI Design](#temporary-ui-design)
    * [Demo](#demo)
 
    <br>
-</div>
+
 
 
 ![Animation](https://user-images.githubusercontent.com/125327962/236888361-c172fb52-747e-4f4c-9da0-0ecd4c9d4a12.gif)
@@ -56,16 +58,49 @@ To get started with FlowBuddy, follow these steps:
 3. Open `main.py`
 4. Press the <kbd>Ctrl</kbd>+<kbd>`</kbd> keys to access the overlay
 
+## Future Vision
+
+FlowBuddy will become an All-In-One solution that eliminates the need for juggling between different websites/apps/files. Anything you need will be at your fingertips ready to use.
+
+We are planning on adding template support. With many plugins to chose from, there will be endless options for anyone to setup their working environment exactly how they want.
+
+It will be template based so that people can share their configurations with others. 
+This will help people discover new tools easier.
+
+
+Although there are hundreds of apps that can do specific features of FlowBuddy better, our approach is unique.
+
+We believe that simpicity is at the core of productivity. 
+
+## Potential Future Features
+
+1. **No-Manual Notes**
+   - select text, right click and send straight to FlowBuddy's Note Tool.
+2. **Shortcut Templates**
+   - Ability to share current configuration for others to use, will help others find good tools easier.
+3. **Shortcut Templates**
+   - Create a textbox in FlowBuddy that will quickly search anything we type.
+4. **Work Clock**
+   - Set up work cycles (Example: 2 hours of work, 15 minutes of break) Keep track of time working on a specific task.
+5. **Easy Reminder Tool**
+6. **Folder Mirror**
+   - Window in FlowBuddy that will always display a specific folder. For example Downloads
+   - Set up a project folder Mirror and add smart project restructuring to make sure every project is organized the exact same way
+7. **Clipboard History**
+
+
+
+
 ## UI Explanation
 
 **Red buttons** — Exit/Delete  
 **Green button** — Add Group/Task  
 **Orange button** — Edit Mode  
 
-## Temporary UI Design
+## Demo
 
-![Frame 80](https://user-images.githubusercontent.com/125327962/236720054-46ae7ad9-afb8-4664-9f67-bdbd98d3d750.png)
 
-## Demo (OLD UI, Same Features, Bug Fixes)
 
-https://user-images.githubusercontent.com/125327962/235811057-804cc63e-d1c5-421f-9d5c-dccff8dfc9eb.mp4`
+https://github.com/derto42/FlowBuddy/assets/125327962/a6f2ebf4-20b3-4566-9d69-141a67c17d6b
+
+

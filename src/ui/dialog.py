@@ -36,6 +36,7 @@ class BaseDialog(QDialog, BaseWindow):
         self._title = QLabel(title, self)
         self._layout.addWidget(self._title)
         self._title.setFont(get_font(size=int(24 * UI_SCALE), weight="semibold"))
+        self._title.setStyleSheet("color: #282828")
         self._title.setAlignment(Qt.AlignCenter)
         
         self._main_layout = QWidget(self)
@@ -169,5 +170,4 @@ class ConfirmationDialog(BaseDialog):
         super().__init__(title, parent)
         
         self._title.setFont(get_font(size=int(16 * UI_SCALE)))
-
-
+        self._title.setStyleSheet("color: #282828")

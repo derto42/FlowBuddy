@@ -50,6 +50,7 @@ class GroupNode(BaseNode):
 
         self._name_label = QLabel(group_class.group_name, self)
         self._name_label.setFont(get_font(size=int(24 * UI_SCALE), weight="semibold"))
+        self._name_label.setStyleSheet("color: #282828")
 
         new_task_button = GrnButton(self, "radial")
         edit_group_button = YelButton(self, "radial")
@@ -126,6 +127,7 @@ class TaskNode(BaseNode):
         layout.setSpacing(0)
         name_label = QLabel(task.task_name, self)
         name_label.setFont(get_font(size=int(16 * UI_SCALE)))
+        name_label.setStyleSheet("color: #282828")
         layout.addWidget(name_label)
         layout.addSpacing(int(13 * UI_SCALE))
         # making setText and text of name_label accessible from self._name_label
