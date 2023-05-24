@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import requests
 
 import src.FileSystem as FS
 
@@ -47,6 +48,11 @@ class NotFoundInFile(Exception):
         super().__init__(f"{_id} not found in save file")
 
 
+class InvalidURL(Exception):
+    def __init__(self, _url: str):
+        super().__init__(f'{_url} is invalid')
+
+
 class TaskClass:
     def __init__(
         self,
@@ -80,11 +86,7 @@ class TaskClass:
 
         self.task_name = task_name
         self.button_text = button_text
-        if url is None:
-            self.url = []
-        else:
-            self.url = url.replace(",", " ")
-            self.url = self.url.split()
+        self.url = url
         self.file_path = file_path
         self.directory_path = directory_path
 
@@ -98,10 +100,56 @@ class TaskClass:
             "TaskClass("
             f"task_id = {self.task_id} "
             f"task_name = {self.task_name} "
-            f"url = {self.url}"
+            f"url = {self._url}"
             f"file_path = {self.button_text})"
             f"directory_path = {self.directory_path}"
         )
+
+    @property
+    def url(self):
+        return self._url
+
+    @url.setter
+    def url(self, new_url: str | None):
+        if new_url is None:
+            self._url = []
+        elif type(new_url) == list:
+            self._url = new_url
+        else:
+            new_url = new_url.replace(",", " ")
+            url_list = new_url.split()
+
+            for index, _url in enumerate(url_list):
+                if (fixed_url := self.verify_url_root(_url)) is not None:
+                    url_list[index] = fixed_url
+                else:
+                    url_list.pop(index)
+
+            self._url = url_list
+
+    @staticmethod
+    def verify_url_root(url_check: str) -> str | None:
+        """
+        Uses requests to verify the url being opened.
+        http will be added if required to ensure default browser is opened
+        http vs https will also be checked
+        :param url_check: the url to check
+        :return: the fixed url or None for error handling
+        """
+        if 'http' not in url_check[:4]:
+            url_check = 'http://' + url_check
+
+        try:
+            _req = requests.get(url_check)
+        except requests.exceptions.RequestException:
+            return None
+
+        if not _req.history:
+            return url_check
+        if _req.history[0].is_redirect:
+            return _req.url
+
+        return None
 
     def edit_task(
         self,
@@ -116,17 +164,13 @@ class TaskClass:
 
         :param task_name: Name of task
         :param button_text: text to show on button
-        :param url: string of url, if separated by comma they will be split into string for saving
+        :param url: string of url, if separated by comma they will be split into list for saving
         :param file_path: filepath string
         :param directory_path: directory path string
         """
         self.task_name = task_name
         self.button_text = button_text
-        if url is None:
-            self.url = []
-        else:
-            self.url = url.replace(",", " ")
-            self.url = self.url.split()
+        self.url = url
         self.file_path = file_path
         self.directory_path = directory_path
 
@@ -394,7 +438,7 @@ def get_task_by_id(task_id: str) -> TaskClass:
         task_name=task_data["task_name"],
         task_id=task_id,
         button_text=task_data["button_text"],
-        url=", ".join(task_data["url"]),
+        url=task_data["url"],
         file_path=task_data["file_path"],
         directory_path=task_data["directory_path"],
     )
