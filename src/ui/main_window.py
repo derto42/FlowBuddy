@@ -1,8 +1,7 @@
 from __future__ import annotations
 import webbrowser
 from typing import Optional
-import requests
-import requests.exceptions
+
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QMouseEvent
