@@ -24,6 +24,7 @@ from PyQt5.QtGui import (
 )
 from ui.dialog import ConfirmationDialog
 
+from ui.settings import UI_SCALE
 
 from ui.utils import get_font
 
@@ -35,6 +36,7 @@ class NoteTab(QTextEdit):
         self.load_text_from_file()
         self.setFont(get_font(size=16))
         self.textChanged.connect(self.save_text_to_file)
+        # self.save_text_to_file()
         self.setAcceptRichText(False)
         self.setStyleSheet(
             """
@@ -62,7 +64,11 @@ class CustomTabWidget(QTabWidget):
         self.addTabButton = QToolButton(self)
         self.addTabButton.setText("+")
         self.addTabButton.clicked.connect(parent.add_new_tab)
-        self.setCornerWidget(self.addTabButton, Qt.TopRightCorner)
+
+    def movePlusButton(self, no_of_tabs=0):
+        """Move the plus button to the correct location."""
+        w = self.count()
+        self.addTabButton.move(w * 100, 0)
 
 
 class JottingDownWindow(QWidget):
@@ -101,8 +107,7 @@ class JottingDownWindow(QWidget):
             }
         """
         )
-
-        self.setFixedSize(500, 500)
+        self.setFixedSize(900 * int(UI_SCALE), 900 * int(UI_SCALE))
         self.old_pos = None
 
     def paintEvent(self, event):
@@ -126,15 +131,18 @@ class JottingDownWindow(QWidget):
                     self.add_button_to_tab(tabno)
 
             self.tab_widget.setCurrentIndex(config["last_active"])
+            self.tab_widget.movePlusButton(3)
         else:
-            # If config file doesn't exist, load tabs by iterating over files in the notes folder
+            # If config file doesn't exist, load tabs by iterating
+            # over files in the notes folder
 
             for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
                     self.tab_widget.addTab(NoteTab(file_path), file_name)
                     self.add_button_to_tab(tabno)
-            # If no tabs are found after loading existing .txt files, add the default "notes" file
+            # If no tabs are found after loading existing .txt files, add the
+            #  default "notes" file
         if self.tab_widget.count() == 0:
             self.add_new_tab("notes")
 
@@ -171,12 +179,13 @@ class JottingDownWindow(QWidget):
         tabid = int(sending_button.objectName()) - 1
         file_name = self.tab_widget.tabText(tabid)
         dialog = ConfirmationDialog(f"Delete tab {file_name}?")
-        res=dialog.exec()
+        res = dialog.exec()
         if res:
             return
         self.tab_widget.removeTab(tabid)
         self.delete_tab_text_file(file_name)
         self.rename_remaining_buttons()
+        self.tab_widget.movePlusButton()
         self.save_tabs()
 
     def add_new_tab(self, file_name=""):
@@ -192,7 +201,8 @@ class JottingDownWindow(QWidget):
         if not os.path.exists(file_path):
             self.tab_widget.addTab(NoteTab(file_path), file_name)
             self.add_button_to_tab(len(self.tab_widget) - 1)
-            self.save_tabs()
+            # self.tab_widget.movePlusButton()
+            self.tab_widget.movePlusButton(self.tab_widget.count())
 
         else:
             QMessageBox.warning(
