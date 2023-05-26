@@ -36,7 +36,7 @@ class NoteTab(QTextEdit):
         self.load_text_from_file()
         self.setFont(get_font(size=16))
         self.textChanged.connect(self.save_text_to_file)
-        # self.save_text_to_file()
+        self.save_text_to_file()
         self.setAcceptRichText(False)
         self.setStyleSheet(
             """
@@ -201,8 +201,8 @@ class JottingDownWindow(QWidget):
         if not os.path.exists(file_path):
             self.tab_widget.addTab(NoteTab(file_path), file_name)
             self.add_button_to_tab(len(self.tab_widget) - 1)
-            # self.tab_widget.movePlusButton()
-            self.tab_widget.movePlusButton(self.tab_widget.count())
+            self.tab_widget.movePlusButton()
+            self.save_tabs()
 
         else:
             QMessageBox.warning(
