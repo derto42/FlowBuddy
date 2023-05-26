@@ -180,7 +180,7 @@ class JottingDownWindow(QWidget):
         file_name = self.tab_widget.tabText(tabid)
         dialog = ConfirmationDialog(f"Delete tab {file_name}?")
         res = dialog.exec()
-        if res:
+        if not res:
             return
         self.tab_widget.removeTab(tabid)
         self.delete_tab_text_file(file_name)
