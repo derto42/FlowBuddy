@@ -131,7 +131,6 @@ class JottingDownWindow(QWidget):
                     self.add_button_to_tab(tabno)
 
             self.tab_widget.setCurrentIndex(config["last_active"])
-            self.tab_widget.movePlusButton(3)
         else:
             # If config file doesn't exist, load tabs by iterating
             # over files in the notes folder
@@ -145,7 +144,7 @@ class JottingDownWindow(QWidget):
             #  default "notes" file
         if self.tab_widget.count() == 0:
             self.add_new_tab("notes")
-
+        self.tab_widget.movePlusButton()
     def add_button_to_tab(self, tabno):
         self.button = RedButton(self.tab_widget, "radial")
         self.tab_widget.tabBar().setTabButton(tabno, 2, self.button)
