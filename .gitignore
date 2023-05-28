@@ -159,3 +159,4 @@ cython_debug/
 
 # save file
 src/save.json
+notes/config.json
