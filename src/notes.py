@@ -145,11 +145,12 @@ class JottingDownWindow(QWidget):
         if self.tab_widget.count() == 0:
             self.add_new_tab("notes")
         self.tab_widget.movePlusButton()
+
     def add_button_to_tab(self, tabno):
         self.button = RedButton(self.tab_widget, "radial")
         self.tab_widget.tabBar().setTabButton(tabno, 2, self.button)
-        self.button.setObjectName(str(tabno + 1))
-        self.button.clicked.connect(self.delete_tab)
+        tab_text = self.tab_widget.tabBar().tabText(tabno)
+        self.button.clicked.connect(lambda: self.delete_tab(tab_text))
 
     def save_tabs(self):
         config = {
@@ -162,10 +163,6 @@ class JottingDownWindow(QWidget):
         with open(self.config_file, "w") as file:
             json.dump(config, file)
 
-    def rename_remaining_buttons(self):
-        for tabno in range(self.tab_widget.count()):
-            self.button.setObjectName(str(tabno + 1))
-
     def delete_tab_text_file(self, file_name):
         file_path = os.path.join(self.notes_folder, file_name)
         if os.path.exists(file_path):
@@ -173,9 +170,8 @@ class JottingDownWindow(QWidget):
         else:
             QMessageBox.warning(self, "File Exists", f"{file_path} does not exist.")
 
-    def delete_tab(self):
-        sending_button = self.sender()
-        tabid = int(sending_button.objectName()) - 1
+    def delete_tab(self, tab_text):
+        tabid = self.get_tab_number_from_text(tab_text)
         file_name = self.tab_widget.tabText(tabid)
         dialog = ConfirmationDialog(f"Delete tab {file_name}?")
         res = dialog.exec()
@@ -183,9 +179,14 @@ class JottingDownWindow(QWidget):
             return
         self.tab_widget.removeTab(tabid)
         self.delete_tab_text_file(file_name)
-        self.rename_remaining_buttons()
         self.tab_widget.movePlusButton()
         self.save_tabs()
+
+    def get_tab_number_from_text(self, tab_text):
+        for i in range(self.tab_widget.count()):
+            if self.tab_widget.tabText(i) == tab_text:
+                return i
+        return -1
 
     def add_new_tab(self, file_name=""):
         if not file_name:
