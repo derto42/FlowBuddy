@@ -1,6 +1,6 @@
 import os
 import json
-from ui.custom_button import RedButton
+from ui.custom_button import RedButton, GrnButton
 import keyboard
 from PyQt5.QtWidgets import (
     QApplication,
@@ -11,7 +11,6 @@ from PyQt5.QtWidgets import (
     QTabWidget,
     QSizePolicy,
     QInputDialog,
-    QToolButton,
     QMessageBox,
 )
 from PyQt5.QtCore import Qt, QPoint
@@ -61,8 +60,9 @@ class NoteTab(QTextEdit):
 class CustomTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.addTabButton = QToolButton(self)
-        self.addTabButton.setText("+")
+        # self.addTabButton = QToolButton(self)
+        self.addTabButton = GrnButton(self)
+        # self.addTabButton.setText("+")
         self.addTabButton.clicked.connect(parent.add_new_tab)
 
     def movePlusButton(self, no_of_tabs=0):
