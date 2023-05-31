@@ -8,3 +8,4 @@ requests==2.31.0
 black # formatter
 ruff  # linter
 pytest # for unittesting
+pytube>=15.0.0 # for youtube downloads
