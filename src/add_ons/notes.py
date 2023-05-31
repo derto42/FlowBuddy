@@ -1,9 +1,8 @@
 import os
 import json
-from ui.custom_button import RedButton, GrnButton
-import keyboard
+
+from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
-    QApplication,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -13,7 +12,6 @@ from PyQt5.QtWidgets import (
     QInputDialog,
     QMessageBox,
 )
-from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import (
     QTextCursor,
     QPainter,
@@ -21,10 +19,12 @@ from PyQt5.QtGui import (
     QColor,
     QKeySequence,
 )
+
+from add_on import AddOnBase
+
 from ui.dialog import ConfirmationDialog
-
+from ui.custom_button import RedButton, GrnButton
 from ui.settings import UI_SCALE
-
 from ui.utils import get_font
 
 
@@ -72,8 +72,12 @@ class CustomTabWidget(QTabWidget):
 
 
 class JottingDownWindow(QWidget):
+    window_toggle_signal = pyqtSignal()
+    
     def __init__(self):
         super().__init__()
+        
+        self.window_toggle_signal.connect(self.toggle_window)
 
         self.notes_folder = "notes"
         if not os.path.exists(self.notes_folder):
@@ -209,6 +213,16 @@ class JottingDownWindow(QWidget):
                 self, "File Exists", f"A file with the name {file_name} already exists."
             )
 
+    def toggle_window(self) -> None:
+        if self.isHidden():
+            window.show()
+            window.activateWindow()
+            if current_widget := self.tab_widget.currentWidget():
+                current_widget.setFocus()
+        else:
+            window.hide()
+
+
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.old_pos = event.globalPos()
@@ -228,21 +242,6 @@ class JottingDownWindow(QWidget):
         self.save_tabs()
 
 
-if __name__ == "__main__":
-    app = QApplication([])
-    window = JottingDownWindow()
-    window.show()
-    window.hide()
+window = JottingDownWindow()
 
-    def toggle_window():
-        if window.isHidden():
-            window.show()
-            window.activateWindow()  # Add this line to activate the window
-            current_widget = window.tab_widget.currentWidget()
-            if current_widget:
-                current_widget.setFocus()  # Set focus on the text box
-        else:
-            window.hide()
-
-    keyboard.add_hotkey("ctrl+`", toggle_window)
-    app.exec_()
+AddOnBase().set_shortcut("<ctrl>+`", window.window_toggle_signal.emit)

@@ -1,5 +1,5 @@
 import os
-from notes import JottingDownWindow, NoteTab
+from add_ons.notes import JottingDownWindow, NoteTab
 from PyQt5.QtCore import Qt
 from ui.dialog import ConfirmationDialog
 

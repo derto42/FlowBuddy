@@ -6,12 +6,14 @@ import sys
 SAVE_FILE_NAME = "save.json"
 ICONS_FOLDER_NAME = "icons"
 FONTS_FOLDER_NAME = "fonts"
+ADD_ONS_NAME = "add_ons"
 
 PROGRAM_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SAVE_FILE = os.path.join(PROGRAM_DIR, SAVE_FILE_NAME)
 ICONS_FOLDER = os.path.join(PROGRAM_DIR, ICONS_FOLDER_NAME)
 FONTS_FOLDER = os.path.join(PROGRAM_DIR, FONTS_FOLDER_NAME)
+ADD_ONS_FOLDER = os.path.join(PROGRAM_DIR, ADD_ONS_NAME)
 
 PLATFORM = sys.platform
 
@@ -42,6 +44,7 @@ def font(font_name: str) -> str | None:
     """Returns the absolute path of given font. Returns None if the font does not exist."""
     path = os.path.join(FONTS_FOLDER, font_name)
     return os.path.abspath(path).replace('\\', '/') if os.path.exists(path) else None
+
 
 def open_file(file_path: str | None) -> None:
     if file_path is not None:
