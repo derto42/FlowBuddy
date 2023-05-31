@@ -1,7 +1,7 @@
 import sys
 from typing import Callable
 
-from pynput import keyboard
+from utils import HotKeys
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
@@ -42,8 +42,7 @@ def main():
     def on_hotkey_press():
         window.window_toggle_signal.emit()
 
-    hotkey_listener = keyboard.GlobalHotKeys({'<ctrl>+`': on_hotkey_press})
-    hotkey_listener.start()
+    HotKeys.add_global_shortcut("<ctrl>+`", on_hotkey_press)
 
     sys.exit(app.exec_())
 
