@@ -4,16 +4,16 @@ import sys
 
 
 SAVE_FILE_NAME = "save.json"
-ICONS_FOLDER_NAME = "icons"
-FONTS_FOLDER_NAME = "fonts"
-ADD_ONS_NAME = "add_ons"
+ICONS_FOLDER_NAME = "ui/icons"
+FONTS_FOLDER_NAME = "ui/fonts"
+ADDONS_NAME = "addons"
 
 PROGRAM_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SAVE_FILE = os.path.join(PROGRAM_DIR, SAVE_FILE_NAME)
 ICONS_FOLDER = os.path.join(PROGRAM_DIR, ICONS_FOLDER_NAME)
 FONTS_FOLDER = os.path.join(PROGRAM_DIR, FONTS_FOLDER_NAME)
-ADD_ONS_FOLDER = os.path.join(PROGRAM_DIR, ADD_ONS_NAME)
+ADDONS_FOLDER = os.path.join(PROGRAM_DIR, ADDONS_NAME)
 
 PLATFORM = sys.platform
 

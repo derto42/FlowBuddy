@@ -20,7 +20,7 @@ from PyQt5.QtGui import (
     QKeySequence,
 )
 
-from add_on import AddOnBase
+from addon import AddOnBase
 
 from ui.dialog import ConfirmationDialog
 from ui.custom_button import RedButton, GrnButton
@@ -79,7 +79,7 @@ class JottingDownWindow(QWidget):
         
         self.window_toggle_signal.connect(self.toggle_window)
 
-        self.notes_folder = "notes"
+        self.notes_folder = "addons/notes/data"
         if not os.path.exists(self.notes_folder):
             os.makedirs(self.notes_folder)
 

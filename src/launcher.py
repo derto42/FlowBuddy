@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
 
         # Load squares
         self.squares = [DraggableSquare(self, QPoint(i*(self.grid_size+self.gutter_size) + self.gutter_size, self.gutter_size), self.grid_size, 'gray', folder, f'https://www.google.com/search?q={folder}') 
-                        for i, folder in enumerate(os.listdir('add_ons'))]
+                        for i, folder in enumerate(os.listdir('addons'))]
         
         self.load_positions()
 

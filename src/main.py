@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
 import FileSystem as FS
 from ui import MainWindow
-from add_on import load_add_ons
+from addon import load_addons
 
 TITLE = "FlowBuddy"
 
@@ -31,7 +31,7 @@ def show_tray_icon(parent: QApplication, activate_action: Callable):
 def main():
     app = QApplication(sys.argv)
 
-    load_add_ons()
+    load_addons()
 
     window = MainWindow()
 

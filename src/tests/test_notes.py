@@ -8,7 +8,7 @@ from ui.dialog import ConfirmationDialog
 
 def test_delete_tab(qtbot, tmpdir):
     # Create a temporary directory for testing
-    temp_dir = tmpdir.mkdir("notes")
+    temp_dir = tmpdir.mkdir("addons/notes")
 
     # Create a test file in the temporary directory
     test_file = temp_dir.join("test.txt")
