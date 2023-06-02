@@ -12,16 +12,30 @@ from PyQt5.QtWidgets import (
     QWidget,
     QLayout,
     QApplication,
+    QSystemTrayIcon,
 )
 
 import SaveFile as Data
 from FileSystem import open_file
+from utils import HotKeys
 
-from .base_window import BaseWindow
-from .utils import get_font
-from .custom_button import RedButton, GrnButton, YelButton, TextButton
-from .dialog import TaskDialog, GroupDialog, ConfirmationDialog, ACCEPTED, REJECTED
-from .settings import UI_SCALE
+from ui import (
+    BaseWindow,
+    RedButton,
+    GrnButton,
+    YelButton,
+    TextButton,
+    TaskDialog,
+    GroupDialog,
+    ConfirmationDialog,
+    ACCEPTED,
+    REJECTED,
+)
+
+from addon import AddOnBase
+from ui.settings import UI_SCALE
+from ui.utils import get_font
+
 
 NAME_TO_INT = {
     "group_layout": 0,
@@ -395,3 +409,19 @@ class MainWindow(BaseWindow):
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
         Data.apply_settings("position", [self.pos().x(), self.pos().y()])
         return super().mouseReleaseEvent(a0)
+
+
+window = MainWindow()
+
+if any(x.lower() == "-showui" for x in QApplication.arguments()):
+    QApplication.instance().processEvents()
+    window.update()
+    window.show()
+        
+HotKeys.add_global_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
+
+AddOnBase.system_tray_icon.activated.connect(
+    lambda reason: window.window_toggle_signal.emit()
+    if reason != QSystemTrayIcon.ActivationReason.Context
+    else None
+)

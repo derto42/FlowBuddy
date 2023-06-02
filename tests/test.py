@@ -70,7 +70,7 @@ from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout
 from ui.custom_button import *
 from ui.base_window import *
 from ui.dialog import *
-from ui.main_window import *
+from addons.shortcuts.shortcuts import *
 from ui.logo import *
 
 app = QApplication([])
