@@ -4,11 +4,14 @@ from glob import glob
 from os.path import split
 import os
 
+from PyQt5.QtWidgets import QSystemTrayIcon
+
 from FileSystem import exists, ADDONS_FOLDER, ADDONS_NAME
 from utils import HotKeys
 
 
 class AddOnBase:
+    system_tray_icon: QSystemTrayIcon = None # instance of QSystemTrayIcon will be assigned after initializing it
     def set_shortcut(self, shortcut: str, function: Callable) -> None:
         HotKeys.add_global_shortcut(shortcut, function)
     
