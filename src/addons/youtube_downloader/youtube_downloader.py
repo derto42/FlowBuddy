@@ -38,6 +38,7 @@ from ui.base_window import BaseWindow  # pylint: disable=import-error
 from ui.dialog import ConfirmationDialog, BaseDialog  # pylint: disable=import-error
 from ui.custom_button import RedButton, GrnButton, YelButton, TextButton  # pylint: disable=import-error
 
+from addon import AddOnBase
 
 class RoundedProgressBar(QProgressBar):
     def __init__(self, parent=None):
@@ -472,13 +473,8 @@ class DownloaderWorker(QWidget):
             print(self.video_location)
 
 
-if __name__ == "__main__":
-    def main():
-        app = QApplication(sys.argv)
+window = YoutubeDownloader()
 
-        window = YoutubeDownloader()
-        window.show()
-
-        sys.exit(app.exec_())
-
-    main()
+menu = AddOnBase.system_tray_icon.contextMenu()
+action = menu.addAction("Youtube Downloader")
+action.triggered.connect(window.ytd_toggle_signal.emit)
