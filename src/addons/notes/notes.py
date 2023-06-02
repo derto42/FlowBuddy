@@ -68,15 +68,15 @@ class CustomTabWidget(QTabWidget):
     def movePlusButton(self, no_of_tabs=0):
         """Move the plus button to the correct location."""
         w = self.count()
-        self.addTabButton.move(w * 100, 0)
+        self.addTabButton.move(int(w * 100 * UI_SCALE), 0)
 
 
 class JottingDownWindow(QWidget):
     window_toggle_signal = pyqtSignal()
-    
+
     def __init__(self):
         super().__init__()
-        
+
         self.window_toggle_signal.connect(self.toggle_window)
 
         self.notes_folder = "addons/notes/data"
@@ -111,7 +111,7 @@ class JottingDownWindow(QWidget):
             }
         """
         )
-        self.setFixedSize(900 * int(UI_SCALE), 900 * int(UI_SCALE))
+        self.setFixedSize(int(900 * UI_SCALE), int(900 * UI_SCALE))
         self.old_pos = None
 
     def paintEvent(self, event):
@@ -221,7 +221,6 @@ class JottingDownWindow(QWidget):
                 current_widget.setFocus()
         else:
             window.hide()
-
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
