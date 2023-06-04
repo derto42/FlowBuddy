@@ -1,6 +1,6 @@
 import unittest
 
-from SaveFile import (
+from addons.shortcuts.shortcuts_save import (
     GroupClass,
     TaskAlreadyInGroup,
     TaskClass,

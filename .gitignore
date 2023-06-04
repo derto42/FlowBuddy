@@ -158,5 +158,5 @@ dmypy.json
 cython_debug/
 
 # save file
-src/save.json
+/**/save.json
 notes/config.json

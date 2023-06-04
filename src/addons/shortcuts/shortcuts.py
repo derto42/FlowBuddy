@@ -1,6 +1,7 @@
 from __future__ import annotations
 import webbrowser
 from typing import Optional
+import contextlib
 
 
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -15,9 +16,11 @@ from PyQt5.QtWidgets import (
     QSystemTrayIcon,
 )
 
-import SaveFile as Data
+from . import shortcuts_save as Data
 from FileSystem import open_file
 from utils import HotKeys
+from addon import AddOnBase
+import SaveFile
 
 from ui import (
     BaseWindow,
@@ -32,7 +35,6 @@ from ui import (
     REJECTED,
 )
 
-from addon import AddOnBase
 from ui.settings import UI_SCALE
 from ui.utils import get_font
 
@@ -303,8 +305,8 @@ class MainWindow(BaseWindow):
         self.add_to_editors(add_group_widget)
 
         try:
-            position = Data.get_setting("position")
-        except Data.NotFound:
+            position = SaveFile.get_setting("position")
+        except SaveFile.NotFound:
             pass
         else:
             self.move(position[0], position[1])
@@ -407,16 +409,29 @@ class MainWindow(BaseWindow):
         QApplication.instance().processEvents()
 
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
-        Data.apply_settings("position", [self.pos().x(), self.pos().y()])
+        SaveFile.apply_settings("position", [self.pos().x(), self.pos().y()])
         return super().mouseReleaseEvent(a0)
+    
+    def show(self) -> None:
+        SaveFile.apply_settings("hidden", False)
+        return super().show()
+    
+    def hide(self) -> None:
+        SaveFile.apply_settings("hidden", True)
+        return super().hide()
+    
+    def setHidden(self, hidden: bool) -> None:
+        SaveFile.apply_settings("hidden", hidden)
+        return super().setHidden(hidden)
 
 
 window = MainWindow()
 
-if any(x.lower() == "-showui" for x in QApplication.arguments()):
-    QApplication.instance().processEvents()
-    window.update()
-    window.show()
+with contextlib.suppress(SaveFile.NotFound):
+    if not SaveFile.get_setting("hidden"):
+        QApplication.instance().processEvents()
+        window.update()
+        window.show()
         
 HotKeys.add_global_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
 
