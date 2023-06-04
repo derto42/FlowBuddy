@@ -129,7 +129,7 @@ class BaseWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         
         self._offset = None
-        self._margin_for_shadow = mrgn = 25
+        self._margin_for_shadow = mrgn = 60
         
         self.setLayout(layout:=QVBoxLayout(self))
         layout.setContentsMargins(mrgn, mrgn, mrgn, mrgn) # margin for shadow
