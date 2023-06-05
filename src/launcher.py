@@ -1,10 +1,14 @@
 import sys
 import os
 import json
+from types import ModuleType
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QWidget
 from PyQt5.QtCore import Qt, QPoint, QRect, QEvent
 from PyQt5.QtGui import QPainter, QColor, QBrush, QPen, QPalette
 import webbrowser
+
+from addon import AddOnBase
+
 
 # Constants
 SAVE_JSON = 'launcher.json'
@@ -13,8 +17,9 @@ BUTTON_HEIGHT = 30
 BUTTON_OFFSET = 120
 GRID_OFFSET = 30
 
+
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, add_ons: dict[str, ModuleType]):
         super().__init__()
 
         self.grid_size = 64
@@ -26,9 +31,21 @@ class MainWindow(QMainWindow):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         # Load squares
-        self.squares = [DraggableSquare(self, QPoint(i*(self.grid_size+self.gutter_size) + self.gutter_size, self.gutter_size), self.grid_size, 'gray', folder, f'https://www.google.com/search?q={folder}') 
-                        for i, folder in enumerate(os.listdir('addons'))]
-        
+        self.squares = [
+            DraggableSquare(
+                parent = self,
+                pos = QPoint(
+                    i * (self.grid_size + self.gutter_size) + self.gutter_size,
+                    self.gutter_size,
+                ),
+                size = self.grid_size,
+                color = 'gray',
+                label = module.split(".")[-1],
+                AddOnBase_instance = AddOnBase.instences[module] if module in AddOnBase.instences else AddOnBase(),
+            )
+            for i, module in enumerate(add_ons)
+        ]
+
         self.load_positions()
 
     def save_positions(self):
@@ -56,13 +73,13 @@ class MainWindow(QMainWindow):
 
 
 class DraggableSquare(QLabel):
-    def __init__(self, parent, pos, size, color, label, url):
+    def __init__(self, parent, pos, size, color, label, AddOnBase_instance: AddOnBase):
         super().__init__(parent)
         self.size = size
         self.setFixedSize(size, size)
         self.move(pos)
         self.grabOffset = None
-        self.url = url
+        self.AddOnBase_instance = AddOnBase_instance
         self.label = QLabel(label, self)
         self.label.setGeometry(QRect(0, 0, size, 20))
         self.label.setAlignment(Qt.AlignCenter)
@@ -70,14 +87,13 @@ class DraggableSquare(QLabel):
         self.highlighted = False
         self.show()
 
+
     def mousePressEvent(self, event):
         self.raise_()
         self.grabOffset = event.pos()
         self.highlighted = True
         self.update()
         
-
-
     def mouseReleaseEvent(self, event):
         self.grabOffset = None
         self.highlighted = False
@@ -104,9 +120,8 @@ class DraggableSquare(QLabel):
 
             self.move(new_pos)
 
-
     def mouseDoubleClickEvent(self, event):
-        webbrowser.open(self.url)
+        self.AddOnBase_instance.activate()
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -114,7 +129,8 @@ class DraggableSquare(QLabel):
             painter.fillRect(self.rect(), QBrush(QColor(100, 100, 100, 50)))
 
 
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-sys.exit(app.exec_())
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
