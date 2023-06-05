@@ -16,10 +16,10 @@ from PyQt5.QtWidgets import (
     QSystemTrayIcon,
 )
 
+from addon import AddOnBase
+
 from . import shortcuts_save as Data
 from FileSystem import open_file
-from utils import HotKeys
-from addon import AddOnBase
 import SaveFile
 
 from ui import (
@@ -433,7 +433,7 @@ with contextlib.suppress(SaveFile.NotFound):
         window.update()
         window.show()
         
-HotKeys.add_global_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
+AddOnBase.set_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
 
 AddOnBase.system_tray_icon.activated.connect(
     lambda reason: window.window_toggle_signal.emit()

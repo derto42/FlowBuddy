@@ -27,7 +27,8 @@ class AddOnBase:
         """Override this method to call when desktop widget is activated."""
         pass
     
-    def set_shortcut(self, shortcut: str, function: Callable) -> None:
+    @staticmethod
+    def set_shortcut(shortcut: str, function: Callable) -> None:
         """Adds a global shortcut"""
         HotKeys.add_global_shortcut(shortcut, function)
     
