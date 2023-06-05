@@ -7,6 +7,8 @@ import sys
 from os import path
 from typing import Any
 
+from FileSystem import abspath
+
 
 # This module uses `sys._getframe(1).f_globals["__name__"]` to get the name of the calling module.
 # I don't think this is a good idea.
@@ -26,17 +28,18 @@ def _create_empty_save_file(file_path: str) -> None:
 def _prepare_save_file(module_path: str) -> str:
     """If the save_file exists, retruns the save_file path. Otherwise, creates a new save_file."""
     file_path = path.join((module_path.replace(".", "/")), "..") + "/save.json"
+    abs_file_path = abspath(file_path)
     
-    if not path.exists(file_path):
-        _create_empty_save_file(file_path)
+    if not path.exists(abs_file_path):
+        _create_empty_save_file(abs_file_path)
         
     try:
-        with open(file_path, "r") as f:
+        with open(abs_file_path, "r") as f:
             _ = json.load(f)
     except json.JSONDecodeError:
-        _create_empty_save_file(file_path)
+        _create_empty_save_file(abs_file_path)
         
-    return file_path
+    return abs_file_path
 
 
 def apply_settings(name: str, value: Any) -> None:
