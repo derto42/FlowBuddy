@@ -440,3 +440,5 @@ AddOnBase.system_tray_icon.activated.connect(
     if reason != QSystemTrayIcon.ActivationReason.Context
     else None
 )
+
+AddOnBase().activate = lambda: window.window_toggle_signal.emit()
