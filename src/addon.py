@@ -1,9 +1,7 @@
 from __future__ import annotations
 from types import ModuleType
-from typing import Callable, overload
+from typing import Callable
 from importlib import import_module
-from glob import glob
-from os.path import split
 import os
 
 from PyQt5.QtWidgets import QSystemTrayIcon
@@ -23,6 +21,7 @@ class AddOnBase:
     
     def __init__(self):
         AddOnBase.instences[currently_loading_module] = self
+        self.name = currently_loading_module
         
     def activate(self):
         """Override this method to call when desktop widget is activated."""
