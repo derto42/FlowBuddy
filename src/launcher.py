@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
                 size = self.grid_size,
                 color = 'gray',
                 label = module.split(".")[-1],
-                AddOnBase_instance = AddOnBase.instences[module] if module in AddOnBase.instences else AddOnBase(),
+                AddOnBase_instance = AddOnBase.instances[module] if module in AddOnBase.instances else AddOnBase(),
             )
             for i, module in enumerate(add_ons)
         ]

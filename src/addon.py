@@ -17,10 +17,16 @@ currently_loading_module = None
 
 class AddOnBase:
     system_tray_icon: QSystemTrayIcon = None # instance of QSystemTrayIcon will be assigned after initializing it
-    instences: dict[str, AddOnBase] = {}
+    instances: dict[str, AddOnBase] = {}
+    
+    def __new__(cls):
+        if currently_loading_module in AddOnBase.instances.keys():
+            return AddOnBase.instances[currently_loading_module]
+        else:
+            return super().__new__(cls)
     
     def __init__(self):
-        AddOnBase.instences[currently_loading_module] = self
+        AddOnBase.instances[currently_loading_module] = self
         self.name = currently_loading_module
         
     def activate(self):

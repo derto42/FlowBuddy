@@ -21,25 +21,25 @@ class NotFound(Exception):
 
 def _create_empty_save_file(file_path: str) -> None:
     """Creates an empty save file."""
-    with open(file_path, "w") as f:
+    with open(f"{file_path}/save.json", "w") as f:
         json.dump({}, f)
 
 
 def _prepare_save_file(module_path: str) -> str:
     """If the save_file exists, retruns the save_file path. Otherwise, creates a new save_file."""
-    file_path = path.join((module_path.replace(".", "/")), "..") + "/save.json"
+    file_path = path.join((module_path.replace(".", "/")), "..")
     abs_file_path = abspath(file_path)
-    
-    if not path.exists(abs_file_path):
+
+    if abs_file_path is None or not path.exists(f"{abs_file_path}/save.json"):
         _create_empty_save_file(abs_file_path)
-        
+
     try:
-        with open(abs_file_path, "r") as f:
+        with open(f"{abs_file_path}/save.json", "r") as f:
             _ = json.load(f)
     except json.JSONDecodeError:
         _create_empty_save_file(abs_file_path)
-        
-    return abs_file_path
+
+    return f"{abs_file_path}/save.json"
 
 
 def apply_settings(name: str, value: Any) -> None:
