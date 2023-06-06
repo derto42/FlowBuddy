@@ -3,15 +3,11 @@
 from __future__ import annotations
 
 import json
-import sys
 from os import path
 from typing import Any
+import inspect
 
 from FileSystem import abspath
-
-
-# This module uses `sys._getframe(1).f_globals["__name__"]` to get the name of the calling module.
-# I don't think this is a good idea.
 
 
 class NotFound(Exception):
@@ -20,30 +16,32 @@ class NotFound(Exception):
 
 
 def _create_empty_save_file(file_path: str) -> None:
-    """Creates an empty save file."""
+    """Creates an empty save file in the file_path directory."""
     with open(f"{file_path}/save.json", "w") as f:
         json.dump({}, f)
 
 
-def _prepare_save_file(module_path: str) -> str:
+def _prepare_save_file() -> str:
     """If the save_file exists, retruns the save_file path. Otherwise, creates a new save_file."""
-    file_path = path.join((module_path.replace(".", "/")), "..")
+    # getting the path of the calling module using inspect.
+    file_path = path.dirname(inspect.currentframe().f_back.f_back.f_globals["__file__"])
     abs_file_path = abspath(file_path)
+    save_file = f"{abs_file_path}/save.json"
 
-    if abs_file_path is None or not path.exists(f"{abs_file_path}/save.json"):
+    if abs_file_path is None or not path.exists(save_file):
         _create_empty_save_file(abs_file_path)
 
     try:
-        with open(f"{abs_file_path}/save.json", "r") as f:
+        with open(save_file, "r") as f:
             _ = json.load(f)
     except json.JSONDecodeError:
         _create_empty_save_file(abs_file_path)
 
-    return f"{abs_file_path}/save.json"
+    return save_file
 
 
 def apply_settings(name: str, value: Any) -> None:
-    save_file_path = _prepare_save_file(sys._getframe(1).f_globals["__name__"])
+    save_file_path = _prepare_save_file()
     
     with open(save_file_path, "r") as save_file:
         json_data = json.load(save_file)
@@ -55,7 +53,7 @@ def apply_settings(name: str, value: Any) -> None:
 
 
 def get_setting(name: str) -> Any:
-    save_file_path = _prepare_save_file(sys._getframe(1).f_globals["__name__"])
+    save_file_path = _prepare_save_file()
     
     with open(save_file_path, "r") as save_file:
         json_data = json.load(save_file)
@@ -66,7 +64,7 @@ def get_setting(name: str) -> Any:
 
 
 def remove_setting(name: str) -> None:
-    save_file_path = _prepare_save_file(sys._getframe(1).f_globals["__name__"])
+    save_file_path = _prepare_save_file()
     
     with open(save_file_path, "r") as save_file:
         json_data = json.load(save_file)
