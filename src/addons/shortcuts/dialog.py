@@ -1,6 +1,7 @@
 
 from typing import Any, Tuple, Optional
 
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -29,6 +30,11 @@ class GroupDialog(BaseDialog):
         return self._name_entry.text() if super().result() == ACCEPTED else super().result()
 
     def exec(self) -> Any:
+        self.adjustSize()
+        cursor_pos = QCursor.pos()
+        geo = self.geometry()
+        self.setGeometry(geo.adjusted(cursor_pos.x() - geo.width()//2, cursor_pos.y() - geo.height()//2, 0, 0))
+
         super().exec()
         return self.result()
     
@@ -87,6 +93,11 @@ class TaskDialog(BaseDialog):
         return name, button_text, url, file_path
 
     def exec(self) -> Any:
+        self.adjustSize()
+        cursor_pos = QCursor.pos()
+        geo = self.geometry()
+        self.setGeometry(geo.adjusted(cursor_pos.x() - geo.width()//2, cursor_pos.y() - geo.height()//2, 0, 0))
+        
         super().exec()
         return self.result()
     
