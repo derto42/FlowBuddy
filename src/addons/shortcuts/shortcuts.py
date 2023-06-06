@@ -1,8 +1,7 @@
 from __future__ import annotations
-import webbrowser
 from typing import Optional
+import webbrowser
 import contextlib
-
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QMouseEvent
@@ -28,12 +27,12 @@ from ui import (
     GrnButton,
     YelButton,
     TextButton,
-    TaskDialog,
-    GroupDialog,
     ConfirmationDialog,
     ACCEPTED,
     REJECTED,
 )
+
+from .dialog import TaskDialog, GroupDialog
 
 from ui.settings import UI_SCALE
 from ui.utils import get_font
