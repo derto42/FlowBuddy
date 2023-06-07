@@ -1,14 +1,98 @@
 
-from typing import Any, Tuple, Optional
+from typing import Any, Tuple, Optional, Literal
+from PyQt5.QtCore import QEvent, QVariantAnimation,QPropertyAnimation, QEasingCurve, QRect
 
-from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QCursor, QResizeEvent
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QFileDialog,
+    QGraphicsOpacityEffect,
 )
 
 from ui import BaseDialog, ACCEPTED, REJECTED, TextButton, Entry
+
+
+class FileChooseButton(TextButton):
+    
+    class InnerButton(TextButton):
+        def __init__(self, parent: QWidget, text: str = "Text Button", side: str = Literal["left", "right"]):
+            super().__init__(parent, text)
+            
+            self.side = side
+            self._parent = parent
+            
+            self.exposed_geometry = None
+            self.hidden_geometry = None
+            
+            self.opacity = QGraphicsOpacityEffect()
+            self.opacity.setOpacity(0.0)
+            self.opacity_anim = QPropertyAnimation(self.opacity, b"opacity")
+            self.opacity_anim.setDuration(500)
+            self.opacity_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+            self.setGraphicsEffect(self.opacity)
+            
+            self.animation = QVariantAnimation()
+            self.animation.setDuration(500)
+            self.animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+            self.animation.valueChanged.connect(self.setGeometry)
+
+
+        def spawn(self):
+            self.animation.stop()
+            self.opacity_anim.stop()
+            self.animation.setStartValue(self.geometry())
+            self.animation.setEndValue(self.exposed_geometry)
+            self.opacity_anim.setStartValue(self.opacity.opacity())
+            self.opacity_anim.setEndValue(0.99)
+            self.animation.start()
+            self.opacity_anim.start()
+
+        def kill(self):
+            self.animation.stop()
+            self.opacity_anim.stop()
+            self.animation.setStartValue(self.geometry())
+            self.animation.setEndValue(self.hidden_geometry)
+            self.opacity_anim.setStartValue(self.opacity.opacity())
+            self.opacity_anim.setEndValue(0.0)
+            self.animation.start()
+            self.opacity_anim.start()
+            
+        def define_geometries(self):
+            geo = self._parent.geometry()
+            width = geo.width() // 2
+            height = geo.height()
+            self.exposed_geometry = QRect(width if self.side == "right" else 0, 0,
+                                                 width, height)
+            self.hidden_geometry = QRect(width // 2, 0, width, height)
+            
+            self.setGeometry(self.hidden_geometry)
+            
+        def resizeEvent(self, a0: QResizeEvent) -> None:
+            if self.exposed_geometry is None:
+                self.define_geometries()
+            return super().resizeEvent(a0)
+
+    
+    def __init__(self, parent: QWidget | None = None, text: str = "Text Button"):
+        super().__init__(parent, text)
+        
+        self.adjustSize()
+
+        self.file_button = self.InnerButton(self, "File", "left")
+        self.folder_button = self.InnerButton(self, "Folder", "right")
+        
+    def enterEvent(self, a0: QEvent) -> None:
+        self.file_button.spawn()
+        self.folder_button.spawn()
+        return super().enterEvent(a0)
+    
+    def leaveEvent(self, a0: QEvent) -> None:
+        self.file_button.kill()
+        self.folder_button.kill()
+        return super().leaveEvent(a0)
+
 
 class GroupDialog(BaseDialog):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -53,8 +137,9 @@ class TaskDialog(BaseDialog):
         self._name_entry = Entry(self, "Task Name")
         self._button_entry = Entry(self, "Button Text")
         self._url_entry = Entry(self, "URL")
-        file_choose_button = TextButton(self, "Choose File")
-        file_choose_button.clicked.connect(self._choose_file)
+        file_choose_button = FileChooseButton(self, "Choose File")
+        file_choose_button.file_button.clicked.connect(lambda: self._choose_file("file"))
+        file_choose_button.folder_button.clicked.connect(lambda: self._choose_file("folder"))
 
         self._name_entry.setToolTip("Task Name")
         self._button_entry.setToolTip("Button Text")
@@ -68,11 +153,14 @@ class TaskDialog(BaseDialog):
 
         self._name_entry.setFocus()
 
-    def _choose_file(self):
+    def _choose_file(self, type: Literal["file", "folder"]):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
-        self._file_path, _ = QFileDialog.getOpenFileName(self, "Choose File", "",
-                                                         "All Files (*)", options=options)
+        if type == "file":
+            self._file_path, _ = QFileDialog.getOpenFileName(self, "Choose File", "",
+                                                            "All Files (*)", options=options)
+        elif type == "folder":
+            self._file_path = QFileDialog.getExistingDirectory(self, "Choose Folder", "", options=options)
 
     def for_edit(self, name: str, button_text: str, url: str, file_path: str) -> None:
         self.setTitle("Edit Task")
