@@ -1,8 +1,7 @@
 from __future__ import annotations
-import webbrowser
 from typing import Optional
+import webbrowser
 import contextlib
-
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QMouseEvent
@@ -16,10 +15,10 @@ from PyQt5.QtWidgets import (
     QSystemTrayIcon,
 )
 
+from addon import AddOnBase
+
 from . import shortcuts_save as Data
 from FileSystem import open_file
-from utils import HotKeys
-from addon import AddOnBase
 import SaveFile
 
 from ui import (
@@ -28,12 +27,12 @@ from ui import (
     GrnButton,
     YelButton,
     TextButton,
-    TaskDialog,
-    GroupDialog,
     ConfirmationDialog,
     ACCEPTED,
     REJECTED,
 )
+
+from .dialog import TaskDialog, GroupDialog
 
 from ui.settings import UI_SCALE
 from ui.utils import get_font
@@ -433,10 +432,12 @@ with contextlib.suppress(SaveFile.NotFound):
         window.update()
         window.show()
         
-HotKeys.add_global_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
+AddOnBase.set_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
 
 AddOnBase.system_tray_icon.activated.connect(
     lambda reason: window.window_toggle_signal.emit()
     if reason != QSystemTrayIcon.ActivationReason.Context
     else None
 )
+
+AddOnBase().activate = lambda: window.window_toggle_signal.emit()

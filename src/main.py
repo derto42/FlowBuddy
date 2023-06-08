@@ -4,7 +4,8 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
 import FileSystem as FS
-from addon import AddOnBase, load_addons
+from addon import AddOnBase, load_addons, add_ons
+from launcher import MainWindow
 
 
 def main():
@@ -20,6 +21,9 @@ def main():
     tray_icon.setContextMenu(menu)
     
     load_addons()
+    
+    widgets = MainWindow(add_ons)
+    widgets.show()
 
     sys.exit(app.exec_())
 
