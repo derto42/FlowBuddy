@@ -1,13 +1,35 @@
-import sys
-import os
-import json
+from os import path
 from types import ModuleType
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QWidget
-from PyQt5.QtCore import Qt, QPoint, QRect, QEvent
-from PyQt5.QtGui import QPainter, QColor, QBrush, QPen, QPalette
-import webbrowser
+from typing import Callable, Optional
 
-from addon import AddOnBase
+from PyQt5.QtCore import Qt, QPoint, QRect, QSize, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QEvent
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QLabel,
+    QPushButton,
+    QWidget,
+    QHBoxLayout,
+    QGraphicsOpacityEffect,
+)
+from PyQt5.QtGui import (
+    QPainter,
+    QColor,
+    QBrush,
+    QKeySequence,
+    QPaintEvent,
+    QMouseEvent,
+    QFontMetrics,
+    QPixmap,
+)
+
+from ui.settings import UI_SCALE
+from ui.utils import get_font
+
+from FileSystem import icon as get_icon, abspath
+from SaveFile import apply_settings, get_setting, remove_setting, NotFound
+
+from addon import AddOnBase, add_on_paths
 
 
 # Constants
@@ -18,119 +40,359 @@ BUTTON_OFFSET = 120
 GRID_OFFSET = 30
 
 
+def check_setting(name: str) -> bool:
+    try:
+        get_setting(name)
+    except NotFound:
+        return False
+    return True
+
+
+class IconButton(QPushButton):
+    def __init__(self, parent: QWidget, icon_path: str, hover_icon_path: str) -> None:
+        super().__init__(parent)
+        
+        self._icon = icon_path
+        self._hover_icon = hover_icon_path
+        
+        self.setFixedSize(QSize(85, 85))
+        self.setIconSize(QSize(85, 85))
+        
+        self.setStyleSheet(
+            (
+                """
+            QPushButton {
+                border: none;
+                icon: url(%s);
+                margin: 0px;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                icon: url(%s);
+                margin: 0px;
+                padding: 0px;
+            }
+        """
+                % (
+                    self._icon,
+                    self._hover_icon,
+                )
+            )
+        )
+
+
+class ShortcutLabel(QWidget):
+    
+    class Label(QLabel):
+        def __init__(self, text: str, parent: Optional[QWidget] = None):
+            super().__init__(text, parent)
+            
+            self.is_plus = text == "+"
+            
+            self.setFont(get_font(size=11, weight="semibold"))
+            self.setFixedSize(self.sizeHint())
+            
+        def sizeHint(self):
+            font_metrics = QFontMetrics(self.font())
+            text_width = font_metrics.width(self.text())
+            text_height = font_metrics.height()
+            button_width = text_width + 7 * 2  # *2 for Adding padding to both sides
+            button_height = text_height + 1 * 2
+            return QSize(button_width, button_height)
+            
+        def paintEvent(self, a0: QPaintEvent) -> None:
+            back_color = QColor(0, 0, 0, 0) if self.is_plus else QColor("#ECECEC")
+            text_color = QColor("#ECECEC") if self.is_plus else self.palette().buttonText().color()
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(back_color)  # default color #ECECEC
+            painter.drawRoundedRect(self.rect(), 5 * UI_SCALE, 5 * UI_SCALE)
+            painter.setPen(text_color)
+            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.text())
+            
+            
+    def __init__(self, parent: QWidget, shortcut: QKeySequence):
+        super().__init__(parent)
+        
+        keys = QKeySequence(shortcut[0]).toString().split("+")
+        self.shortcut_keys = [x.upper() for y in keys for x in (y, "+")][:-1]
+        
+        self.setLayout(layout := QHBoxLayout(self))
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        layout.addStretch()
+
+        for key in self.shortcut_keys:
+            label = self.Label(key)
+            layout.addWidget(label)
+
+        layout.addStretch()
+        
+        self.adjustSize()
+
+
+class GroupWidget(QWidget):
+    def __init__(self, parent: QWidget, title: str, icon_path: str, hover_icon_path: str,
+                 shortcut: QKeySequence, activate_callback: Callable) -> None:
+        super().__init__(parent)
+        
+        self.setFixedWidth(85 + 40)
+        
+        self.icon_button = IconButton(self, icon_path, hover_icon_path)
+        self.icon_button.clicked.connect(activate_callback)
+        self.icon_button.setGeometry(QRect(20, 0, self.icon_button.width(), self.icon_button.height()))
+        
+        self.title_label = QLabel(title, self)
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setFont(get_font(size = int(12 * UI_SCALE), weight="medium"))
+        self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
+        self.title_label.setGeometry(QRect(0, 85+11, self.width(), self.title_label.height()))
+
+        self.hotkey_label = ShortcutLabel(self, shortcut)
+        self.hotkey_label.setGeometry(QRect(0, 85+17+17+self.title_label.sizeHint().height(),
+                                            self.width(),
+                                            self.hotkey_label.height()))
+        
+        self.adjustSize()
+        
+        self.move(QPoint(self.x(), 80))
+        self.hide()
+        
+        self.finished_callback = None
+        
+        self.opacity = QGraphicsOpacityEffect()
+        self.opacity.setOpacity(0.0)
+        self.setGraphicsEffect(self.opacity)
+
+        self.opacity_animation = QPropertyAnimation(self.opacity, b"opacity")
+        self.opacity_animation.setDuration(500)
+        self.opacity_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        
+        self.pos_animation = QPropertyAnimation(self, b"pos")
+        self.pos_animation.setDuration(500)
+        self.pos_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        
+        self.animation = QParallelAnimationGroup()
+        self.animation.addAnimation(self.pos_animation)
+        self.animation.addAnimation(self.opacity_animation)
+        self.animation.finished.connect(lambda: self.finished_callback())
+
+    def spawn(self) -> None:
+        self.animation.stop()
+        self.show()
+        self.finished_callback = self.after_spawn
+        self.pos_animation.setStartValue(self.pos())
+        self.pos_animation.setEndValue(QPoint(self.x(), 40))
+        self.opacity_animation.setStartValue(self.opacity.opacity())
+        self.opacity_animation.setEndValue(1.0)
+        self.animation.start()
+        
+        
+    def kill(self) -> None:
+        self.animation.stop()
+        self.finished_callback = self.after_kill
+        self.pos_animation.setStartValue(self.pos())
+        self.pos_animation.setEndValue(QPoint(self.x(), 80))
+        self.opacity_animation.setStartValue(self.opacity.opacity())
+        self.opacity_animation.setEndValue(0.0)
+        self.animation.start()
+        
+        
+    def after_spawn(self) -> None:
+        pass
+    
+    def after_kill(self) -> None:
+        self.hide()
+
+
+class LowerWidget(QWidget):
+    def __init__(self, parent: QWidget) -> None:
+        super().__init__(parent)
+        self.icon: QPixmap = QPixmap(get_icon("icon.png")).scaled(45, 45,
+                                                                  Qt.AspectRatioMode.KeepAspectRatio,
+                                                                  Qt.TransformationMode.SmoothTransformation)
+
+        self.icon_label = QLabel(self)
+        self.icon_label.setPixmap(self.icon)
+        
+        self.title_label = QLabel("FlowBuddy", self)
+        self.title_label.setFont(get_font(size=16, weight="semibold"))
+        self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
+        self.title_label.move(53, 5)
+
+        self.setFixedSize(177, 45)
+        
+        self.pos_animation = QPropertyAnimation(self, b"pos")
+        self.pos_animation.setDuration(500)
+        self.pos_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+        self.opacity = QGraphicsOpacityEffect()
+        self.opacity.setOpacity(1.0)
+        self.setGraphicsEffect(self.opacity)
+        self.opacity_animation = QPropertyAnimation(self.opacity, b"opacity")
+        self.opacity_animation.setDuration(500)
+        self.opacity_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+        self.animation = QParallelAnimationGroup()
+        self.animation.addAnimation(self.pos_animation)
+        self.animation.addAnimation(self.opacity_animation)
+        
+        
+    def spawn(self) -> None:
+        self.animation.stop()
+        self.pos_animation.setStartValue(self.pos())
+        self.pos_animation.setEndValue(QPoint(self.x(), 13))
+        self.opacity_animation.setStartValue(self.opacity.opacity())
+        self.opacity_animation.setEndValue(1.0)
+        self.animation.start()
+    
+    def kill(self) -> None:
+        self.animation.stop()
+        self.pos_animation.setStartValue(self.pos())
+        self.pos_animation.setEndValue(QPoint(self.x(), 26))
+        self.opacity_animation.setStartValue(self.opacity.opacity())
+        self.opacity_animation.setEndValue(0.0)
+        self.animation.start()
+
+
 class MainWindow(QMainWindow):
-    def __init__(self, add_ons: dict[str, ModuleType]):
+    def __init__(self, add_ons: dict[str, ModuleType]) -> None:
         super().__init__()
 
-        self.grid_size = 64
-        self.gutter_size = GRID_OFFSET
-
-        # setup window
-        self.setGeometry(0, 0, QApplication.desktop().width(), QApplication.desktop().height())
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        # Load squares
-        self.squares = [
-            DraggableSquare(
-                parent = self,
-                pos = QPoint(
-                    i * (self.grid_size + self.gutter_size) + self.gutter_size,
-                    self.gutter_size,
-                ),
-                size = self.grid_size,
-                color = 'gray',
-                label = module.split(".")[-1],
-                AddOnBase_instance = AddOnBase.instances[module] if module in AddOnBase.instances else AddOnBase(),
-            )
-            for i, module in enumerate(add_ons)
-        ]
+        self._offset = None
+        self._moved = False
+        self.maximized = False
+        self.widgets: list[GroupWidget] = []
 
-        self.load_positions()
+        self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
+                                  if check_setting("lower_position") else \
+                                  QPoint(QApplication.desktop().width() // 2, QApplication.desktop().height() // 2)
 
-    def save_positions(self):
-        return {square.label.text(): (square.x(), square.y()) for square in self.squares}
+        self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1]) \
+                                  if check_setting("upper_position") else \
+                                  self.pos()
 
-    def load_positions(self):
-        try:
-            with open(SAVE_JSON, 'r') as f:
-                positions = json.load(f)
-            for square in self.squares:
-                if square.label.text() in positions:
-                    square.move(QPoint(*positions[square.label.text()]))
-        except FileNotFoundError:
-            pass  # No saved positions to load
+        for add_on_name in add_ons:
+            title = add_on_name.split(".")[-1]
 
-    def mousePressEvent(self, event):
-        for square in self.squares:
-            if square.geometry().contains(event.pos()):
-                square.mousePressEvent(event)
-                return
+            add_on_path = path.dirname(add_on_paths[add_on_name])
+            if icon_path:=abspath(f"{add_on_path}/icon.png"):
+                icon_path = icon_path.replace("\\", "/")
+            else:
+                icon_path = get_icon("default_launcher_icon.png")
+            hover_icon_path = icon_path
+            add_on_base_instance = AddOnBase.instances[add_on_name]
+            activate = add_on_base_instance.activate
+            shortcut = add_on_base_instance.activate_shortcut
 
-    def closeEvent(self, event):
-        with open("launcher.json", "w") as f:
-            json.dump({"squares": self.save_positions()}, f)
+            self.add_widget(title, hover_icon_path, hover_icon_path, shortcut, activate)
+        self.lower_widget = LowerWidget(self)
+        self.lower_widget.move(40, 13)
+
+        self.setGeometry(QRect(self.lower_position, QPoint(40+40+177, 13+13+45) + self.lower_position))
 
 
-class DraggableSquare(QLabel):
-    def __init__(self, parent, pos, size, color, label, AddOnBase_instance: AddOnBase):
-        super().__init__(parent)
-        self.size = size
-        self.setFixedSize(size, size)
-        self.move(pos)
-        self.grabOffset = None
-        self.AddOnBase_instance = AddOnBase_instance
-        self.label = QLabel(label, self)
-        self.label.setGeometry(QRect(0, 0, size, 20))
-        self.label.setAlignment(Qt.AlignCenter)
-        self.setStyleSheet(f'background-color: {color}; border-radius: 9px;')
-        self.highlighted = False
-        self.show()
-
-
-    def mousePressEvent(self, event):
-        self.raise_()
-        self.grabOffset = event.pos()
-        self.highlighted = True
-        self.update()
+        self.animation = QPropertyAnimation(self, b"geometry")
+        self.animation.setDuration(500)
+        self.animation.setEasingCurve(QEasingCurve.Type.OutCubic)
         
-    def mouseReleaseEvent(self, event):
-        self.grabOffset = None
-        self.highlighted = False
-        self.update()
-        self.parent().save_positions()
+        
+    def get_window_size(self) -> QSize:
+        return QSize(((85+20+20) * len(self.widgets)) + 20+20, 164+40+40)
+    
+    def get_next_widget_position(self) -> QPoint:
+        return QPoint(((85+20+20) * len(self.widgets)) + 20, 40)
+        
+    def add_widget(self, title: str, icon_path: str, hover_icon_path: str,
+                   shortcut: QKeySequence, activate_callback: Callable) -> None:
+        widget = GroupWidget(self, title, icon_path, hover_icon_path, shortcut, activate_callback)
+        widget.move(self.get_next_widget_position())
+        self.widgets.append(widget)
+        
+    def maximize(self) -> None:
+        self.animation.stop()
+        self.animation.setStartValue(self.geometry())
+        self.animation.setEndValue(QRect(self.upper_position,
+                                         QPoint(self.get_window_size().width(),
+                                                self.get_window_size().height()) + self.upper_position))
+        self.animation.start()
+        self.lower_widget.kill()
+        for widget in self.widgets:
+            widget.spawn()
+        self.maximized = True
 
-    def mouseMoveEvent(self, event):
-        if self.grabOffset is not None:
-            new_pos = self.mapToParent(event.pos() - self.grabOffset)
-
-            # Snap to grid
-            grid_size = self.parent().grid_size + self.parent().gutter_size
-            new_pos.setX(round((new_pos.x() - self.parent().gutter_size) / grid_size) * grid_size + self.parent().gutter_size)
-            new_pos.setY(round((new_pos.y() - self.parent().gutter_size) / grid_size) * grid_size + self.parent().gutter_size)
-
-            # Check for collisions
-            for square in self.parent().squares:
-                if square is not self and square.geometry().contains(new_pos, True):
-                    return  # Don't move if a collision is detected
-
-            # Check for screen boundaries
-            if new_pos.x() < 0 or new_pos.y() < 0 or new_pos.x() + self.width() > QApplication.desktop().width() or new_pos.y() + self.height() > QApplication.desktop().height():
-                return  # Don't move if it would go off-screen
-
-            self.move(new_pos)
-
-    def mouseDoubleClickEvent(self, event):
-        self.AddOnBase_instance.activate()
-
-    def paintEvent(self, event):
+    def minimize(self) -> None:
+        self.animation.stop()
+        self.animation.setStartValue(self.geometry())
+        self.animation.setEndValue(QRect(self.lower_position, QPoint(40+40+177, 13+13+45) + self.lower_position))
+        self.animation.start()
+        self.lower_widget.spawn()
+        for widget in self.widgets:
+            widget.kill()
+        self.maximized = False
+        
+        
+    def paintEvent(self, a0: QPaintEvent) -> None:
         painter = QPainter(self)
-        if self.highlighted:
-            painter.fillRect(self.rect(), QBrush(QColor(100, 100, 100, 50)))
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(QColor(0, 0, 0, 178)))
+        painter.drawRoundedRect(self.rect(), 32 * UI_SCALE, 32 * UI_SCALE)
+
+    def mousePressEvent(self, a0: QMouseEvent) -> None:
+        if a0.button() == Qt.MouseButton.LeftButton:
+            self._offset = a0.pos()
+        return super().mousePressEvent(a0)
+    
+    def mouseMoveEvent(self, a0: QMouseEvent) -> None:
+        if self._offset is not None and a0.buttons() == Qt.MouseButton.LeftButton:
+            self.move(a0.globalPos() - self._offset)
+            self._moved = True
+        return super().mouseMoveEvent(a0)
+
+    def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
+        if self._moved:
+            if self.maximized:
+                self.upper_position = self.pos()
+                apply_settings("upper_position", [self.upper_position.x(), self.upper_position.y()])
+            else:
+                self.lower_position = self.pos()
+                apply_settings("lower_position", [self.lower_position.x(), self.lower_position.y()])
+        else:
+            if self.maximized:
+                self.minimize()
+            else:
+                self.maximize()
+        self._moved = False
+        self._offset = None
+        return super().mouseReleaseEvent(a0)
+
 
 
 if __name__ == '__main__':
+    import sys
+    
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
+    # window = MainWindow()
+    # window.show()
+    
+    # widget2 = ShortcutLabel(parent = None, shortcut=QKeySequence(Qt.CTRL | Qt.Key.Key_S))
+    # widget2.show()
+    
+    # widget = GroupWidget(None)
+    # widget.show()
+
+    # window = MainWindow({"Name 1": None, "Name 2": None, "Name 3": None, "Name 4": None})
+    # widget2 = GroupWidget(window, "Title", "src/addons/shortcuts/icon.png", "src/addons/shortcuts/icon.png")
+    # widget2.move(20, 40)
+    # window.show()
+    
+    # wid = LowerWidget(None)
+    # wid.show()
+
     sys.exit(app.exec_())
