@@ -478,3 +478,7 @@ window = YoutubeDownloader()
 menu = AddOnBase.system_tray_icon.contextMenu()
 action = menu.addAction("Youtube Downloader")
 action.triggered.connect(window.ytd_toggle_signal.emit)
+
+AddOnBase().set_shortcut("<ctrl>+<shift>+y", window.ytd_toggle_signal.emit)
+
+AddOnBase().activate = window.ytd_toggle_signal.emit
