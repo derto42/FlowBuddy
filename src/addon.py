@@ -5,12 +5,14 @@ from importlib import import_module
 import os
 
 from PyQt5.QtWidgets import QSystemTrayIcon
+from PyQt5.QtGui import QKeySequence
 
 from FileSystem import exists, ADDONS_FOLDER, ADDONS_NAME
 from utils import HotKeys
 
 
 add_ons: dict[str, ModuleType] = {}
+add_on_paths: dict[str, ModuleType] = {}
 
 currently_loading_module = None
 
@@ -33,16 +35,21 @@ class AddOnBase:
         """Override this method to call when desktop widget is activated."""
         pass
     
+    def set_activate_shortcut(self, key: QKeySequence) -> None:
+        """Adds a global shortcut key to call the activate method."""
+        self.activate_shortcut: QKeySequence = key
+        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), self.activate)
+    
     @staticmethod
-    def set_shortcut(shortcut: str, function: Callable) -> None:
+    def set_shortcut(key: QKeySequence, function: Callable) -> None:
         """Adds a global shortcut"""
-        HotKeys.add_global_shortcut(shortcut, function)
+        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), function)
     
 
 
 def load_addons() -> None:
     """Loads all the modules from the ADDONs folder."""
-    global add_ons, currently_loading_module
+    global add_ons, add_on_paths, currently_loading_module
     if exists(ADDONS_FOLDER):
         # traverse root directory, and list directories as dirs and files as files
         for root, dirs, files in os.walk(ADDONS_FOLDER):
@@ -56,3 +63,4 @@ def load_addons() -> None:
                     module = import_module(module_name)
                     currently_loading_module = None
                     add_ons[module_name] = module
+                    add_on_paths[module_name] = file_path
