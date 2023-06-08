@@ -61,6 +61,18 @@ class HotKeys:
         [func() for func in HotKeys._shortcuts_and_callbacks[shortcut]]
 
 
+    @staticmethod
+    def format_shortcut_string(key: str) -> str:
+        x = ["alt", "alt_l", "alt_r", "alt_gr", "backspace", "caps_lock", "cmd", "cmd_l", "cmd_r",
+             "ctrl", "ctrl_l", "ctrl_r", "delete", "down", "end", "enter", "esc",
+            "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10",
+            "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20",
+            "home", "left", "page_down", "page_up", "right",
+            "shift", "shift_l", "shift_r", "space", "tab", "up",
+            "insert", "menu", "num_lock", "print_screen", "scroll_lock",]
+        return "+".join([f"<{k.lower().strip()}>" if k.lower().strip() in x else k.lower().strip() for k in key.split("+")])
+
+
 
 # for test
 if __name__ == "__main__":
@@ -68,6 +80,10 @@ if __name__ == "__main__":
     HotKeys.add_global_shortcut("<ctrl>+k", lambda: print("key 2"))
     HotKeys.add_global_shortcut("<ctrl>+k", lambda: print("key 3"))
     HotKeys.add_global_shortcut("<ctrl>+l", lambda: print("key 4"))
+    
+    HotKeys.format_shortcut_string("Shift + k")
+    HotKeys.format_shortcut_string("Shift")
+    HotKeys.format_shortcut_string("k")
     
     input()
     
