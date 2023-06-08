@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import (
 )
 
 from PyQt5.QtCore import Qt, QPointF, pyqtSignal
-from PyQt5.QtGui import QPainter, QLinearGradient
+from PyQt5.QtGui import QPainter, QLinearGradient, QKeySequence
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ui.utils import get_font  # pylint: disable=import-error
@@ -479,6 +479,6 @@ menu = AddOnBase.system_tray_icon.contextMenu()
 action = menu.addAction("Youtube Downloader")
 action.triggered.connect(window.ytd_toggle_signal.emit)
 
-AddOnBase().set_shortcut("<ctrl>+<shift>+y", window.ytd_toggle_signal.emit)
+AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+Shift+Y"))
 
 AddOnBase().activate = window.ytd_toggle_signal.emit

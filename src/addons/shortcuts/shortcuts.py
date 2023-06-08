@@ -4,7 +4,7 @@ import webbrowser
 import contextlib
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtGui import QMouseEvent, QKeySequence
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -432,12 +432,11 @@ with contextlib.suppress(SaveFile.NotFound):
         window.update()
         window.show()
         
-AddOnBase.set_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
+AddOnBase().activate = window.window_toggle_signal.emit
+AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+`"))
 
 AddOnBase.system_tray_icon.activated.connect(
     lambda reason: window.window_toggle_signal.emit()
     if reason != QSystemTrayIcon.ActivationReason.Context
     else None
 )
-
-AddOnBase().activate = lambda: window.window_toggle_signal.emit()

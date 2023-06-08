@@ -273,4 +273,5 @@ class JottingDownWindow(QWidget):
 
 window = JottingDownWindow()
 
-AddOnBase().set_shortcut("<ctrl>+`", window.window_toggle_signal.emit)
+AddOnBase().activate = window.window_toggle_signal.emit
+AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+`"))
