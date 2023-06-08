@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
 
         self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
                                   if check_setting("lower_position") else \
-                                  QPoint(QApplication.desktop().width() // 2, QApplication.desktop().height() // 2)
+                                  QPoint(QApplication.desktop().width() // 2 - (40+40+177) // 2, QApplication.desktop().height() - 100 - (13+13+45) // 2)
 
         self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1]) \
                                   if check_setting("upper_position") else \
