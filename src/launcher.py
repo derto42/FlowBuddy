@@ -1,4 +1,5 @@
 from os import path
+from math import ceil
 from types import ModuleType
 from typing import Callable, Optional
 
@@ -40,14 +41,6 @@ from SaveFile import apply_settings, get_setting, remove_setting, NotFound
 from utils import HotKeys
 
 from addon import AddOnBase, add_on_paths
-
-
-# Constants
-SAVE_JSON = 'launcher.json'
-BUTTON_WIDTH = 110
-BUTTON_HEIGHT = 30
-BUTTON_OFFSET = 120
-GRID_OFFSET = 30
 
 
 def check_setting(name: str) -> bool:
@@ -144,11 +137,12 @@ class ShortcutLabel(QWidget):
 
 
 class GroupWidget(QWidget):
-    def __init__(self, parent: QWidget, title: str, icon_path: str, hover_icon_path: str,
+    def __init__(self, parent: QWidget, index: int, title: str, icon_path: str, hover_icon_path: str,
                  shortcut: QKeySequence, activate_callback: Callable) -> None:
         super().__init__(parent)
         
-        self.setFixedWidth(85 + 40)
+        self.index = index
+        self.setFixedWidth(85 + 40)  # 40 padding
         
         self.icon_button = IconButton(self, icon_path, hover_icon_path)
         self.icon_button.clicked.connect(activate_callback)
@@ -166,8 +160,7 @@ class GroupWidget(QWidget):
                                             self.hotkey_label.height()))
         
         self.adjustSize()
-        
-        self.move(QPoint(self.x(), 80))
+        self.move(self.get_widget_position(self.index))
         self.hide()
         
         self.finished_callback = None
@@ -189,32 +182,48 @@ class GroupWidget(QWidget):
         self.animation.addAnimation(self.opacity_animation)
         self.animation.finished.connect(lambda: self.finished_callback())
 
+
     def spawn(self) -> None:
         self.animation.stop()
         self.show()
         self.finished_callback = self.after_spawn
         self.pos_animation.setStartValue(self.pos())
-        self.pos_animation.setEndValue(QPoint(self.x(), 40))
+        self.pos_animation.setEndValue(self.get_widget_position(self.index))
         self.opacity_animation.setStartValue(self.opacity.opacity())
         self.opacity_animation.setEndValue(1.0)
         self.animation.start()
-        
         
     def kill(self) -> None:
         self.animation.stop()
         self.finished_callback = self.after_kill
         self.pos_animation.setStartValue(self.pos())
-        self.pos_animation.setEndValue(QPoint(self.x(), 80))
+        self.pos_animation.setEndValue(self.get_widget_position(self.index) + QPoint(0, 80))
         self.opacity_animation.setStartValue(self.opacity.opacity())
         self.opacity_animation.setEndValue(0.0)
         self.animation.start()
-        
         
     def after_spawn(self) -> None:
         pass
     
     def after_kill(self) -> None:
         self.hide()
+    
+    @staticmethod
+    def get_widget_position(index: int) -> QPoint:
+        """Returns the position of the GroupWidget for main window according to the given index."""
+        # 4 is the maximum number of widgets for each line
+        x = (4 if (_x:=index % 4) == 0 else _x) - 1
+        y = ceil(index / 4) - 1
+        position = QPoint(GroupWidget.size().width() * x, (GroupWidget.size().height() + 40) * y)
+        return position + QPoint(20, 40)  # adding left and top padding
+        
+    
+    # setting fixed size of GroupWidget
+    @staticmethod
+    def size() -> QSize:
+        # Note: this widgets exact size is 85, 164. 20 is added to the margins.
+        # this values don't effect the size of the GroupWidget
+        return QSize(85+20+20, 164)
 
 
 class LowerWidget(QWidget):
@@ -232,7 +241,8 @@ class LowerWidget(QWidget):
         self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
         self.title_label.move(53, 5)
 
-        self.setFixedSize(177, 45)
+        self.setFixedSize(self.size())
+        
         
         self.pos_animation = QPropertyAnimation(self, b"pos")
         self.pos_animation.setDuration(500)
@@ -265,6 +275,14 @@ class LowerWidget(QWidget):
         self.opacity_animation.setStartValue(self.opacity.opacity())
         self.opacity_animation.setEndValue(0.0)
         self.animation.start()
+        
+    
+    # setting fixed size of LowerWidget
+    @staticmethod
+    def size() -> QSize:
+        # Note: this widgets exact size is 177, 45. 40, 13 is added to the margins.
+        # this values don't effect the size of the LowerWidget
+        return QSize(177+40+40, 45+13+13)
 
 
 class MainWindow(QMainWindow):
@@ -283,35 +301,37 @@ class MainWindow(QMainWindow):
         
         self.window_toggle_signal.connect(lambda: self.show() if self.isHidden() else self.hide())
 
-        for add_on_name in add_ons:
+        self.lower_widget = LowerWidget(self)
+        self.lower_widget.move(40, 13)
+
+        for index, add_on_name in enumerate(add_ons, 1):
             title = add_on_name.split(".")[-1]
 
             add_on_path = path.dirname(add_on_paths[add_on_name])
-            if icon_path:=abspath(f"{add_on_path}/icon.png"):
+            if icon_path := abspath(f"{add_on_path}/icon.png"):
                 icon_path = icon_path.replace("\\", "/")
             else:
                 icon_path = get_icon("default_launcher_icon.png")
             hover_icon_path = icon_path
             add_on_base_instance = AddOnBase.instances[add_on_name]
-            activate = add_on_base_instance.activate
+            activate = lambda: add_on_base_instance.activate()
             shortcut = add_on_base_instance.activate_shortcut
 
-            self.add_widget(title, hover_icon_path, hover_icon_path, shortcut, activate)
+            self.add_widget(index, title, hover_icon_path, hover_icon_path, shortcut, activate)
 
         self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
                               if check_setting("lower_position") else \
-                              QPoint(QApplication.desktop().width() // 2 - (40+40+177) // 2,
-                                     QApplication.desktop().height() - 100 - (13+13+45) // 2)
+                              QPoint(QApplication.desktop().width() // 2 - self.lower_widget.size().width() // 2,
+                                     QApplication.desktop().height() - self.lower_widget.size().height() - 50)
 
         self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1]) \
                               if check_setting("upper_position") else \
                               QPoint(QApplication.desktop().width() // 2 - self.get_window_size().width() // 2,
-                                     QApplication.desktop().height() - 300 - self.get_window_size().height() // 2)
+                                     QApplication.desktop().height() - self.get_window_size().height() - 150)
 
-        self.lower_widget = LowerWidget(self)
-        self.lower_widget.move(40, 13)
-
-        self.setGeometry(QRect(self.lower_position, QPoint(40+40+177, 13+13+45) + self.lower_position))
+        self.setGeometry(QRect(self.lower_position,
+                               QPoint(self.lower_widget.size().width(),
+                                      self.lower_widget.size().height()) + self.lower_position))
         
         self.setHidden(get_setting("hidden")) if check_setting("hidden") else self.show()
         
@@ -325,18 +345,24 @@ class MainWindow(QMainWindow):
         
         
     def get_window_size(self) -> QSize:
-        return QSize(((85+20+20) * len(self.widgets)) + 20+20, 164+40+40)
-    
-    def get_next_widget_position(self) -> QPoint:
-        return QPoint(((85+20+20) * len(self.widgets)) + 20, 40)
+        """Returns the size of the window acording to the GroupWidgets created."""
+        len_of_widgets = len(self.widgets)
+        x = min(len_of_widgets, 4)
+        y = ceil(len_of_widgets / 4)
+        window_size = QSize(GroupWidget.size().width() * x, (GroupWidget.size().height() + 40) * y - 40)
+        return window_size + QSize(20+20, 40+40)  # adding left, right, top and bottom padding
         
-    def add_widget(self, title: str, icon_path: str, hover_icon_path: str,
+        
+    def add_widget(self, index: int, title: str, icon_path: str, hover_icon_path: str,
                    shortcut: QKeySequence, activate_callback: Callable) -> None:
-        widget = GroupWidget(self, title, icon_path, hover_icon_path, shortcut, activate_callback)
-        widget.move(self.get_next_widget_position())
+        
+        """Adds a new GroupWidget to the main window."""
+        widget = GroupWidget(self, index, title, icon_path, hover_icon_path, shortcut, activate_callback)
         self.widgets.append(widget)
         
+        
     def maximize(self) -> None:
+        """Maxmizes the main window and shows all the widgets."""
         self.animation.stop()
         self.animation.setStartValue(self.geometry())
         self.animation.setEndValue(QRect(self.upper_position,
@@ -348,10 +374,14 @@ class MainWindow(QMainWindow):
             widget.spawn()
         self.maximized = True
 
+
     def minimize(self) -> None:
+        """Minimizes the main window and hides all widgets."""
         self.animation.stop()
         self.animation.setStartValue(self.geometry())
-        self.animation.setEndValue(QRect(self.lower_position, QPoint(40+40+177, 13+13+45) + self.lower_position))
+        self.animation.setEndValue(QRect(self.lower_position,
+                                         QPoint(self.lower_widget.size().width(),
+                                         self.lower_widget.size().height()) + self.lower_position))
         self.animation.start()
         self.lower_widget.spawn()
         for widget in self.widgets:
