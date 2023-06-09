@@ -283,15 +283,6 @@ class MainWindow(QMainWindow):
         
         self.window_toggle_signal.connect(lambda: self.show() if self.isHidden() else self.hide())
 
-        self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
-                              if check_setting("lower_position") else \
-                              QPoint(QApplication.desktop().width() // 2 - (40+40+177) // 2,
-                                     QApplication.desktop().height() - 100 - (13+13+45) // 2)
-
-        self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1]) \
-                              if check_setting("upper_position") else \
-                              self.pos()
-
         for add_on_name in add_ons:
             title = add_on_name.split(".")[-1]
 
@@ -307,13 +298,22 @@ class MainWindow(QMainWindow):
 
             self.add_widget(title, hover_icon_path, hover_icon_path, shortcut, activate)
 
+        self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
+                              if check_setting("lower_position") else \
+                              QPoint(QApplication.desktop().width() // 2 - (40+40+177) // 2,
+                                     QApplication.desktop().height() - 100 - (13+13+45) // 2)
+
+        self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1]) \
+                              if check_setting("upper_position") else \
+                              QPoint(QApplication.desktop().width() // 2 - self.get_window_size().width() // 2,
+                                     QApplication.desktop().height() - 300 - self.get_window_size().height() // 2)
+
         self.lower_widget = LowerWidget(self)
         self.lower_widget.move(40, 13)
 
         self.setGeometry(QRect(self.lower_position, QPoint(40+40+177, 13+13+45) + self.lower_position))
-
-        if check_setting("hidden"):
-            self.setHidden(get_setting("hidden"))
+        
+        self.setHidden(get_setting("hidden")) if check_setting("hidden") else self.show()
         
         hotkey = get_setting("hotkey") if check_setting("hotkey") else "<Ctrl>+`"
         HotKeys.add_global_shortcut(hotkey, self.window_toggle_signal.emit)
