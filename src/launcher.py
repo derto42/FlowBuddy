@@ -2,7 +2,16 @@ from os import path
 from types import ModuleType
 from typing import Callable, Optional
 
-from PyQt5.QtCore import Qt, QPoint, QRect, QSize, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QEvent
+from PyQt5.QtCore import (
+    Qt,
+    QPoint,
+    QRect,
+    QSize,
+    QPropertyAnimation,
+    QParallelAnimationGroup,
+    QEasingCurve,
+    pyqtSignal
+)
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -28,6 +37,7 @@ from ui.utils import get_font
 
 from FileSystem import icon as get_icon, abspath
 from SaveFile import apply_settings, get_setting, remove_setting, NotFound
+from utils import HotKeys
 
 from addon import AddOnBase, add_on_paths
 
@@ -258,24 +268,29 @@ class LowerWidget(QWidget):
 
 
 class MainWindow(QMainWindow):
+    window_toggle_signal = pyqtSignal()
+    
     def __init__(self, add_ons: dict[str, ModuleType]) -> None:
         super().__init__()
-
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self._offset = None
         self._moved = False
         self.maximized = False
         self.widgets: list[GroupWidget] = []
+        
+        self.window_toggle_signal.connect(lambda: self.show() if self.isHidden() else self.hide())
 
         self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
-                                  if check_setting("lower_position") else \
-                                  QPoint(QApplication.desktop().width() // 2 - (40+40+177) // 2, QApplication.desktop().height() - 100 - (13+13+45) // 2)
+                              if check_setting("lower_position") else \
+                              QPoint(QApplication.desktop().width() // 2 - (40+40+177) // 2,
+                                     QApplication.desktop().height() - 100 - (13+13+45) // 2)
 
         self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1]) \
-                                  if check_setting("upper_position") else \
-                                  self.pos()
+                              if check_setting("upper_position") else \
+                              self.pos()
 
         for add_on_name in add_ons:
             title = add_on_name.split(".")[-1]
@@ -291,11 +306,18 @@ class MainWindow(QMainWindow):
             shortcut = add_on_base_instance.activate_shortcut
 
             self.add_widget(title, hover_icon_path, hover_icon_path, shortcut, activate)
+
         self.lower_widget = LowerWidget(self)
         self.lower_widget.move(40, 13)
 
         self.setGeometry(QRect(self.lower_position, QPoint(40+40+177, 13+13+45) + self.lower_position))
 
+        if check_setting("hidden"):
+            self.setHidden(get_setting("hidden"))
+        
+        hotkey = get_setting("hotkey") if check_setting("hotkey") else "<Ctrl>+`"
+        HotKeys.add_global_shortcut(hotkey, self.window_toggle_signal.emit)
+            
 
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(500)
@@ -364,13 +386,22 @@ class MainWindow(QMainWindow):
                 self.lower_position = self.pos()
                 apply_settings("lower_position", [self.lower_position.x(), self.lower_position.y()])
         else:
-            if self.maximized:
-                self.minimize()
-            else:
-                self.maximize()
+            self.minimize() if self.maximized else self.maximize()
         self._moved = False
         self._offset = None
         return super().mouseReleaseEvent(a0)
+    
+    def show(self) -> None:
+        apply_settings("hidden", False)
+        return super().show()
+    
+    def hide(self) -> None:
+        apply_settings("hidden", True)
+        return super().hide()
+    
+    def setHidden(self, hidden: bool) -> None:
+        apply_settings("hidden", hidden)
+        return super().setHidden(hidden)
 
 
 

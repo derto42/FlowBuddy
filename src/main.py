@@ -23,7 +23,6 @@ def main():
     load_addons()
     
     widgets = MainWindow(add_ons)
-    widgets.show()
 
     sys.exit(app.exec_())
 
