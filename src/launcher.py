@@ -11,7 +11,8 @@ from PyQt5.QtCore import (
     QPropertyAnimation,
     QParallelAnimationGroup,
     QEasingCurve,
-    pyqtSignal
+    pyqtSignal,
+    QTimer,
 )
 from PyQt5.QtWidgets import (
     QApplication,
@@ -137,6 +138,8 @@ class ShortcutLabel(QWidget):
 
 
 class GroupWidget(QWidget):
+    animating: int = 0
+    
     def __init__(self, parent: QWidget, index: int, title: str, icon_path: str, hover_icon_path: str,
                  shortcut: QKeySequence, activate_callback: Callable) -> None:
         super().__init__(parent)
@@ -160,7 +163,7 @@ class GroupWidget(QWidget):
                                             self.hotkey_label.height()))
         
         self.adjustSize()
-        self.move(self.get_widget_position(self.index))
+        self.move(self.get_widget_position(self.index) + QPoint(0, 80))
         self.hide()
         
         self.finished_callback = None
@@ -184,28 +187,37 @@ class GroupWidget(QWidget):
 
 
     def spawn(self) -> None:
-        self.animation.stop()
-        self.show()
-        self.finished_callback = self.after_spawn
-        self.pos_animation.setStartValue(self.pos())
-        self.pos_animation.setEndValue(self.get_widget_position(self.index))
-        self.opacity_animation.setStartValue(self.opacity.opacity())
-        self.opacity_animation.setEndValue(1.0)
-        self.animation.start()
+        GroupWidget.animating += 1
+        def do():
+            self.animation.stop()
+            self.show()
+            self.finished_callback = self.after_spawn
+            self.pos_animation.setStartValue(self.pos())
+            self.pos_animation.setEndValue(self.get_widget_position(self.index))
+            self.opacity_animation.setStartValue(self.opacity.opacity())
+            self.opacity_animation.setEndValue(1.0)
+            self.animation.start()
+        
+        QTimer.singleShot(GroupWidget.animating * 50, do)  # adding delay
         
     def kill(self) -> None:
-        self.animation.stop()
-        self.finished_callback = self.after_kill
-        self.pos_animation.setStartValue(self.pos())
-        self.pos_animation.setEndValue(self.get_widget_position(self.index) + QPoint(0, 80))
-        self.opacity_animation.setStartValue(self.opacity.opacity())
-        self.opacity_animation.setEndValue(0.0)
-        self.animation.start()
+        GroupWidget.animating += 1
+        def do():
+            self.animation.stop()
+            self.finished_callback = self.after_kill
+            self.pos_animation.setStartValue(self.pos())
+            self.pos_animation.setEndValue(self.get_widget_position(self.index) + QPoint(0, 80))
+            self.opacity_animation.setStartValue(self.opacity.opacity())
+            self.opacity_animation.setEndValue(0.0)
+            self.animation.start()
+        
+        QTimer.singleShot(GroupWidget.animating * 50, do)  # adding delay
         
     def after_spawn(self) -> None:
-        pass
+        GroupWidget.animating -= 1
     
     def after_kill(self) -> None:
+        GroupWidget.animating -= 1
         self.hide()
     
     @staticmethod
@@ -305,7 +317,7 @@ class MainWindow(QMainWindow):
         self.lower_widget.move(40, 13)
 
         for index, add_on_name in enumerate(add_ons, 1):
-            title = add_on_name.split(".")[-1]
+            title = add_on_name.split(".")[-1].replace("_", " ").title()
 
             add_on_path = path.dirname(add_on_paths[add_on_name])
             if icon_path := abspath(f"{add_on_path}/icon.png"):
@@ -370,6 +382,7 @@ class MainWindow(QMainWindow):
                                                 self.get_window_size().height()) + self.upper_position))
         self.animation.start()
         self.lower_widget.kill()
+        GroupWidget.animating = 0  # reseting the delay of GroupWidget
         for widget in self.widgets:
             widget.spawn()
         self.maximized = True
@@ -384,6 +397,7 @@ class MainWindow(QMainWindow):
                                          self.lower_widget.size().height()) + self.lower_position))
         self.animation.start()
         self.lower_widget.spawn()
+        GroupWidget.animating = 0  # reseting the delay of GroupWidget
         for widget in self.widgets:
             widget.kill()
         self.maximized = False
