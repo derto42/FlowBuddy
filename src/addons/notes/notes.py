@@ -53,8 +53,9 @@ class NoteTab(QWidget):
             QTextEdit {
                 padding: 0px;
                 margin: 0px;
-                border: none;
-                background-color: white;
+                border: 1px white;
+                border-radius: 9px;
+                background-color: cyan;
             }
             
             """
@@ -93,10 +94,12 @@ class CustomTabWidget(QTabWidget):
                 background: white;
                 border: 1px white;
                 border-radius: 9px;
+                margin-left:5;
+                margin-right:5;
             }
             QTabBar::tab:selected {
-                background: lightblue;
-                border: 1px white;
+                background: #C5C6D0;
+                border: 1px #C5C6D0;
                 border-radius: 9px;
             }
         """
@@ -107,9 +110,9 @@ class CustomTabWidget(QTabWidget):
         w = self.count()
         if w > 0:
             rect = self.tabBar().tabRect(w - 1)
-            self.addTabButton.move(rect.right() + 5, rect.top() + 1)
+            self.addTabButton.move(rect.right() + 5, rect.top() + 0)
         else:
-            self.addTabButton.move(5, 1)
+            self.addTabButton.move(5, 0)
 
 
 class JottingDownWindow(QWidget):
@@ -132,7 +135,7 @@ class JottingDownWindow(QWidget):
         # self.setAttribute(Qt.WA_TranslucentBackground)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(22, 22, 22, 22)  # Set padding here
+        # layout.setContentsMargins(22, 22, 22, 22)  # Set padding here
         self.setLayout(layout)
 
         layout.addWidget(self.tab_widget)
@@ -147,12 +150,11 @@ class JottingDownWindow(QWidget):
             QWidget {
                 border: 1px grey;
                 border-radius: 9px;
-                background-color: #dadada;
+                background-color: pink;
             }
             QVBoxLayout {
-                border: 1px solid;
+                border: 10px solid-black;
                 border-radius: 9px;
-                background-color: cyan;
             }
         """
         )
@@ -171,7 +173,7 @@ class JottingDownWindow(QWidget):
                     file_name = os.path.basename(file_path)
                     note_tab = NoteTab(file_path)  # create an instance of NoteTab
                     self.tab_widget.addTab(
-                        note_tab, file_name
+                        note_tab, file_name+"     "
                     )  # add the NoteTab instance, not the QTextEdit
                     self.add_button_to_tab(tabno)
 
@@ -183,7 +185,7 @@ class JottingDownWindow(QWidget):
             for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
-                    self.tab_widget.addTab(NoteTab(file_path), file_name)
+                    self.tab_widget.addTab(NoteTab(file_path), file_name+"     *")
                     self.add_button_to_tab(tabno)
             # If no tabs are found after loading existing .txt files, add the
             #  default "notes" file
