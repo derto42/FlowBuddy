@@ -24,7 +24,8 @@ import SaveFile as Data
 from addon import AddOnBase
 from ui import BaseWindow, Entry
 from settings import UI_SCALE, CORNER_RADIUS
-from ui import settings as GlobalSettings  # for reloading the values
+import settings as GlobalSettings  # for reloading the values
+
 from .structure import STRUCTURE, UPDATE, ENTRY, SPIN, KEY, SETTING_TYPE, TYPE, OPTIONS
 
 
@@ -97,6 +98,9 @@ class SettingsUI(QWidget):
     
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        
+        # temporarily disabled close button.
+        self.setWindowFlag(QtCore.Qt.WindowType.WindowCloseButtonHint, False)
         
         self._layouts: dict[str, QVBoxLayout] = {}
         
