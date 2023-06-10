@@ -157,10 +157,11 @@ class GroupWidget(QWidget):
         self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
         self.title_label.setGeometry(QRect(0, 85+11, self.width(), self.title_label.height()))
 
-        self.hotkey_label = ShortcutLabel(self, shortcut)
-        self.hotkey_label.setGeometry(QRect(0, 85+17+17+self.title_label.sizeHint().height(),
-                                            self.width(),
-                                            self.hotkey_label.height()))
+        if shortcut is not None:
+            self.hotkey_label = ShortcutLabel(self, shortcut)
+            self.hotkey_label.setGeometry(QRect(0, 85+17+17+self.title_label.sizeHint().height(),
+                                                self.width(),
+                                                self.hotkey_label.height()))
         
         self.adjustSize()
         self.move(self.get_widget_position(self.index) + QPoint(0, 80))
@@ -317,19 +318,7 @@ class MainWindow(QMainWindow):
         self.lower_widget.move(40, 13)
 
         for index, add_on_name in enumerate(add_ons, 1):
-            title = add_on_name.split(".")[-1].replace("_", " ").title()
-
-            add_on_path = path.dirname(add_on_paths[add_on_name])
-            if icon_path := abspath(f"{add_on_path}/icon.png"):
-                icon_path = icon_path.replace("\\", "/")
-            else:
-                icon_path = get_icon("default_launcher_icon.png")
-            hover_icon_path = icon_path
-            add_on_base_instance = AddOnBase.instances[add_on_name]
-            activate = lambda: add_on_base_instance.activate()
-            shortcut = add_on_base_instance.activate_shortcut
-
-            self.add_widget(index, title, hover_icon_path, hover_icon_path, shortcut, activate)
+            self.add_widget(index, add_on_name)
 
         self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
                               if check_setting("lower_position") else \
@@ -365,11 +354,22 @@ class MainWindow(QMainWindow):
         return window_size + QSize(20+20, 40+40)  # adding left, right, top and bottom padding
         
         
-    def add_widget(self, index: int, title: str, icon_path: str, hover_icon_path: str,
-                   shortcut: QKeySequence, activate_callback: Callable) -> None:
-        
+    def add_widget(self, index: int, add_on_name: str) -> None:
         """Adds a new GroupWidget to the main window."""
-        widget = GroupWidget(self, index, title, icon_path, hover_icon_path, shortcut, activate_callback)
+        
+        title = add_on_name.split(".")[-1].replace("_", " ").title()
+
+        add_on_path = path.dirname(add_on_paths[add_on_name])
+        if icon_path := abspath(f"{add_on_path}/icon.png"):
+            icon_path = icon_path.replace("\\", "/")
+        else:
+            icon_path = get_icon("default_launcher_icon.png")
+        hover_icon_path = icon_path
+        add_on_base_instance = AddOnBase(add_on_name)
+        activate = add_on_base_instance.activate
+        shortcut = add_on_base_instance.activate_shortcut
+
+        widget = GroupWidget(self, index, title, icon_path, hover_icon_path, shortcut, activate)
         self.widgets.append(widget)
         
         

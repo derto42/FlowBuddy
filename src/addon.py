@@ -1,6 +1,6 @@
 from __future__ import annotations
 from types import ModuleType
-from typing import Callable
+from typing import Callable, Optional
 from importlib import import_module
 import os
 
@@ -15,36 +15,6 @@ add_ons: dict[str, ModuleType] = {}
 add_on_paths: dict[str, ModuleType] = {}
 
 currently_loading_module = None
-
-
-class AddOnBase:
-    system_tray_icon: QSystemTrayIcon = None # instance of QSystemTrayIcon will be assigned after initializing it
-    instances: dict[str, AddOnBase] = {}
-    
-    def __new__(cls):
-        if currently_loading_module in AddOnBase.instances.keys():
-            return AddOnBase.instances[currently_loading_module]
-        else:
-            return super().__new__(cls)
-    
-    def __init__(self):
-        AddOnBase.instances[currently_loading_module] = self
-        self.name = currently_loading_module
-        
-    def activate(self):
-        """Override this method to call when desktop widget is activated."""
-        pass
-    
-    def set_activate_shortcut(self, key: QKeySequence) -> None:
-        """Adds a global shortcut key to call the activate method."""
-        self.activate_shortcut: QKeySequence = key
-        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), self.activate)
-    
-    @staticmethod
-    def set_shortcut(key: QKeySequence, function: Callable) -> None:
-        """Adds a global shortcut"""
-        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), function)
-    
 
 
 def load_addons() -> None:
@@ -64,3 +34,47 @@ def load_addons() -> None:
                     currently_loading_module = None
                     add_ons[module_name] = module
                     add_on_paths[module_name] = file_path
+
+
+class AddOnBase:
+    system_tray_icon: QSystemTrayIcon = None # instance of QSystemTrayIcon will be assigned after initializing it
+    instances: dict[str, AddOnBase] = {}
+    
+    def __new__(cls, name: Optional[str] = None):
+        # returns the instance of currently loading addon module if available.
+        # if not, returns the AddOnBase instance of module of given addon name.
+        if currently_loading_module is not None:
+            if name is not None:
+                print("WARNING: name should not be specified when creating new instace from addon module.",
+                      f"name of this instance is '{currently_loading_module}'.")
+                
+            if currently_loading_module in AddOnBase.instances:
+                return AddOnBase.instances[currently_loading_module]
+            new_instance = super().__new__(cls)
+            new_instance._init()
+            AddOnBase.instances[currently_loading_module] = new_instance
+            return new_instance
+        
+        if name in AddOnBase.instances:
+            return AddOnBase.instances[name]
+        else: raise ValueError(f"'{name}' AddOn instance not found.")
+    
+    def _init(self):
+        AddOnBase.instances[currently_loading_module] = self
+        self.name = currently_loading_module
+        self.activate_shortcut = None
+        
+    def activate(self):
+        """Override this method to call when desktop widget is activated."""
+        pass
+    
+    def set_activate_shortcut(self, key: QKeySequence) -> None:
+        """Adds a global shortcut key to call the activate method."""
+        self.activate_shortcut: QKeySequence = key
+        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), self.activate)
+    
+    @staticmethod
+    def set_shortcut(key: QKeySequence, function: Callable) -> None:
+        """Adds a global shortcut"""
+        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), function)
+    
