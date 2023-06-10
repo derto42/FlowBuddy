@@ -21,10 +21,10 @@ from PyQt5.QtWidgets import (
 
 
 import SaveFile as Data
-from ..base_window import BaseWindow
-from ..entry_box import Entry
-from . import UI_SCALE, CORNER_RADIUS
-from .. import settings as GlobalSettings
+from addon import AddOnBase
+from ui import BaseWindow, Entry
+from ui.settings import UI_SCALE, CORNER_RADIUS
+from ui import settings as GlobalSettings  # for reloading the values
 from .structure import STRUCTURE, UPDATE, ENTRY, SPIN, KEY, SETTING_TYPE, TYPE, OPTIONS
 
 
@@ -93,6 +93,8 @@ class SpinBox(Entry):
     
 
 class SettingsUI(QWidget):
+    window_toggle_signal = pyqtSignal()
+    
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         
@@ -107,6 +109,8 @@ class SettingsUI(QWidget):
             self._create_group(group_name)
             for setting_name, options in settings.items():
                 self._create_setting(group_name, setting_name, options)
+        
+        self.window_toggle_signal.connect(lambda: self.show() if self.isHidden() else self.hide())
         
         
     def _create_group(self, group_name: str) -> None:
@@ -167,3 +171,8 @@ class SettingsUI(QWidget):
         setting_layout.addWidget(reset_button := QPushButton("Reset"))
         reset_button.clicked.connect(lambda _: reset_setting_value(widget=spinbox))
         
+
+ui_window = SettingsUI()
+
+addon_base = AddOnBase()
+addon_base.activate = ui_window.window_toggle_signal.emit
