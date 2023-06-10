@@ -1,4 +1,3 @@
-
 import os
 import json
 
@@ -15,9 +14,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import (
     QTextCursor,
-    QPainter,
-    QPen,
-    QColor,
     QKeySequence,
 )
 
@@ -38,14 +34,27 @@ class NoteTab(QWidget):
         self.text_edit = QTextEdit()
         self.text_edit.setFont(get_font(size=16))
         self.text_edit.textChanged.connect(self.save_text_to_file)
+        self.save_text_to_file()
         self.text_edit.setAcceptRichText(False)
+        #This is for the tab itself
+        # Add QTextEdit to layout with padding
+        layout = QVBoxLayout()
+        layout.addWidget(self.text_edit)
+        #  Set the margins
+        layout.setContentsMargins(
+             int(24 * UI_SCALE),
+             int(24 * UI_SCALE),
+             int(22 * UI_SCALE),
+             int(22 * UI_SCALE),
+        )
+        self.setLayout(layout)
         self.text_edit.setStyleSheet(
             """
             QTextEdit {
                 padding: 0px;
                 margin: 0px;
                 border: none;
-                background-color: black;
+                background-color: white;
             }
             
             """
@@ -54,14 +63,7 @@ class NoteTab(QWidget):
         # Load text into QTextEdit after it's been created
         self.load_text_from_file()
 
-        # Add QTextEdit to layout with padding
-        layout = QVBoxLayout()
-        layout.addWidget(self.text_edit)
 
-        # Set the margins
-        layout.setContentsMargins(int(24 * UI_SCALE), int(24 * UI_SCALE), int(22 * UI_SCALE), int(22 * UI_SCALE))
-
-        self.setLayout(layout)
 
     def load_text_from_file(self):
         if os.path.exists(self.file_path):
@@ -74,36 +76,40 @@ class NoteTab(QWidget):
             file.write(self.text_edit.toPlainText())
 
 
-
-
 class CustomTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.addTabButton = GrnButton(self)
         self.addTabButton.clicked.connect(parent.add_new_tab)
-        
+
         # Set the background of the tab widget to be transparent
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setStyleSheet("""
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setStyleSheet(
+            """
             QTabWidget {
-                background: transparent;
+                background: cyan;
             }
             QTabBar::tab {
-                background: transparent;
+                background: white;
+                border: 1px white;
+                border-radius: 9px;
             }
             QTabBar::tab:selected {
-                background: transparent;
+                background: lightblue;
+                border: 1px white;
+                border-radius: 9px;
             }
-        """)
-        
+        """
+        )
+
     def movePlusButton(self, no_of_tabs=0):
         """Move the plus button to the correct location."""
         w = self.count()
         if w > 0:
             rect = self.tabBar().tabRect(w - 1)
-            self.addTabButton.move(rect.right() + 5, rect.top()+5)
+            self.addTabButton.move(rect.right() + 5, rect.top() + 1)
         else:
-            self.addTabButton.move(5, 5)
+            self.addTabButton.move(5, 1)
 
 
 class JottingDownWindow(QWidget):
@@ -123,10 +129,10 @@ class JottingDownWindow(QWidget):
         self.tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)  # Set padding here
+        layout.setContentsMargins(22, 22, 22, 22)  # Set padding here
         self.setLayout(layout)
 
         layout.addWidget(self.tab_widget)
@@ -136,16 +142,22 @@ class JottingDownWindow(QWidget):
         new_tab_shortcut = QShortcut(QKeySequence("Ctrl+T"), self)
         new_tab_shortcut.activated.connect(self.add_new_tab)
 
-        self.setStyleSheet("""
-            QWidget, QVBoxLayout {
+        self.setStyleSheet(
+            """
+            QWidget {
+                border: 1px grey;
+                border-radius: 9px;
+                background-color: #dadada;
+            }
+            QVBoxLayout {
                 border: 1px solid;
                 border-radius: 9px;
-                background-color: white;
+                background-color: cyan;
             }
-        """)
+        """
+        )
         self.setFixedSize(int(650 * UI_SCALE), int(450 * UI_SCALE))
         self.old_pos = None
-
 
     def load_tabs(self):
         # Load existing .txt files in the notes folder as tabs
@@ -158,7 +170,9 @@ class JottingDownWindow(QWidget):
                 if os.path.exists(file_path):
                     file_name = os.path.basename(file_path)
                     note_tab = NoteTab(file_path)  # create an instance of NoteTab
-                    self.tab_widget.addTab(note_tab, file_name)  # add the NoteTab instance, not the QTextEdit
+                    self.tab_widget.addTab(
+                        note_tab, file_name
+                    )  # add the NoteTab instance, not the QTextEdit
                     self.add_button_to_tab(tabno)
 
             self.tab_widget.setCurrentIndex(config["last_active"])
@@ -228,15 +242,15 @@ class JottingDownWindow(QWidget):
                 return
         file_name = f"{file_name}.txt"
 
-
         file_path = os.path.join(self.notes_folder, file_name)
         if not os.path.exists(file_path):
             note_tab = NoteTab(file_path)  # create an instance of NoteTab
-            self.tab_widget.addTab(note_tab, file_name)  # add the NoteTab instance, not the QTextEdit
+            self.tab_widget.addTab(
+                note_tab, file_name
+            )  # add the NoteTab instance, not the QTextEdit
             self.add_button_to_tab(len(self.tab_widget) - 1)
             self.tab_widget.movePlusButton()
             self.save_tabs()
-
 
         else:
             QMessageBox.warning(
