@@ -34,11 +34,11 @@ from PyQt5.QtGui import (
     QPixmap,
 )
 
-from ui.settings import UI_SCALE
+from settings import UI_SCALE
 from ui.utils import get_font
 
 from FileSystem import icon as get_icon, abspath
-from SaveFile import apply_settings, get_setting, remove_setting, NotFound
+from SaveFile import apply_setting, get_setting, remove_setting, NotFoundException
 from utils import HotKeys
 
 from addon import AddOnBase, add_on_paths
@@ -47,7 +47,7 @@ from addon import AddOnBase, add_on_paths
 def check_setting(name: str) -> bool:
     try:
         get_setting(name)
-    except NotFound:
+    except NotFoundException:
         return False
     return True
 
@@ -425,10 +425,10 @@ class MainWindow(QMainWindow):
         if self._moved:
             if self.maximized:
                 self.upper_position = self.pos()
-                apply_settings("upper_position", [self.upper_position.x(), self.upper_position.y()])
+                apply_setting("upper_position", [self.upper_position.x(), self.upper_position.y()])
             else:
                 self.lower_position = self.pos()
-                apply_settings("lower_position", [self.lower_position.x(), self.lower_position.y()])
+                apply_setting("lower_position", [self.lower_position.x(), self.lower_position.y()])
         else:
             self.minimize() if self.maximized else self.maximize()
         self._moved = False
@@ -436,15 +436,15 @@ class MainWindow(QMainWindow):
         return super().mouseReleaseEvent(a0)
     
     def show(self) -> None:
-        apply_settings("hidden", False)
+        apply_setting("hidden", False)
         return super().show()
     
     def hide(self) -> None:
-        apply_settings("hidden", True)
+        apply_setting("hidden", True)
         return super().hide()
     
     def setHidden(self, hidden: bool) -> None:
-        apply_settings("hidden", hidden)
+        apply_setting("hidden", hidden)
         return super().setHidden(hidden)
 
 

@@ -1,23 +1,18 @@
 """
 This module contains settings values of our application.
-
-Functions:
-reload_values(): Reloads the Settings values from the SaveFile module if the setting found in SaveFile.
-Otherwise loads the defaul values.
-
-Note: The values can be adjusted using the reload_values() function,
-which updates the values based on the latest settings.
 """
 
 from typing import Any
+from importlib import reload
+
+import SaveFile as Data
 
 
 # Function to retrieve settings from the SaveFile module.
 def _get_setting(setting_name: str) -> tuple[Any, bool]:
-    import SaveFile as Data
     try:
         return Data.get_setting(setting_name), True
-    except Data.NotFound:
+    except Data.NotFoundException:
         return None, False
 
 
@@ -30,8 +25,6 @@ UI_SCALE: float = _load[0] if (_load:=_get_setting("ui_scale"))[1] and isinstanc
 
 
 
-
-# functions
 
 def apply_ui_scale(value: int | float) -> int | float:
     scaled_value = value * UI_SCALE

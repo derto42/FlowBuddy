@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import (
 import SaveFile as Data
 from addon import AddOnBase
 from ui import BaseWindow, Entry
-from ui.settings import UI_SCALE, CORNER_RADIUS
+from settings import UI_SCALE, CORNER_RADIUS
 from ui import settings as GlobalSettings  # for reloading the values
 from .structure import STRUCTURE, UPDATE, ENTRY, SPIN, KEY, SETTING_TYPE, TYPE, OPTIONS
 
@@ -136,16 +136,16 @@ class SettingsUI(QWidget):
         setting_options: list = options[OPTIONS]
 
         def get_setting_value(*_, setting_name: str = setting_key) -> Any:
-            with contextlib.suppress(Data.NotFound):
+            with contextlib.suppress(Data.NotFoundException):
                 return Data.get_setting(setting_name)
 
         def set_setting_value(*_, setting_name: str = setting_key, value: Any = None) -> None:
-            with contextlib.suppress(Data.NotFound):
-                Data.apply_settings(setting_name, value)
+            with contextlib.suppress(Data.NotFoundException):
+                Data.apply_setting(setting_name, value)
             reload(GlobalSettings)
 
         def reset_setting_value(*_, setting_name: str = setting_key, widget: QSpinBox = None) -> None:
-            with contextlib.suppress(Data.NotFound):
+            with contextlib.suppress(Data.NotFoundException):
                 Data.remove_setting(setting_name)
             if widget is not None:
                 reload(GlobalSettings)

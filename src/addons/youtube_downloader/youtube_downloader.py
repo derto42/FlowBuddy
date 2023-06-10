@@ -31,9 +31,9 @@ from PyQt5.QtCore import Qt, QPointF, pyqtSignal
 from PyQt5.QtGui import QPainter, QLinearGradient, QKeySequence
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from settings import UI_SCALE  # pylint: disable=import-error
 from ui.utils import get_font  # pylint: disable=import-error
 from ui.entry_box import Entry  # pylint: disable=import-error
-from ui.settings import UI_SCALE  # pylint: disable=import-error
 from ui.base_window import BaseWindow  # pylint: disable=import-error
 from ui.dialog import ConfirmationDialog, BaseDialog  # pylint: disable=import-error
 from ui.custom_button import RedButton, GrnButton, YelButton, TextButton  # pylint: disable=import-error

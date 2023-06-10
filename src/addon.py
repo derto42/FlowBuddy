@@ -4,11 +4,13 @@ from types import ModuleType
 from typing import Callable, Optional
 from importlib import import_module
 import os
+import inspect
 
 from PyQt5.QtWidgets import QSystemTrayIcon
 from PyQt5.QtGui import QKeySequence
 
 from FileSystem import exists, ADDONS_FOLDER, ADDONS_NAME
+from SaveFile import JsonType, NotFoundException, apply_setting, get_setting, remove_setting, NotFoundException
 from utils import HotKeys
 
 
@@ -102,11 +104,11 @@ def load_addons() -> None:
         
         for module_name in modules_and_paths:
             # Import the module
+            add_on_paths[module_name] = modules_and_paths[module_name]
             currently_loading_module = module_name
             module = import_module(module_name)
             currently_loading_module = None
             add_ons[module_name] = module
-            add_on_paths[module_name] = modules_and_paths[module_name]
 
 
 
@@ -115,18 +117,20 @@ class AddOnBase:
     instances: dict[str, AddOnBase] = {}
     
     def __new__(cls, name: Optional[str] = None):
-        # returns the instance of currently loading addon module if available.
+        # returns the instance of currently loading or calling addon module if available.
         # if not, returns the AddOnBase instance of module of given addon name.
-        if currently_loading_module is not None:
+        
+        if (addon_module:=currently_loading_module) is not None or \
+            (addon_module:=AddOnBase._get_calling_module()) is not None:
             if name is not None:
                 print("WARNING: name should not be specified when creating new instace from addon module.",
-                      f"name of this instance is '{currently_loading_module}'.")
+                      f"name of this instance is '{addon_module}'.")
                 
-            if currently_loading_module in AddOnBase.instances:
-                return AddOnBase.instances[currently_loading_module]
+            if addon_module in AddOnBase.instances:
+                return AddOnBase.instances[addon_module]
             new_instance = super().__new__(cls)
             new_instance._init()
-            AddOnBase.instances[currently_loading_module] = new_instance
+            AddOnBase.instances[addon_module] = new_instance
             return new_instance
         
         if name in AddOnBase.instances:
@@ -134,9 +138,22 @@ class AddOnBase:
         else: raise ValueError(f"'{name}' AddOn instance not found.")
     
     def _init(self):
-        AddOnBase.instances[currently_loading_module] = self
         self.name = currently_loading_module
         self.activate_shortcut = None
+        
+    @staticmethod
+    def _get_calling_module() -> str | None:
+        """Returns the calling module name if calling module is an addon. Otherwise returns None."""
+        addon_file = inspect.currentframe().f_back.f_back.f_globals["__file__"]
+        return next(
+            (
+                module_name
+                for module_name, path in add_on_paths.items()
+                if os.path.abspath(path) == os.path.abspath(addon_file)
+            ),
+            None,
+        )
+        
         
     def activate(self):
         """Override this method to call when desktop widget is activated."""
@@ -146,6 +163,20 @@ class AddOnBase:
         """Adds a global shortcut key to call the activate method."""
         self.activate_shortcut: QKeySequence = key
         HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), self.activate)
+
+
+    def apply_setting(self, name: str, value: JsonType) -> None:
+        save_file = os.path.join(os.path.dirname(add_on_paths[self.name]), "save.json")
+        return apply_setting(name, value, save_file)
+    
+    def get_setting(self, name: str) -> JsonType:
+        save_file = os.path.join(os.path.dirname(add_on_paths[self.name]), "save.json")
+        return get_setting(name, save_file)
+    
+    def remove_setting(self, name: str) -> None:
+        save_file = os.path.join(os.path.dirname(add_on_paths[self.name]), "save.json")
+        return remove_setting(name, save_file)
+    
     
     @staticmethod
     def set_shortcut(key: QKeySequence, function: Callable) -> None:

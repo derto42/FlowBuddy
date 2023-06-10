@@ -25,7 +25,7 @@ from addon import AddOnBase
 
 from ui.dialog import ConfirmationDialog
 from ui.custom_button import RedButton, GrnButton
-from ui.settings import UI_SCALE
+from settings import UI_SCALE
 from ui.utils import get_font
 
 

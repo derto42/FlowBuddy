@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QKeyEvent, QShowEvent
 
 
-from .settings import UI_SCALE
+from settings import UI_SCALE
 from .custom_button import RedButton, GrnButton
 from .utils import get_font
 from .base_window import BaseWindow
