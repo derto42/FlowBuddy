@@ -311,8 +311,9 @@ class MainWindow(QMainWindow):
         self._moved = False
         self.maximized = False
         self.widgets: list[GroupWidget] = []
+        self.active_windows = []
         
-        self.window_toggle_signal.connect(lambda: self.show() if self.isHidden() else self.hide())
+        self.window_toggle_signal.connect(self.toggle_windows)
 
         self.lower_widget = LowerWidget(self)
         self.lower_widget.move(scaled(40), scaled(13))
@@ -371,6 +372,16 @@ class MainWindow(QMainWindow):
 
         widget = GroupWidget(self, index, title, icon_path, hover_icon_path, shortcut, activate)
         self.widgets.append(widget)
+        
+        
+    def toggle_windows(self) -> None:
+        if self.isHidden():
+            for window in self.active_windows:
+                window.show()
+        else:
+            self.active_windows = [x for x in QApplication.allWindows() if x.isVisible()]
+            for window in self.active_windows:
+                window.hide()
         
         
     def maximize(self) -> None:

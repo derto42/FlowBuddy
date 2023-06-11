@@ -162,7 +162,7 @@ class AddOnBase:
     def set_activate_shortcut(self, key: QKeySequence) -> None:
         """Adds a global shortcut key to call the activate method."""
         self.activate_shortcut: QKeySequence = key
-        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), self.activate)
+        HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), lambda: self.activate())
 
 
     def apply_setting(self, name: str, value: JsonType) -> None:
