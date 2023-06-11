@@ -153,6 +153,7 @@ class GroupWidget(QWidget):
         
         self.title_label = QLabel(title, self)
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setWordWrap(True)
         self.title_label.setFont(get_font(size = scaled(12), weight="medium"))
         self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
         self.title_label.setGeometry(QRect(0, scaled(85+11), self.width(), self.title_label.height()))
