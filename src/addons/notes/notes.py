@@ -34,18 +34,17 @@ class NoteTab(QWidget):
         self.text_edit = QTextEdit()
         self.text_edit.setFont(get_font(size=16))
         self.text_edit.textChanged.connect(self.save_text_to_file)
-        self.save_text_to_file()
         self.text_edit.setAcceptRichText(False)
-        #This is for the tab itself
+        # This is for the tab itself
         # Add QTextEdit to layout with padding
         layout = QVBoxLayout()
         layout.addWidget(self.text_edit)
         #  Set the margins
         layout.setContentsMargins(
-             int(24 * UI_SCALE),
-             int(24 * UI_SCALE),
-             int(22 * UI_SCALE),
-             int(22 * UI_SCALE),
+            int(24 * UI_SCALE),
+            int(24 * UI_SCALE),
+            int(22 * UI_SCALE),
+            int(22 * UI_SCALE),
         )
         self.setLayout(layout)
         self.text_edit.setStyleSheet(
@@ -55,7 +54,7 @@ class NoteTab(QWidget):
                 margin: 0px;
                 border: 1px white;
                 border-radius: 9px;
-                background-color: cyan;
+                background-color: white;
             }
             
             """
@@ -63,8 +62,6 @@ class NoteTab(QWidget):
 
         # Load text into QTextEdit after it's been created
         self.load_text_from_file()
-
-
 
     def load_text_from_file(self):
         if os.path.exists(self.file_path):
@@ -75,6 +72,10 @@ class NoteTab(QWidget):
     def save_text_to_file(self):
         with open(self.file_path, "w") as file:
             file.write(self.text_edit.toPlainText())
+
+    def create_new_file(self):
+        with open(self.file_path, "w") as file:
+            file.write("")
 
 
 class CustomTabWidget(QTabWidget):
@@ -87,9 +88,6 @@ class CustomTabWidget(QTabWidget):
         # self.setAttribute(Qt.WA_TranslucentBackground)
         self.setStyleSheet(
             """
-            QTabWidget {
-                background: cyan;
-            }
             QTabBar::tab {
                 background: white;
                 border: 1px white;
@@ -150,11 +148,7 @@ class JottingDownWindow(QWidget):
             QWidget {
                 border: 1px grey;
                 border-radius: 9px;
-                background-color: pink;
-            }
-            QVBoxLayout {
-                border: 10px solid-black;
-                border-radius: 9px;
+                background-color: lightgrey;
             }
         """
         )
@@ -173,7 +167,7 @@ class JottingDownWindow(QWidget):
                     file_name = os.path.basename(file_path)
                     note_tab = NoteTab(file_path)  # create an instance of NoteTab
                     self.tab_widget.addTab(
-                        note_tab, file_name+"     "
+                        note_tab, file_name + "     "
                     )  # add the NoteTab instance, not the QTextEdit
                     self.add_button_to_tab(tabno)
 
@@ -185,7 +179,7 @@ class JottingDownWindow(QWidget):
             for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
-                    self.tab_widget.addTab(NoteTab(file_path), file_name+"     *")
+                    self.tab_widget.addTab(NoteTab(file_path), file_name + "     *")
                     self.add_button_to_tab(tabno)
             # If no tabs are found after loading existing .txt files, add the
             #  default "notes" file
@@ -247,12 +241,14 @@ class JottingDownWindow(QWidget):
         file_path = os.path.join(self.notes_folder, file_name)
         if not os.path.exists(file_path):
             note_tab = NoteTab(file_path)  # create an instance of NoteTab
+            note_tab.create_new_file()
             self.tab_widget.addTab(
                 note_tab, file_name
             )  # add the NoteTab instance, not the QTextEdit
             self.add_button_to_tab(len(self.tab_widget) - 1)
             self.tab_widget.movePlusButton()
             self.save_tabs()
+            self.tab_widget.setCurrentIndex(len(self.tab_widget) - 1)
 
         else:
             QMessageBox.warning(
