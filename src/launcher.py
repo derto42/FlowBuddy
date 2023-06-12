@@ -156,7 +156,7 @@ class GroupWidget(QWidget):
         self.title_label.setWordWrap(True)
         self.title_label.setFont(get_font(size = scaled(12), weight="medium"))
         self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
-        self.title_label.setGeometry(QRect(0, scaled(85+11), self.width(), self.title_label.height()))
+        self.title_label.setGeometry(QRect(0, scaled(85+11), self.width(), self.title_label.height() + scaled(10)))
 
         if shortcut is not None:
             self.hotkey_label = ShortcutLabel(self, shortcut)
