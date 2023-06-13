@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
 import FileSystem as FS
 from addon import AddOnBase, load_addons, add_ons
-from launcher import MainWindow
+from launcher import LowerWidget
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
     
     load_addons()
     
-    widgets = MainWindow(add_ons)
+    widgets = LowerWidget(add_ons)
 
     sys.exit(app.exec_())
 
