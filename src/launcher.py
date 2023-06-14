@@ -225,8 +225,8 @@ class LowerWidget(QMainWindow):
         HotKeys.add_global_shortcut(hotkey, self.window_toggle_signal.emit)
 
         self.move(self.lower_position)
-        self.setHidden(get_setting("hidden")) if check_setting("hidden") else self.show()
-        self.main_window.show()
+        self.setHidden(get_setting("lower-hidden")) if check_setting("lower-hidden") else self.show()
+        self.main_window.setHidden(get_setting("upper-hidden")) if check_setting("upper-hidden") else self.show()
         
 
     def toggle_windows(self) -> None:
@@ -371,14 +371,8 @@ class MainWindow(QWidget):
 
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
         if self._moved:
-            if self.maximized:
-                self.upper_position = self.pos()
-                apply_setting("upper_position", [self.upper_position.x(), self.upper_position.y()])
-            else:
-                self.lower_position = self.pos()
-                apply_setting("lower_position", [self.lower_position.x(), self.lower_position.y()])
-        else:
-            self.minimize() if self.maximized else self.maximize()
+            self.upper_position = self.pos()
+            apply_setting("upper_position", [self.upper_position.x(), self.upper_position.y()])
         self._moved = False
         self._offset = None
         return super().mouseReleaseEvent(a0)
