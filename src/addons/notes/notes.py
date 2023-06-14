@@ -84,19 +84,16 @@ class CustomTabWidget(QTabWidget):
         self.addTabButton = GrnButton(self)
         self.addTabButton.clicked.connect(parent.add_new_tab)
 
-        # Set the background of the tab widget to be transparent
-        # self.setAttribute(Qt.WA_TranslucentBackground)
-        # self.setStyleSheet(
-        #     """
-        #     QTabBar::tab {
-        #         background: white;
-        #         color: blue;
-        #         border: 1px white;
-        #         border-radius: 9px;
-        #         margin-left:5;
-        #         margin-right:5;
-        #     }
-        #     QTabBar::tab:selected {
+    #     # Set the background of the tab widget to be transparent
+    #     self.setStyleSheet(
+    #         """
+    #         QTabBar::tab {
+    #             border: 1px ;
+    #             border-radius: 9px;
+    #    #         margin-left:5;
+       #         margin-right:5;
+            # }
+            # QTabBar::tab:selected {
         #         color: black;
         #         background: white;
         #         border: 1px #C5C6D0;
