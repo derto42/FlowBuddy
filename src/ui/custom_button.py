@@ -12,7 +12,7 @@ from PyQt5.QtGui import (
 
 from FileSystem import icon as icon_path
 from .utils import get_font
-from .settings import CORNER_RADIUS, UI_SCALE
+from settings import CORNER_RADIUS, UI_SCALE
 
 
 BUTTON_SIZE = {

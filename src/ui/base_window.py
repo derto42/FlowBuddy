@@ -15,7 +15,7 @@ from PyQt5.QtGui import (
     QMouseEvent,
 )
 
-from .settings import *
+from settings import *
 from .custom_button import *
 from .utils import get_font
 

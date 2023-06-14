@@ -21,10 +21,11 @@ from PyQt5.QtWidgets import (
 
 
 import SaveFile as Data
-from ..base_window import BaseWindow
-from ..entry_box import Entry
-from . import UI_SCALE, CORNER_RADIUS
-from .. import settings as GlobalSettings
+from addon import AddOnBase
+from ui import BaseWindow, Entry
+from settings import UI_SCALE, CORNER_RADIUS
+import settings as GlobalSettings  # for reloading the values
+
 from .structure import STRUCTURE, UPDATE, ENTRY, SPIN, KEY, SETTING_TYPE, TYPE, OPTIONS
 
 
@@ -93,8 +94,13 @@ class SpinBox(Entry):
     
 
 class SettingsUI(QWidget):
+    window_toggle_signal = pyqtSignal()
+    
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        
+        # temporarily disabled close button.
+        self.setWindowFlag(QtCore.Qt.WindowType.WindowCloseButtonHint, False)
         
         self._layouts: dict[str, QVBoxLayout] = {}
         
@@ -107,6 +113,8 @@ class SettingsUI(QWidget):
             self._create_group(group_name)
             for setting_name, options in settings.items():
                 self._create_setting(group_name, setting_name, options)
+        
+        self.window_toggle_signal.connect(lambda: self.show() if self.isHidden() else self.hide())
         
         
     def _create_group(self, group_name: str) -> None:
@@ -132,16 +140,16 @@ class SettingsUI(QWidget):
         setting_options: list = options[OPTIONS]
 
         def get_setting_value(*_, setting_name: str = setting_key) -> Any:
-            with contextlib.suppress(Data.NotFound):
+            with contextlib.suppress(Data.NotFoundException):
                 return Data.get_setting(setting_name)
 
         def set_setting_value(*_, setting_name: str = setting_key, value: Any = None) -> None:
-            with contextlib.suppress(Data.NotFound):
-                Data.apply_settings(setting_name, value)
+            with contextlib.suppress(Data.NotFoundException):
+                Data.apply_setting(setting_name, value)
             reload(GlobalSettings)
 
         def reset_setting_value(*_, setting_name: str = setting_key, widget: QSpinBox = None) -> None:
-            with contextlib.suppress(Data.NotFound):
+            with contextlib.suppress(Data.NotFoundException):
                 Data.remove_setting(setting_name)
             if widget is not None:
                 reload(GlobalSettings)
@@ -167,3 +175,8 @@ class SettingsUI(QWidget):
         setting_layout.addWidget(reset_button := QPushButton("Reset"))
         reset_button.clicked.connect(lambda _: reset_setting_value(widget=spinbox))
         
+
+ui_window = SettingsUI()
+
+addon_base = AddOnBase()
+addon_base.activate = ui_window.window_toggle_signal.emit

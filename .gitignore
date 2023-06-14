@@ -160,3 +160,6 @@ cython_debug/
 # save file
 /**/save.json
 notes/config.json
+
+# addons order config file
+src/addons/order.json

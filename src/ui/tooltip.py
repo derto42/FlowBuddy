@@ -23,7 +23,7 @@ from PyQt5.QtGui import (
 
 
 from .utils import get_font
-from .settings import *
+from settings import *
 
 
 class ToolTip(QWidget):
