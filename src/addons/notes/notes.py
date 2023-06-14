@@ -86,33 +86,33 @@ class CustomTabWidget(QTabWidget):
 
         # Set the background of the tab widget to be transparent
         # self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setStyleSheet(
-            """
-            QTabBar::tab {
-                background: white;
-                color: blue;
-                border: 1px white;
-                border-radius: 9px;
-                margin-left:5;
-                margin-right:5;
-            }
-            QTabBar::tab:selected {
-                color: black;
-                background: white;
-                border: 1px #C5C6D0;
-                border-radius: 9px;
-            }
-        """
-        )
+        # self.setStyleSheet(
+        #     """
+        #     QTabBar::tab {
+        #         background: white;
+        #         color: blue;
+        #         border: 1px white;
+        #         border-radius: 9px;
+        #         margin-left:5;
+        #         margin-right:5;
+        #     }
+        #     QTabBar::tab:selected {
+        #         color: black;
+        #         background: white;
+        #         border: 1px #C5C6D0;
+        #         border-radius: 9px;
+        #     }
+        # """
+        # )
 
     def movePlusButton(self, no_of_tabs=0):
         """Move the plus button to the correct location."""
         w = self.count()
         if w > 0:
             rect = self.tabBar().tabRect(w - 1)
-            self.addTabButton.move(rect.right() + 5, rect.top() + 0)
+            self.addTabButton.move(rect.right() + 5, rect.top() + 5)
         else:
-            self.addTabButton.move(5, 0)
+            self.addTabButton.move(5, 5)
 
 
 class JottingDownWindow(QWidget):
