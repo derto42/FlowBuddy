@@ -22,7 +22,7 @@ class NotFoundException(Exception):
 
 def _create_empty_save_file(file_path: str) -> None:
     """Creates an empty save file in the file_path directory."""
-    with open(f"{file_path}/save.json", "w") as f:
+    with open(f"{file_path}", "w") as f:
         json.dump({}, f)
 
 
