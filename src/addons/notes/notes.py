@@ -90,13 +90,15 @@ class CustomTabWidget(QTabWidget):
             """
             QTabBar::tab {
                 background: white;
+                color: blue;
                 border: 1px white;
                 border-radius: 9px;
                 margin-left:5;
                 margin-right:5;
             }
             QTabBar::tab:selected {
-                background: #C5C6D0;
+                color: black;
+                background: white;
                 border: 1px #C5C6D0;
                 border-radius: 9px;
             }
@@ -148,7 +150,7 @@ class JottingDownWindow(QWidget):
             QWidget {
                 border: 1px grey;
                 border-radius: 9px;
-                background-color: lightgrey;
+                background-color: #FAFAFA;
             }
         """
         )
@@ -179,7 +181,7 @@ class JottingDownWindow(QWidget):
             for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
-                    self.tab_widget.addTab(NoteTab(file_path), file_name + "     *")
+                    self.tab_widget.addTab(NoteTab(file_path), file_name )
                     self.add_button_to_tab(tabno)
             # If no tabs are found after loading existing .txt files, add the
             #  default "notes" file
