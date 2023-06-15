@@ -1,6 +1,5 @@
 import os
 import json
-from pathlib import Path
 
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
@@ -241,7 +240,9 @@ class JottingDownWindow(QWidget):
 
 
 window = JottingDownWindow()
-window.setStyleSheet(Path("src/addons/notes/notes.qss").read_text())
+
+with open(os.path.join(os.path.dirname(__file__), "notes.qss"), "r") as f:
+    window.setStyleSheet(f.read())
 
 AddOnBase().activate = window.window_toggle_signal.emit
 AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+`"))
