@@ -1,0 +1,12 @@
+QTextEdit{ 
+    background-color:lightgrey;
+    border-radius: 10;
+} 
+
+QTabWidget{ 
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 5px 15px;
+  margin-top: 10px;
+  outline: 0px;
+}
