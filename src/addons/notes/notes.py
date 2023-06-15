@@ -1,5 +1,6 @@
 import os
 import json
+from pathlib import Path
 
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
@@ -47,20 +48,6 @@ class NoteTab(QWidget):
             int(22 * UI_SCALE),
         )
         self.setLayout(layout)
-        self.text_edit.setStyleSheet(
-            """
-            QTextEdit {
-                padding: 0px;
-                margin: 0px;
-                border: 1px white;
-                border-radius: 9px;
-                background-color: white;
-            }
-            
-            """
-        )
-
-        # Load text into QTextEdit after it's been created
         self.load_text_from_file()
 
     def load_text_from_file(self):
@@ -84,24 +71,6 @@ class CustomTabWidget(QTabWidget):
         self.addTabButton = GrnButton(self)
         self.addTabButton.clicked.connect(parent.add_new_tab)
 
-    #     # Set the background of the tab widget to be transparent
-    #     self.setStyleSheet(
-    #         """
-    #         QTabBar::tab {
-    #             border: 1px ;
-    #             border-radius: 9px;
-    #    #         margin-left:5;
-       #         margin-right:5;
-            # }
-            # QTabBar::tab:selected {
-        #         color: black;
-        #         background: white;
-        #         border: 1px #C5C6D0;
-        #         border-radius: 9px;
-        #     }
-        # """
-        # )
-
     def movePlusButton(self, no_of_tabs=0):
         """Move the plus button to the correct location."""
         w = self.count()
@@ -119,22 +88,19 @@ class JottingDownWindow(QWidget):
         super().__init__()
 
         self.window_toggle_signal.connect(self.toggle_window)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
 
         self.notes_folder = "addons/notes/data"
         if not os.path.exists(self.notes_folder):
             os.makedirs(self.notes_folder)
 
         self.config_file = os.path.join(self.notes_folder, "config.json")
+
         self.tab_widget = CustomTabWidget(self)
         self.tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        # self.setAttribute(Qt.WA_TranslucentBackground)
-
         layout = QVBoxLayout()
-        # layout.setContentsMargins(22, 22, 22, 22)  # Set padding here
         self.setLayout(layout)
-
         layout.addWidget(self.tab_widget)
 
         self.load_tabs()
@@ -142,15 +108,6 @@ class JottingDownWindow(QWidget):
         new_tab_shortcut = QShortcut(QKeySequence("Ctrl+T"), self)
         new_tab_shortcut.activated.connect(self.add_new_tab)
 
-        self.setStyleSheet(
-            """
-            QWidget {
-                border: 1px grey;
-                border-radius: 9px;
-                background-color: #FAFAFA;
-            }
-        """
-        )
         self.setFixedSize(int(650 * UI_SCALE), int(450 * UI_SCALE))
         self.old_pos = None
 
@@ -178,7 +135,7 @@ class JottingDownWindow(QWidget):
             for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
-                    self.tab_widget.addTab(NoteTab(file_path), file_name )
+                    self.tab_widget.addTab(NoteTab(file_path), file_name)
                     self.add_button_to_tab(tabno)
             # If no tabs are found after loading existing .txt files, add the
             #  default "notes" file
@@ -188,7 +145,8 @@ class JottingDownWindow(QWidget):
 
     def add_button_to_tab(self, tabno):
         self.button = RedButton(self.tab_widget, "radial")
-        self.tab_widget.tabBar().setTabButton(tabno, 2, self.button)
+        self.right = self.tab_widget.tabBar().RightSide
+        self.tab_widget.tabBar().setTabButton(tabno, self.right, self.button)
         tab_text = self.tab_widget.tabBar().tabText(tabno)
         self.button.clicked.connect(lambda: self.delete_tab(tab_text))
 
@@ -283,6 +241,7 @@ class JottingDownWindow(QWidget):
 
 
 window = JottingDownWindow()
+window.setStyleSheet(Path("src/addons/notes/notes.qss").read_text())
 
 AddOnBase().activate = window.window_toggle_signal.emit
 AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+`"))
