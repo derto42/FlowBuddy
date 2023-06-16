@@ -110,6 +110,12 @@ class JottingDownWindow(QWidget):
         self.setFixedSize(int(650 * UI_SCALE), int(450 * UI_SCALE))
         self.old_pos = None
 
+    def add_tab(self,file_path,file_name,tabno):
+        note_tab = NoteTab(file_path)
+        self.tab_widget.addTab(note_tab, file_name)
+        self.add_button_to_tab(tabno)
+
+
     def load_tabs(self):
         # Load existing .txt files in the notes folder as tabs
         if os.path.exists(self.config_file):
@@ -120,11 +126,7 @@ class JottingDownWindow(QWidget):
             for tabno, file_path in enumerate(config["files"]):
                 if os.path.exists(file_path):
                     file_name = os.path.basename(file_path)
-                    note_tab = NoteTab(file_path)  # create an instance of NoteTab
-                    self.tab_widget.addTab(
-                        note_tab, file_name + "     "
-                    )  # add the NoteTab instance, not the QTextEdit
-                    self.add_button_to_tab(tabno)
+                    self.add_tab(file_path, file_name, tabno)
 
             self.tab_widget.setCurrentIndex(config["last_active"])
         else:
@@ -134,8 +136,7 @@ class JottingDownWindow(QWidget):
             for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
-                    self.tab_widget.addTab(NoteTab(file_path), file_name)
-                    self.add_button_to_tab(tabno)
+                    self.add_tab(file_path, file_name, tabno)
             # If no tabs are found after loading existing .txt files, add the
             #  default "notes" file
         if self.tab_widget.count() == 0:
