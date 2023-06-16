@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QGraphicsDropShadowEffect,
+    QTabWidget,
 )
 from PyQt5.QtGui import (
     QColor,
@@ -74,6 +75,9 @@ class InnerPart(QWidget):
 
             self.edit_button.setToolTip("Edit Window")
             self.close_button.setToolTip("Close Window")
+
+            self.tab_widget=QTabWidget(self)
+            self.tab_widget.hide()
             
             layout.addLayout(title_layout:=QHBoxLayout())
             title_layout.setContentsMargins(0, int(10 * UI_SCALE), 0, int(10 * UI_SCALE))
