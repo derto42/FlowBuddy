@@ -68,7 +68,6 @@ class CustomTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.addTabButton = GrnButton(self)
-        self.addTabButton.move(100, 5)
         self.addTabButton.clicked.connect(parent.add_new_tab)
 
 
@@ -94,7 +93,6 @@ class JottingDownWindow(QWidget):
         self.setLayout(layout)
         layout.addWidget(self.tab_widget)
 
-
         new_tab_shortcut = QShortcut(QKeySequence("Ctrl+T"), self)
         new_tab_shortcut.activated.connect(self.add_new_tab)
 
@@ -106,6 +104,7 @@ class JottingDownWindow(QWidget):
         note_tab = NoteTab(file_path)
         self.tab_widget.addTab(note_tab, file_name)
         self.add_button_to_tab(tabno)
+        print(self.tab_widget.tabBar().width())
 
     def movePlusButton(self):
         """Move the plus button to the correct location."""
@@ -113,8 +112,6 @@ class JottingDownWindow(QWidget):
         if w > 0:
             rect = self.tab_widget.tabBar().size()
             self.tab_widget.addTabButton.move(rect.width() + int(50 * UI_SCALE), 5)
-        else:
-            self.tab_widget.addTabButton.move(int(50 * UI_SCALE), 5)
 
     def load_tabs(self):
         if os.path.exists(self.config_file):
@@ -124,8 +121,6 @@ class JottingDownWindow(QWidget):
 
         if self.tab_widget.count() == 0:
             self.add_new_tab("notes")
-
-        self.movePlusButton()
 
     def Load_tabs_from_text_files(self):
         for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
@@ -177,7 +172,7 @@ class JottingDownWindow(QWidget):
         if not res:
             return
         self.tab_widget.removeTab(tabid)
-        self.delete_tab_text_file(file_name)
+        # self.delete_tab_text_file(file_name)
         self.movePlusButton()
         self.save_tabs()
 
@@ -216,6 +211,7 @@ class JottingDownWindow(QWidget):
     def toggle_window(self) -> None:
         if self.isHidden():
             window.show()
+            self.movePlusButton()
             window.activateWindow()
             if current_widget := self.tab_widget.currentWidget():
                 current_widget.setFocus()
