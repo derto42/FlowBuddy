@@ -54,8 +54,8 @@ class IconButton(QPushButton):
         self._icon = icon_path
         self._hover_icon = hover_icon_path
         
-        self.setFixedSize(QSize(scaled(85), scaled(85)))
-        self.setIconSize(QSize(scaled(85), scaled(85)))
+        self.setFixedSize(QSize(scaled(100), scaled(100)))
+        self.setIconSize(QSize(scaled(100), scaled(100)))
         
         self.setStyleSheet(
             (
@@ -140,7 +140,7 @@ class GroupWidget(QWidget):
         super().__init__(parent)
         
         self.index = index
-        self.setFixedWidth(scaled(85 + 40))  # 40 padding
+        self.setFixedWidth(scaled(100 + 40))  # 40 padding
         
         self.icon_button = IconButton(self, icon_path, hover_icon_path)
         self.icon_button.clicked.connect(activate_callback)
@@ -155,7 +155,7 @@ class GroupWidget(QWidget):
 
         if shortcut is not None:
             self.hotkey_label = ShortcutLabel(self, shortcut)
-            self.hotkey_label.setGeometry(QRect(0, scaled(85+17+17)+self.title_label.sizeHint().height(),
+            self.hotkey_label.setGeometry(QRect(0, scaled(90+17+17)+self.title_label.sizeHint().height(),
                                                 self.width(),
                                                 self.hotkey_label.height()))
         
@@ -178,7 +178,7 @@ class GroupWidget(QWidget):
     def size() -> QSize:
         # Note: this widgets exact size is 85, 164. 20 is added to the margins.
         # this values don't effect the size of the GroupWidget
-        return QSize(scaled(85+20+20), scaled(164))
+        return QSize(scaled(100+20+20), scaled(164))
 
 
 class LowerWidget(QMainWindow):
@@ -199,19 +199,19 @@ class LowerWidget(QMainWindow):
         self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
                               if check_setting("lower_position") else \
                               QPoint(QApplication.desktop().width() // 2 - self.size().width() // 2,
-                                     QApplication.desktop().height() - self.size().height() - 50)
+                                     QApplication.desktop().height() - self.size().height() - 200)
 
 
-        self.icon: QPixmap = QPixmap(get_icon("icon.png")).scaled(scaled(45), scaled(45),
+        self.icon: QPixmap = QPixmap(get_icon("icon.png")).scaled(scaled(35), scaled(35),
                                                                   Qt.AspectRatioMode.KeepAspectRatio,
                                                                   Qt.TransformationMode.SmoothTransformation)
 
         self.icon_label = QLabel(self)
         self.icon_label.setPixmap(self.icon)
-        self.icon_label.setGeometry(scaled(40), scaled(13), scaled(45), scaled(45))
+        self.icon_label.setGeometry(scaled(40), scaled(13), scaled(35), scaled(35))
         
         self.title_label = QLabel("FlowBuddy", self)
-        self.title_label.setFont(get_font(size=scaled(16), weight="semibold"))
+        self.title_label.setFont(get_font(size=scaled(16), weight="medium"))
         self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
         self.title_label.move(scaled(53 + 40), scaled(5 + 13))
         self.title_label.adjustSize()
@@ -284,9 +284,9 @@ class LowerWidget(QMainWindow):
     # setting fixed size of LowerWidget
     @staticmethod
     def size() -> QSize:
-        # Note: this widgets exact size is 177, 45. 40, 13 is added to the margins.
+        # Note: this widgets exact size is 177, 35. 40, 13 is added to the margins.
         # this values don't effect the size of the LowerWidget
-        return QSize(scaled(177+40+40), scaled(45+13+13))
+        return QSize(scaled(177+40+40), scaled(35+13+13))
 
 
 class MainWindow(QWidget):
