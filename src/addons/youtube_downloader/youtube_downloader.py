@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QPointF, pyqtSignal
 from PyQt5.QtGui import QPainter, QLinearGradient, QKeySequence
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from settings import UI_SCALE  # pylint: disable=import-error
 from ui.utils import get_font  # pylint: disable=import-error
 from ui.entry_box import Entry  # pylint: disable=import-error
@@ -472,13 +472,18 @@ class DownloaderWorker(QWidget):
             self.video_location = settings["download_path"]
             print(self.video_location)
 
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = YoutubeDownloader()
+    window.show()
+    sys.exit(app.exec_())
+else:
+    window = YoutubeDownloader()
 
-window = YoutubeDownloader()
+    menu = AddOnBase.system_tray_icon.contextMenu()
+    action = menu.addAction("Youtube Downloader")
+    action.triggered.connect(window.ytd_toggle_signal.emit)
 
-menu = AddOnBase.system_tray_icon.contextMenu()
-action = menu.addAction("Youtube Downloader")
-action.triggered.connect(window.ytd_toggle_signal.emit)
+    AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+Shift+Y"))
 
-AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+Shift+Y"))
-
-AddOnBase().activate = window.ytd_toggle_signal.emit
+    AddOnBase().activate = window.ytd_toggle_signal.emit
