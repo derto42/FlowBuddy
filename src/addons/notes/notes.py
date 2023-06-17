@@ -68,17 +68,10 @@ class CustomTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.addTabButton = GrnButton(self)
+        self.addTabButton.move(100,5)
         self.addTabButton.clicked.connect(parent.add_new_tab)
 
-    def movePlusButton(self, no_of_tabs=0):
-        """Move the plus button to the correct location."""
-        w = self.count()
-        if w > 0:
-            rect = self.tabBar().tabRect(w - 1)
-            self.addTabButton.move(rect.right() + 5, rect.top() + 5)
-        else:
-            self.addTabButton.move(5, 5)
-
+    
 
 class JottingDownWindow(QWidget):
     window_toggle_signal = pyqtSignal()
@@ -115,9 +108,18 @@ class JottingDownWindow(QWidget):
         self.tab_widget.addTab(note_tab, file_name)
         self.add_button_to_tab(tabno)
 
+    def movePlusButton(self, no_of_tabs=0):
+            """Move the plus button to the correct location."""
+            w = self.tab_widget.count()
+            if w > 0:
+                rect = self.tab_widget.tabBar().size()
+                self.tab_widget.addTabButton.move(rect.width() + int(50 * UI_SCALE), 5)
+                # self.addTabButton.move(rect.topRight())
+            else:
+                self.tab_widget.addTabButton.move(int(50 * UI_SCALE), 5)
+
 
     def load_tabs(self):
-        # Load existing .txt files in the notes folder as tabs
         if os.path.exists(self.config_file):
             with open(self.config_file, "r") as file:
                 config = json.load(file)
@@ -137,11 +139,11 @@ class JottingDownWindow(QWidget):
                 if file_name.endswith(".txt"):
                     file_path = os.path.join(self.notes_folder, file_name)
                     self.add_tab(file_path, file_name, tabno)
-            # If no tabs are found after loading existing .txt files, add the
-            #  default "notes" file
+        # If no tabs are found after loading existing .txt files, add the
+        #  default "notes" file
         if self.tab_widget.count() == 0:
             self.add_new_tab("notes")
-        self.tab_widget.movePlusButton()
+        self.movePlusButton()
 
     def add_button_to_tab(self, tabno):
         self.button = RedButton(self.tab_widget, "radial")
@@ -177,7 +179,7 @@ class JottingDownWindow(QWidget):
             return
         self.tab_widget.removeTab(tabid)
         self.delete_tab_text_file(file_name)
-        self.tab_widget.movePlusButton()
+        self.movePlusButton()
         self.save_tabs()
 
     def get_tab_number_from_text(self, tab_text):
@@ -203,7 +205,7 @@ class JottingDownWindow(QWidget):
                 note_tab, file_name
             )  # add the NoteTab instance, not the QTextEdit
             self.add_button_to_tab(len(self.tab_widget) - 1)
-            self.tab_widget.movePlusButton()
+            self.movePlusButton()
             self.save_tabs()
             self.tab_widget.setCurrentIndex(len(self.tab_widget) - 1)
 
