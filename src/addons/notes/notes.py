@@ -68,10 +68,9 @@ class CustomTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.addTabButton = GrnButton(self)
-        self.addTabButton.move(100,5)
+        self.addTabButton.move(100, 5)
         self.addTabButton.clicked.connect(parent.add_new_tab)
 
-    
 
 class JottingDownWindow(QWidget):
     window_toggle_signal = pyqtSignal()
@@ -95,55 +94,55 @@ class JottingDownWindow(QWidget):
         self.setLayout(layout)
         layout.addWidget(self.tab_widget)
 
-        self.load_tabs()
 
         new_tab_shortcut = QShortcut(QKeySequence("Ctrl+T"), self)
         new_tab_shortcut.activated.connect(self.add_new_tab)
 
         self.setFixedSize(int(650 * UI_SCALE), int(450 * UI_SCALE))
+        self.load_tabs()
         self.old_pos = None
 
-    def add_tab(self,file_path,file_name,tabno):
+    def add_tab(self, file_path, file_name, tabno):
         note_tab = NoteTab(file_path)
         self.tab_widget.addTab(note_tab, file_name)
         self.add_button_to_tab(tabno)
 
-    def movePlusButton(self, no_of_tabs=0):
-            """Move the plus button to the correct location."""
-            w = self.tab_widget.count()
-            if w > 0:
-                rect = self.tab_widget.tabBar().size()
-                self.tab_widget.addTabButton.move(rect.width() + int(50 * UI_SCALE), 5)
-                # self.addTabButton.move(rect.topRight())
-            else:
-                self.tab_widget.addTabButton.move(int(50 * UI_SCALE), 5)
-
+    def movePlusButton(self):
+        """Move the plus button to the correct location."""
+        w = self.tab_widget.count()
+        if w > 0:
+            rect = self.tab_widget.tabBar().size()
+            self.tab_widget.addTabButton.move(rect.width() + int(50 * UI_SCALE), 5)
+        else:
+            self.tab_widget.addTabButton.move(int(50 * UI_SCALE), 5)
 
     def load_tabs(self):
         if os.path.exists(self.config_file):
-            with open(self.config_file, "r") as file:
-                config = json.load(file)
-
-            # Load tabs based on the order in config["files"]
-            for tabno, file_path in enumerate(config["files"]):
-                if os.path.exists(file_path):
-                    file_name = os.path.basename(file_path)
-                    self.add_tab(file_path, file_name, tabno)
-
-            self.tab_widget.setCurrentIndex(config["last_active"])
+            self.load_tabs_from_config()
         else:
-            # If config file doesn't exist, load tabs by iterating
-            # over files in the notes folder
+            self.Load_tabs_from_text_files()
 
-            for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
-                if file_name.endswith(".txt"):
-                    file_path = os.path.join(self.notes_folder, file_name)
-                    self.add_tab(file_path, file_name, tabno)
-        # If no tabs are found after loading existing .txt files, add the
-        #  default "notes" file
         if self.tab_widget.count() == 0:
             self.add_new_tab("notes")
+
         self.movePlusButton()
+
+    def Load_tabs_from_text_files(self):
+        for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
+            if file_name.endswith(".txt"):
+                file_path = os.path.join(self.notes_folder, file_name)
+                self.add_tab(file_path, file_name, tabno)
+
+    def load_tabs_from_config(self):
+        with open(self.config_file, "r") as file:
+            config = json.load(file)
+
+        for tabno, file_path in enumerate(config["files"]):
+            if os.path.exists(file_path):
+                file_name = os.path.basename(file_path)
+                self.add_tab(file_path, file_name, tabno)
+
+        self.tab_widget.setCurrentIndex(config["last_active"])
 
     def add_button_to_tab(self, tabno):
         self.button = RedButton(self.tab_widget, "radial")
