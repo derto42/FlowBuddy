@@ -30,7 +30,7 @@ from ui.custom_button import RedButton, TextButton  # pylint: disable=import-err
 if __name__ == "__main__":
     from vcolorpicker import ColorPicker
 else:
-    from src.addons.colorpicker.vcolorpicker import ColorPicker
+    from .vcolorpicker import ColorPicker
 
 
 def resize_image(image, target_width, target_height):
