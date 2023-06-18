@@ -208,9 +208,9 @@ class BuddyColorPicker(BaseWindow):
         self._color_picker.show()
 
     def on_close_button_clicked(self):
-        self.close()
-        self._desktop_color_picker.close()
-        self._color_picker.close()
+        self.hide()
+        self._desktop_color_picker.hide()
+        self._color_picker.hide()
 
     def add_selected_color(self, color: str):
         if color not in self.added_colors:
