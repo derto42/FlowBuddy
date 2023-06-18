@@ -13,6 +13,7 @@ from PyQt5.QtGui import QCursor, QPainter, QPixmap, QColor, QIcon, QPen, QPainte
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QRectF
 from PyQt5.QtSvg import QSvgWidget
 from PIL import ImageGrab, Image
+from addon import AddOnBase
 
 
 sys.path.append(os.path.dirname(os.path.dirname(
@@ -168,6 +169,9 @@ class BuddyColorPicker(BaseWindow):
         self.selected_color_widget = None
         self.selected_color_widgets = 0
         self.added_colors = []
+        
+        self._desktop_color_picker = MagnifierWidget()
+        self._color_picker = ColorPickerWidget()
 
         self.setLayout(self.layout)
         self.setMaximumHeight(800)
@@ -196,17 +200,17 @@ class BuddyColorPicker(BaseWindow):
 
     def start_desktop_color_picker(self):
         self.hide()
-        desktop_color_picker.show()
-        desktop_color_picker.start_color_picker()
+        self._desktop_color_picker.show()
+        self._desktop_color_picker.start_color_picker()
 
     def start_color_picker(self):
         self.hide()
-        color_picker.show()
+        self._color_picker.show()
 
     def on_close_button_clicked(self):
         self.close()
-        desktop_color_picker.close()
-        color_picker.close()
+        self._desktop_color_picker.close()
+        self._color_picker.close()
 
     def add_selected_color(self, color: str):
         if color not in self.added_colors:
@@ -379,6 +383,9 @@ class MagnifierWidget(QWidget):
     def set_track_color(self, track_color: bool) -> None:
         self.track_color = track_color
 
+
+buddy_color_picker = BuddyColorPicker()
+AddOnBase().activate = lambda: buddy_color_picker.show() if buddy_color_picker.isHidden() else buddy_color_picker.hide()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
