@@ -104,7 +104,6 @@ class JottingDownWindow(QWidget):
         note_tab = NoteTab(file_path)
         self.tab_widget.addTab(note_tab, file_name)
         self.add_button_to_tab(tabno)
-        print(self.tab_widget.tabBar().width())
 
     def movePlusButton(self):
         """Move the plus button to the correct location."""
