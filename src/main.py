@@ -22,7 +22,7 @@ def main():
     
     load_addons()
     
-    widgets = LowerWidget(add_ons)
+    LowerWidget(add_ons)
 
     sys.exit(app.exec_())
 
