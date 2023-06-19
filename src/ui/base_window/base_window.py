@@ -64,10 +64,33 @@ def add_base_window(widget: QWidget | TabWidget, title_bar: Literal["title", "ta
     widget.shadow_layer = shadow_layer
     widget.title_bar_layer = title_bar_layer
     widget.shadow_effect = shadow
+
+
+class Buttons:
+    def __init__(self):
+        # for linting purposes
+        self.title_bar_layer: TitleBarLayer
+        
+    @property
+    def red_button(self):
+        (button := self.title_bar_layer.buttons.red_button).show()
+        self.title_bar_layer._set_button_position()
+        return button
+
+    @property
+    def yel_button(self):
+        (button := self.title_bar_layer.buttons.yel_button).show()
+        self.title_bar_layer._set_button_position()
+        return button
+
+    @property
+    def grn_button(self):
+        (button := self.title_bar_layer.buttons.grn_button).show()
+        self.title_bar_layer._set_button_position()
+        return button
     
     
-    
-class BaseWindow(QWidget):
+class BaseWindow(QWidget, Buttons):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__()
         
@@ -85,7 +108,7 @@ class BaseWindow(QWidget):
         return super().setGraphicsEffect(effect)
     
     
-class TabsWindow(TabWidget):
+class TabsWindow(TabWidget, Buttons):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__()
 
