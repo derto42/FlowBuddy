@@ -26,6 +26,8 @@ UI_SCALE: float = _load[0] if (_load:=_get_setting("ui_scale"))[1] and isinstanc
 
 
 
-def apply_ui_scale(value: int | float) -> int | float:
+from PyQt5.QtCore import QSize, QPoint
+
+def apply_ui_scale(value: int | float | QSize | QPoint) -> int | float | QSize | QPoint:
     scaled_value = value * UI_SCALE
     return type(value)(scaled_value)
