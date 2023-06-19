@@ -164,3 +164,4 @@ notes/config.json
 # addons order config file
 src/addons/order.json
 addons/notes/data/config.json
+addons/notes/data/notes.txt
