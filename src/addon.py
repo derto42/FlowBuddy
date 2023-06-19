@@ -93,12 +93,14 @@ def load_addons() -> None:
         modules_and_paths = {}
         
         for root, dirs, files in os.walk(ADDONS_FOLDER):
+            if root != ADDONS_FOLDER: continue
             for name in dirs:
                 dir_path = os.path.join(root, name)
                 file_path = os.path.join(dir_path, f"{name}.py")
                 if os.path.isfile(file_path):  # If the .py file with same name as directory exists
                     module_name = f'{ADDONS_NAME}.{name}.{name}'
                     modules_and_paths[module_name] = file_path
+            break
         
         modules_and_paths = apply_order(modules_and_paths)
         

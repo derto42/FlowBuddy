@@ -155,7 +155,7 @@ class GroupWidget(QWidget):
 
         if shortcut is not None:
             self.hotkey_label = ShortcutLabel(self, shortcut)
-            self.hotkey_label.setGeometry(QRect(0, scaled(90+17+17)+self.title_label.sizeHint().height(),
+            self.hotkey_label.setGeometry(QRect(0, scaled(98+17+17)+self.title_label.sizeHint().height(),
                                                 self.width(),
                                                 self.hotkey_label.height()))
         
@@ -213,7 +213,7 @@ class LowerWidget(QMainWindow):
         self.title_label = QLabel("FlowBuddy", self)
         self.title_label.setFont(get_font(size=scaled(16), weight="medium"))
         self.title_label.setStyleSheet("QLabel { color : #ECECEC }")
-        self.title_label.move(scaled(53 + 40), scaled(5 + 13))
+        self.title_label.move(scaled(43 + 40), scaled(9 + 5))
         self.title_label.adjustSize()
 
         self.setFixedSize(self.size())
@@ -286,7 +286,7 @@ class LowerWidget(QMainWindow):
     def size() -> QSize:
         # Note: this widgets exact size is 177, 35. 40, 13 is added to the margins.
         # this values don't effect the size of the LowerWidget
-        return QSize(scaled(177+40+40), scaled(35+13+13))
+        return QSize(scaled(162+40+40), scaled(35+13+13))
 
 
 class MainWindow(QWidget):

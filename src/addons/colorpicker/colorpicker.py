@@ -2,17 +2,18 @@ import sys
 import os
 from typing import Optional
 
-from clipboard import copy
-
 from pynput import mouse
 
+from numpy import array
+
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QVBoxLayout,
-                             QHBoxLayout, QGridLayout, QFrame, QSizePolicy,
+                             QGridLayout, QFrame, QSizePolicy,
                              QSpacerItem, QPushButton)
-from PyQt5.QtGui import QCursor, QPainter, QPixmap, QColor, QIcon
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QCursor, QPainter, QPixmap, QColor, QIcon, QPen, QPainterPath, QImage, QRadialGradient, QBrush
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QRectF
 from PyQt5.QtSvg import QSvgWidget
-from PIL import ImageGrab
+from PIL import ImageGrab, Image
+from addon import AddOnBase
 
 
 sys.path.append(os.path.dirname(os.path.dirname(
@@ -20,17 +21,24 @@ sys.path.append(os.path.dirname(os.path.dirname(
 
 sys.path.append(os.path.abspath(__file__))
 
-from ui.custom_button import RedButton, GrnButton, YelButton, TextButton  # pylint: disable=import-error, unused-import
-from ui.dialog import ConfirmationDialog, BaseDialog  # pylint: disable=import-error, unused-import
-from ui.base_window import MainLayer  # pylint: disable=import-error, unused-import
-from ui.base_window import InnerPart  # pylint: disable=import-error, unused-import
-from ui.base_window import BaseWindow  # pylint: disable=import-error, unused-import
-from ui.entry_box import Entry  # pylint: disable=import-error, unused-import
-from ui.utils import DEFAULT_BOLD, DEFAULT_REGULAR  # pylint: disable=import-error, unused-import
-from ui.utils import get_font  # pylint: disable=import-error, unused-import
 from settings import UI_SCALE  # pylint: disable=import-error, unused-import
+from ui.utils import get_font  # pylint: disable=import-error, unused-import
+from ui.utils import DEFAULT_BOLD, DEFAULT_REGULAR  # pylint: disable=import-error, unused-import
+from ui.base_window import BaseWindow  # pylint: disable=import-error, unused-import
+from ui.base_window import InnerPart  # pylint: disable=import-error, unused-import
+from ui.custom_button import RedButton, TextButton  # pylint: disable=import-error, unused-import
 
-from vcolorpicker import ColorPicker
+if __name__ == "__main__":
+    from vcolorpicker import ColorPicker
+else:
+    from .vcolorpicker import ColorPicker
+
+
+def resize_image(image, target_width, target_height):
+    qImg = QImage(image)
+    qImg = qImg.scaled(target_width, target_height,
+                       Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+    return qImg
 
 
 def get_pixel_from_position(position) -> str:
@@ -51,6 +59,7 @@ class SelectedColorWidget(QWidget):
     def __init__(self, color: str = '#000000'):
         super().__init__()
         self.color = color
+        self.clipboard = QApplication.clipboard()
         self.layout = QGridLayout()
 
         self.copy_svg_icon = QSvgWidget(os.path.join(os.path.dirname(
@@ -84,7 +93,8 @@ class SelectedColorWidget(QWidget):
         self.copy_color_hex_btn.setStyleSheet('background: white;')
         self.copy_color_hex_btn.setStyleSheet(
             "QPushButton:hover { " + f"background-color: {self.color}; " + "}")
-        self.copy_color_hex_btn.clicked.connect(lambda: copy(self.color))
+        self.copy_color_hex_btn.clicked.connect(
+            lambda: self.clipboard.setText(self.color))
 
         self.layout.addWidget(self.color_label_hex, 0, 0, 1, 3)
         self.layout.addWidget(self.color_value_hex, 0, 3, 1, 5)
@@ -110,7 +120,7 @@ class SelectedColorWidget(QWidget):
         self.copy_color_rgb_btn.setStyleSheet(
             "QPushButton:hover { " + f"background-color: {self.color}; " + "}")
         self.copy_color_rgb_btn.clicked.connect(
-            lambda: copy(str(QColor(self.color).getRgb()[0:3])))
+            lambda: self.clipboard.setText(str(QColor(self.color).getRgb()[0:3])))
 
         self.layout.addWidget(self.color_label_rgb, 1, 0, 1, 3)
         self.layout.addWidget(self.color_value_rgb, 1, 3, 1, 5)
@@ -158,6 +168,11 @@ class BuddyColorPicker(BaseWindow):
         self.layout = QVBoxLayout()
         self.selected_color_widget = None
         self.selected_color_widgets = 0
+        self.added_colors = []
+        
+        self._desktop_color_picker = MagnifierWidget()
+        self._color_picker = ColorPickerWidget()
+
         self.setLayout(self.layout)
         self.setMaximumHeight(800)
 
@@ -185,30 +200,32 @@ class BuddyColorPicker(BaseWindow):
 
     def start_desktop_color_picker(self):
         self.hide()
-        desktop_color_picker.show()
-        desktop_color_picker.start_color_picker()
+        self._desktop_color_picker.show()
+        self._desktop_color_picker.start_color_picker()
 
     def start_color_picker(self):
         self.hide()
-        color_picker.show()
+        self._color_picker.show()
 
     def on_close_button_clicked(self):
-        self.close()
-        desktop_color_picker.close()
-        color_picker.close()
+        self.hide()
+        self._desktop_color_picker.hide()
+        self._color_picker.hide()
 
     def add_selected_color(self, color: str):
-        self.selected_color_widget = SelectedColorWidget(color=color)
-        self.layout.insertWidget(
-            self.layout.count() - 1, self.selected_color_widget)
+        if color not in self.added_colors:
+            self.added_colors.append(color)
+            self.selected_color_widget = SelectedColorWidget(color=color)
+            self.layout.insertWidget(
+                self.layout.count() - 1, self.selected_color_widget)
 
-        self.selected_color_widgets = len(
-            self.findChildren(SelectedColorWidget))
-        self.setMinimumHeight(300 + 100 * self.selected_color_widgets)
-        if self.selected_color_widgets > 5:
-            for ind, selected_color_widget in enumerate(self.findChildren(SelectedColorWidget)):
-                if ind < self.selected_color_widgets - 5:
-                    selected_color_widget.hide()
+            self.selected_color_widgets = len(
+                self.findChildren(SelectedColorWidget))
+            self.setMinimumHeight(300 + 100 * self.selected_color_widgets)
+            if self.selected_color_widgets > 5:
+                for ind, selected_color_widget in enumerate(self.findChildren(SelectedColorWidget)):
+                    if ind < self.selected_color_widgets - 5:
+                        selected_color_widget.hide()
 
     def resize_self(self):
         self.setMinimumHeight(100 + 100 * self.selected_color_widgets)
@@ -216,55 +233,70 @@ class BuddyColorPicker(BaseWindow):
         self.adjustSize()
 
 
-class DesktopColorPicker(BaseWindow):
-    def __init__(self) -> None:
-        super().__init__(True)
-        self._edit_mode = False
-        self.side = 'left'
+class MagnifierWidget(QWidget):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__()
+        self.parent = parent
         self.color = '#000000'
         self.track_color = False
         self.listener = None
+        self.initUI()
 
-        self.findChildren(InnerPart)[0].edit_button.hide()
-        self.findChildren(InnerPart)[0].close_button.hide()
+    def initUI(self):
+        self.layout = QVBoxLayout(self)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
-        self.move(50, 50)
+        self.label = QLabel(self)
+        self.label.resize(340, 340)
 
-        self.inner_part = self.findChild(InnerPart)
-        self.title_layout = self.inner_part.findChild(QHBoxLayout)
+        self.layout.addWidget(self.label)
 
-        self.color_label = QLabel("")
+        screen_geometry = QApplication.desktop().screenGeometry()
+        window_width = self.width()
+        x_pos = screen_geometry.width() - window_width - -200
+        y_pos = 50
 
-        # insert the color label to the title layout at first position
-        self.title_layout.insertWidget(0, self.color_label)
-
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setAlignment(Qt.AlignTop)
-
-        for main_layer in self.findChildren(MainLayer):
-            main_layer.setContentsMargins(0, 0, 0, 0)
+        self.move(x_pos, y_pos)
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.update_position)
-        self.timer.start(1)  # Adjust the update interval as needed
+        self.timer.timeout.connect(self.capture)
+        self.timer.start(60)
 
-        self.magnifier = MagnifierWidget(parent=self)
-        self.layout.addWidget(self.magnifier)
+    def paintEvent(self, event):
+        # Override QWidget's paint event to draw a circular mask with smooth edges
+        path = QPainterPath()
+        # Adjust the rectangle dimensions
+        path.addEllipse(QRectF(self.rect()).adjusted(7, 7, -7, -7))
+        mask = QPainter(self)
+        mask.setRenderHint(QPainter.Antialiasing)  # Enable anti-aliasing
+        mask.setClipPath(path)
+        mask.fillRect(self.rect(), Qt.black)
 
-    def update_position(self):
-        if self.track_color:
-            cursor_pos = QCursor.pos()
-            color = get_pixel_from_position(cursor_pos)
-            self.update_color(color)
-            screen_width = QApplication.desktop().screenGeometry().width()
-            if cursor_pos.x() < 550 and cursor_pos.y() < 600 and self.side == 'left':
-                self.move(screen_width - 550, 50)
-                self.side = 'right'
-            elif cursor_pos.x() > screen_width - 550 and cursor_pos.y() < 600 and self.side == 'right':
-                self.move(50, 50)
-                self.side = 'left'
+    def generatePixmapMask(self, diameter):
+        # Create QPixmap with transparency
+        mask = QPixmap(diameter, diameter)
+        mask.fill(Qt.transparent)
+
+        # Create QPainter to draw on the QPixmap
+        painter = QPainter(mask)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # Create radial gradient
+        gradient = QRadialGradient(
+            diameter / 2, diameter / 2, diameter / 2, diameter / 2, diameter / 2)
+        gradient.setColorAt(0, QColor(0, 0, 0, 255))
+        gradient.setColorAt(1, QColor(0, 0, 0, 0))
+
+        # Set gradient as brush
+        painter.setBrush(QBrush(gradient))
+        painter.setPen(Qt.NoPen)
+
+        # Draw ellipse
+        painter.drawEllipse(0, 0, diameter, diameter)
+        painter.end()
+
+        return mask
 
     def start_color_picker(self):
         self.listener = mouse.Listener(
@@ -272,121 +304,95 @@ class DesktopColorPicker(BaseWindow):
         self.listener.start()
         self.track_color = True
         self.move(50, 50)
-        self.magnifier.set_track_color(True)
-        self.title_layout.setContentsMargins(20, 10, 0, 10)
+        self.set_track_color(True)
+        # self.title_layout.setContentsMargins(20, 10, 0, 10)
 
-    def update_color(self, color: str) -> None:
-        self.color = color
-        self.color_label.setText(
-            f"HEX: {color} RGB: {QColor(color).getRgb()[0:3]}")
-        self.color_label.setStyleSheet(
-            f"color: {color}; font-size: 15px; font-weight: bold;")
-
-    def mousePressEvent(self, event):
-        if event is True:
-            self.magnifier.set_track_color(False)
-            self.track_color = False
-            self.listener.stop()
-            copy(self.color)
-            self.color_label.setText("")
-            self.layout.removeWidget(self.color_label)
-            self.title_layout.setContentsMargins(5, 5, 0, 5)
-            self.setFixedSize(int(UI_SCALE * 230), int(UI_SCALE * 200))
-            self.setFixedWidth(0)
-            self.setFixedHeight(0)
-            self.adjustSize()
-            self.hide()
-            buddy_color_picker.add_selected_color_signal.emit(self.color)
-            buddy_color_picker.show()
-
-
-class MagnifierWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
-        super().__init__()
-        self.parent = parent
-        self.track_color = False
-        self.set_track_color(False)
-        self.setWindowFlags(Qt.FramelessWindowHint |
-                            Qt.Tool | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setMouseTracking(True)
-        # Adjust the size of the magnifier image as needed
-        self.magnifier_pixmap = QPixmap(350, 350)
-        self.update_magnifier()
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_position)
-        self.timer.start(1)  # Adjust the update interval as needed
-
-    def update_magnifier(self):
+    def capture(self):
         if self.track_color:
-            self.magnifier_pixmap.fill(Qt.transparent)
-            painter = QPainter(self.magnifier_pixmap)
-            painter.setRenderHint(QPainter.Antialiasing)
-            magnifier_radius = self.magnifier_pixmap.width() // 2
-            painter.setPen(Qt.black)
-            painter.drawEllipse(self.magnifier_pixmap.rect(
-            ).center(), magnifier_radius, magnifier_radius)
-            cursor_pos = QCursor.pos()
+            cursor = QCursor.pos()
+            self.color = get_pixel_from_position(cursor)
+            x, y = cursor.x() - 8, cursor.y() - 8
+            x, y = int(x), int(y)
 
-            magnification = 16
-            magnified_region = QApplication.primaryScreen().grabWindow(
-                QApplication.desktop().winId(),
-                cursor_pos.x() - magnifier_radius // magnification,
-                cursor_pos.y() - magnifier_radius // magnification,
-                self.magnifier_pixmap.width(),
-                self.magnifier_pixmap.height()
-            )
-            painter.drawPixmap(0, 0, magnified_region.scaled(
-                self.magnifier_pixmap.size() * magnification,
-                Qt.KeepAspectRatioByExpanding))
+            screen = ImageGrab.grab(bbox=(x, y, x + 17, y + 17))
+            screen_resized = screen.resize((340, 340), resample=Image.NEAREST)
 
-            # Draw cursor position point
-            crosshair_size = 10
-            magnifier_center = self.rect().center()
+            screen_np = array(screen_resized)
 
-            # if get_pixel_from_cposition() is red or a shade of red
-            if not get_pixel_from_position(cursor_pos).startswith('#ff'):
-                painter.setPen(Qt.red)
-            else:
-                painter.setPen(Qt.green)
-            painter.drawLine(
-                magnifier_center.x() - crosshair_size, magnifier_center.y(),
-                magnifier_center.x() + crosshair_size, magnifier_center.y())
-            painter.drawLine(
-                magnifier_center.x(), magnifier_center.y() - crosshair_size,
-                magnifier_center.x(), magnifier_center.y() + crosshair_size)
+            height, width, channel = screen_np.shape
+            bytesPerLine = 3 * width
+            qImg = QImage(screen_np.data, width, height,
+                          bytesPerLine, QImage.Format_RGB888)
+
+            pixmap = QPixmap.fromImage(qImg)
+
+            painter = QPainter(pixmap)
+            pen = QPen(QColor('gray'), 1, Qt.SolidLine)
+            painter.setPen(pen)
+
+            pixel_size = 340 // 17
+
+            center = 340 // 2
+
+            for i in range(center % pixel_size, 340, pixel_size):
+                painter.drawLine(i - pixel_size // 2, 0,
+                                 i - pixel_size // 2, 340)
+                painter.drawLine(0, i - pixel_size // 2,
+                                 340, i - pixel_size // 2)
+
+            pen = QPen(QColor('white'), 1, Qt.SolidLine)
+            painter.setPen(pen)
+            painter.drawRect(center - pixel_size // 2 - 2, center -
+                             pixel_size // 2 - 2, pixel_size + 3, pixel_size + 3)
+
+            pen = QPen(QColor('black'), 2, Qt.SolidLine)
+            painter.setPen(pen)
+            painter.drawRect(center - pixel_size // 2, center -
+                             pixel_size // 2, pixel_size, pixel_size)
 
             painter.end()
 
-            self.update()  # Update the widget to reflect the changes
+            self.label.setPixmap(pixmap)
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.drawPixmap(0, 0, self.magnifier_pixmap)
-        painter.end()
+            # Apply mask to pixmap
+            mask = self.generatePixmapMask(pixmap.width())
+            pixmap.setMask(mask.mask())
 
-    def update_position(self):
-        self.update_magnifier()
+            # Create QPainterPath
+            path = QPainterPath()
+            path.addEllipse(QRectF(0, 0, 0, 0))
+
+            # Create mask QPainter
+            mask_painter = QPainter(pixmap)
+            mask_painter.setRenderHint(QPainter.Antialiasing)
+            mask_painter.setClipPath(path)
+
+            # Draw pixmap onto itself using the mask painter
+            mask_painter.drawPixmap(0, 0, pixmap)
+            mask_painter.end()
+
+            self.label.setPixmap(pixmap)
 
     def mousePressEvent(self, event):
-        self.close()
+        self.set_track_color(False)
+        self.listener.stop()
+        self.hide()
+        buddy_color_picker.add_selected_color_signal.emit(self.color)
+        buddy_color_picker.show()
 
     def set_track_color(self, track_color: bool) -> None:
         self.track_color = track_color
-        if track_color:
-            self.setFixedSize(350, 350)
-            self.parent.setFixedSize(450, 450)
-        else:
-            self.setFixedSize(0, 40)
 
+
+buddy_color_picker = BuddyColorPicker()
+AddOnBase().activate = lambda: buddy_color_picker.show() if buddy_color_picker.isHidden() else buddy_color_picker.hide()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     buddy_color_picker = BuddyColorPicker()
     buddy_color_picker.show()
 
-    desktop_color_picker = DesktopColorPicker()
+    desktop_color_picker = MagnifierWidget()
     desktop_color_picker.hide()
 
     color_picker = ColorPickerWidget()
