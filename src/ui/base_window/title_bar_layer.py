@@ -176,6 +176,11 @@ class TitleBarLayer(QWidget):
         """initialize title bar for tabs."""
         self.tabs: dict[int, TabButton] = {}
         self.tabs_order: list[int] = []
+        self.green_button = GrnButton(self, "radial")
+        self.green_button.setIconSize(size := scaled(QSize(22, 22)))
+        self.green_button.setFixedSize(size)
+        self.green_button.move(scaled(20), scaled(50)//2 - self.green_button.height()//2)
+        self.green_button.hide()
 
     def _tab_moving(self, tab_id: int):
         """Checks if the tab is moved more than a specified amount and changes the order of the tabs."""
@@ -202,6 +207,10 @@ class TitleBarLayer(QWidget):
             pos = tab.get_tab_button_position(index)
             if tab._offset is None and tab.pos() != pos:  # check if the tab is being dragged.
                 tab.move(pos)
+                
+        if not self.green_button.isHidden():
+            # applying the x position of green button to the x position of next tab to the last tab.
+            self.green_button.move(tab.get_tab_button_position(len(self.tabs)).x(), self.green_button.y())
 
     def _set_button_position(self) -> None:
         self.buttons.adjustSize()

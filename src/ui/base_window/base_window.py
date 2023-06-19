@@ -119,10 +119,18 @@ class TabsWindow(TabWidget, Buttons):
 
         add_base_window(self, "tab", parent)
 
+    
+    @property
+    def add_button(self):
+        (button := self.title_bar_layer.green_button).show()
+        self.title_bar_layer._reset_tab_positions()
+        return button
+
 
     def setGraphicsEffect(self, effect: QGraphicsEffect) -> None:
         """NOTE: Shadow effect is already applied to this window.\n
         for access the shadow effect, self.shadow_layer."""
+        # this function defined here just for add the docstring
         return super().setGraphicsEffect(effect)
         
     
