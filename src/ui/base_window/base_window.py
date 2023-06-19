@@ -115,6 +115,10 @@ class TabsWindow(TabWidget):
         super().removeTab(index)
         self.title_bar_layer.remove_tab_button(index)
         self.title_bar_layer.set_tab_focus(self.currentIndex())
+        
+    def setCurrentIndex(self, index: int) -> None:
+        self.title_bar_layer.set_tab_focus(index)
+        return super().setCurrentIndex(index)
 
     
     def paintEvent(self, paint_event) -> None:
