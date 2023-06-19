@@ -162,8 +162,6 @@ class TitleBarLayer(QWidget):
         shadow_effect.setBlurRadius(60)
         self.setGraphicsEffect(shadow_effect)  # XXX: should be removed
         
-        self.setFixedSize(600, 300)  # XXX: should be removed
-            
 
     def _init_for_title(self) -> None:
         """initialize title bar for title."""
@@ -176,11 +174,11 @@ class TitleBarLayer(QWidget):
         """initialize title bar for tabs."""
         self.tabs: dict[int, TabButton] = {}
         self.tabs_order: list[int] = []
-        self.green_button = GrnButton(self, "radial")
-        self.green_button.setIconSize(size := scaled(QSize(22, 22)))
-        self.green_button.setFixedSize(size)
-        self.green_button.move(scaled(20), scaled(50)//2 - self.green_button.height()//2)
-        self.green_button.hide()
+        self.add_button = GrnButton(self, "radial")
+        self.add_button.setIconSize(size := scaled(QSize(22, 22)))
+        self.add_button.setFixedSize(size)
+        self.add_button.move(scaled(20), scaled(50)//2 - self.add_button.height()//2)
+        self.add_button.hide()
 
     def _tab_moving(self, tab_id: int):
         """Checks if the tab is moved more than a specified amount and changes the order of the tabs."""
@@ -208,13 +206,16 @@ class TitleBarLayer(QWidget):
             if tab._offset is None and tab.pos() != pos:  # check if the tab is being dragged.
                 tab.move(pos)
                 
-        if not self.green_button.isHidden():
-            # applying the x position of green button to the x position of next tab to the last tab.
-            self.green_button.move(tab.get_tab_button_position(len(self.tabs)).x(), self.green_button.y())
+        self._set_add_button_position()
 
     def _set_button_position(self) -> None:
         self.buttons.adjustSize()
         self.buttons.move(self.width() - self.buttons.width() - scaled(20), scaled(50)//2 - self.buttons.height()//2)
+
+    def _set_add_button_position(self) -> None:
+        if not self.add_button.isHidden():
+            # applying the x position of green button to the x position of next tab to the last tab.
+            self.add_button.move(TabButton.get_tab_button_position(len(self.tabs)).x(), self.add_button.y())
 
 
     def add_tab_button(self, title: str, tab_id: int) -> TabButton:

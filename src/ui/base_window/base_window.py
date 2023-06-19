@@ -122,7 +122,7 @@ class TabsWindow(TabWidget, Buttons):
     
     @property
     def add_button(self):
-        (button := self.title_bar_layer.green_button).show()
+        (button := self.title_bar_layer.add_button).show()
         self.title_bar_layer._reset_tab_positions()
         return button
 
