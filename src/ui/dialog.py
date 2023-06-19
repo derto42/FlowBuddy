@@ -22,7 +22,7 @@ REJECTED = QDialog.Rejected
 class BaseDialog(QDialog, BaseWindow):
     def __init__(self, title: str = "Title",
                  parent: QWidget | None = None,) -> None:
-        super().__init__(add_tab = False, parent = parent)
+        super().__init__(parent = parent)
         
         self._layout = QVBoxLayout()
         self.setLayout(self._layout)

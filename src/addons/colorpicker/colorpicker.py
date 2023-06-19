@@ -25,7 +25,6 @@ from settings import UI_SCALE  # pylint: disable=import-error, unused-import
 from ui.utils import get_font  # pylint: disable=import-error, unused-import
 from ui.utils import DEFAULT_BOLD, DEFAULT_REGULAR  # pylint: disable=import-error, unused-import
 from ui.base_window import BaseWindow  # pylint: disable=import-error, unused-import
-from ui.base_window import InnerPart  # pylint: disable=import-error, unused-import
 from ui.custom_button import RedButton, TextButton  # pylint: disable=import-error, unused-import
 
 if __name__ == "__main__":
@@ -164,7 +163,7 @@ class BuddyColorPicker(BaseWindow):
     resize_signal = pyqtSignal()
 
     def __init__(self):
-        super().__init__(True)
+        super().__init__()
         self.layout = QVBoxLayout()
         self.selected_color_widget = None
         self.selected_color_widgets = 0
@@ -179,7 +178,7 @@ class BuddyColorPicker(BaseWindow):
         self.add_selected_color_signal.connect(self.add_selected_color)
         self.resize_signal.connect(self.resize_self)
 
-        self.findChildren(InnerPart)[0].edit_button.hide()
+        # self.findChildren(InnerPart)[0].edit_button.hide()
 
         self.desktop_color_picker = TextButton(text=" Desktop Color Picker ")
         self.color_picker = TextButton(text=" Custom Color Picker ")

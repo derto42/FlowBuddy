@@ -174,12 +174,12 @@ class YoutubeDownloader(BaseWindow):
     ytd_toggle_signal = pyqtSignal()
 
     def __init__(self, parent: QWidget | None = None):
-        super().__init__(True, parent)
+        super().__init__(parent)
         self._edit_mode = False
         self.workers = {}
 
         self.edit_button = self.findChild(YelButton)
-        self.edit_button.setToolTip("New Downloader")
+        # self.edit_button.setToolTip("New Downloader")
 
         self.ytd_toggle_signal.connect(self.toggle_ytd)
         self.layout = QVBoxLayout()

@@ -257,7 +257,7 @@ class MainWindow(BaseWindow):
     window_toggle_signal = pyqtSignal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(True, parent)
+        super().__init__(parent)
 
         self._edit_mode = False
         self._editors: list[QWidget] = []

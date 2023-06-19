@@ -19,8 +19,8 @@ from PyQt5.QtGui import (
 
 from addon import AddOnBase
 
-from ui.dialog import ConfirmationDialog
-from ui.custom_button import RedButton, GrnButton
+from ui import ConfirmationDialog
+from ui import RedButton, GrnButton
 from settings import UI_SCALE
 from ui.utils import get_font
 
