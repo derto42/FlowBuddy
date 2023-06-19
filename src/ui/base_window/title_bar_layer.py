@@ -19,7 +19,7 @@ from PyQt5.QtGui import (
 )
 
 from settings import apply_ui_scale as scaled, CORNER_RADIUS
-from ui.custom_button import RedButton
+from ui.custom_button import RedButton, YelButton, GrnButton
 from ui.utils import get_font
 
 
@@ -116,6 +116,24 @@ class TabButton(QWidget):
         return scaled(QSize(175, 38))
 
 
+class Buttons(QWidget):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
+        self.setLayout(QHBoxLayout(self))
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(scaled(9))
+        self.red_button = RedButton(self, "radial")
+        self.yel_button = YelButton(self, "radial")
+        self.grn_button = GrnButton(self, "radial")
+        self.layout().addWidget(self.grn_button)
+        self.layout().addWidget(self.yel_button)
+        self.layout().addWidget(self.red_button)
+        self.red_button.hide()
+        self.yel_button.hide()
+        self.grn_button.hide()
+
+
 class TitleBarLayer(QWidget):
     def __init__(self, title_bar: Optional[Literal["title", "tab"]] = None,
                  parent: QWidget | None = None) -> None:
@@ -128,8 +146,8 @@ class TitleBarLayer(QWidget):
         self.mode = title_bar
         self._offset_for_drag = None
         
-        # XXX add red and yel buttons to close and edit the window.
-
+        self.buttons = Buttons(self)
+        self._set_button_position()
         
         if self.mode == "title":
             self._init_for_title()
@@ -184,6 +202,10 @@ class TitleBarLayer(QWidget):
             pos = tab.get_tab_button_position(index)
             if tab._offset is None and tab.pos() != pos:  # check if the tab is being dragged.
                 tab.move(pos)
+
+    def _set_button_position(self) -> None:
+        self.buttons.adjustSize()
+        self.buttons.move(self.width() - self.buttons.width() - scaled(20), scaled(50)//2 - self.buttons.height()//2)
 
 
     def add_tab_button(self, title: str, tab_id: int) -> TabButton:
@@ -241,3 +263,7 @@ class TitleBarLayer(QWidget):
     
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
         self._offset_for_drag = None
+
+    def resizeEvent(self, QResizeEvent) -> None:
+        self._set_button_position()
+        return super().resizeEvent(QResizeEvent)
