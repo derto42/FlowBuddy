@@ -9,6 +9,7 @@ from launcher import LowerWidget
 
 
 def main():
+    global widgets
     app = QApplication(sys.argv)
 
     tray_icon = AddOnBase.system_tray_icon = QSystemTrayIcon(QIcon(FS.icon("icon.png")))
@@ -22,7 +23,7 @@ def main():
     
     load_addons()
     
-    LowerWidget(add_ons)
+    widgets=LowerWidget(add_ons)
 
     sys.exit(app.exec_())
 
