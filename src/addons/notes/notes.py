@@ -70,7 +70,7 @@ class JottingDownWindow(TabsWindow):
 
         self.window_toggle_signal.connect(self.toggle_window)
 
-        self.notes_folder = "addons/notes/data"
+        self.notes_folder = "src/addons/notes/data"
         if not exists(self.notes_folder):
             os.makedirs(self.notes_folder)
 
