@@ -48,6 +48,7 @@ class TabButton(QWidget):
         self._red_button.move(QPoint(self.size().width() - scaled(22 + 10), scaled(8)))
         self._red_button.setIconSize(size := scaled(QSize(22, 22)))
         self._red_button.setFixedSize(size)
+        self._red_button.hide()
         
         self.setFixedSize(self.size())
         

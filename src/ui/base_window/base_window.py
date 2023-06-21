@@ -126,7 +126,8 @@ class TabsWindow(TabWidget, Buttons):
 
         @property
         def red_button(self) -> RedButton:
-            return self.tab_button.red_button
+            (button := self.tab_button.red_button).show()
+            return button
         
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__()
