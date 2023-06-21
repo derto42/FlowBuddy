@@ -20,6 +20,7 @@ from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
+from addons.notes.save_notes import exists
 
 
 
@@ -28,7 +29,6 @@ class NoteTab(QWidget):
     def __init__(self, file_path):
         super().__init__()
         self.file_path = file_path
-
         self.text_edit = QTextEdit()
         self.text_edit.setFont(get_font(size=16))
         self.text_edit.textChanged.connect(self.save_text_to_file)
@@ -46,7 +46,7 @@ class NoteTab(QWidget):
         self.load_text_from_file()
 
     def load_text_from_file(self):
-        if os.path.exists(self.file_path):
+        if exists(self.file_path):
             with open(self.file_path, "r") as file:
                 self.text_edit.setPlainText(file.read())
             self.text_edit.moveCursor(QTextCursor.End)
@@ -71,7 +71,7 @@ class JottingDownWindow(TabsWindow):
         self.window_toggle_signal.connect(self.toggle_window)
 
         self.notes_folder = "addons/notes/data"
-        if not os.path.exists(self.notes_folder):
+        if not exists(self.notes_folder):
             os.makedirs(self.notes_folder)
 
         self.config_file = os.path.join(self.notes_folder, "config.json")
@@ -85,7 +85,7 @@ class JottingDownWindow(TabsWindow):
     
 
     def load_tabs(self):
-        if os.path.exists(self.config_file):
+        if exists(self.config_file):
             self.load_tabs_from_config()
         else:
             self.Load_tabs_from_text_files()
@@ -106,7 +106,7 @@ class JottingDownWindow(TabsWindow):
             config = json.load(file)
 
         for tabno, file_path in enumerate(config["files"]):
-            if os.path.exists(file_path):
+            if exists(file_path):
                 file_name = os.path.basename(file_path)
                 note_tab = NoteTab(file_name)
                 self.addTab(note_tab, file_name)
@@ -127,7 +127,7 @@ class JottingDownWindow(TabsWindow):
 
     def delete_tab_text_file(self, file_name):
         file_path = os.path.join(self.notes_folder, file_name)
-        if os.path.exists(file_path):
+        if exists(file_path):
             os.remove(file_path)
         else:
             QMessageBox.warning(self, "File Exists", f"{file_path} does not exist.")
@@ -141,7 +141,7 @@ class JottingDownWindow(TabsWindow):
             return
         self.removeTab(tabid)
         self.delete_tab_text_file(file_name)
-        self.movePlusButton()
+        # self.movePlusButton()
         self.save_tabs()
 
     def get_tab_number_from_text(self, tab_text):
@@ -160,7 +160,7 @@ class JottingDownWindow(TabsWindow):
         file_name = f"{file_name}.txt"
 
         file_path = os.path.join(self.notes_folder, file_name)
-        if not os.path.exists(file_path):
+        if not exists(file_path):
             note_tab = NoteTab(file_path)  # create an instance of NoteTab
             note_tab.create_new_file()
             self.addTab(
@@ -203,9 +203,6 @@ class JottingDownWindow(TabsWindow):
         self.hide()
 
 window = JottingDownWindow()
-
-# with open(os.path.join(os.path.dirname(__file__), "notes.qss"), "r") as f:
-    # window.setStyleSheet(f.read())
 
 AddOnBase().activate = window.window_toggle_signal.emit
 AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+`"))
