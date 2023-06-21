@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
-    QShortcut,
     QInputDialog,
     QMessageBox,
 )
@@ -20,6 +19,9 @@ from addon import AddOnBase
 from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
+from ui.base_window import TabsWindow
+
+
 
 
 class NoteTab(QWidget):
