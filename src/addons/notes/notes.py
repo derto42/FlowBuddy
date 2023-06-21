@@ -7,8 +7,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QShortcut,
-    QTabWidget,
-    QSizePolicy,
     QInputDialog,
     QMessageBox,
 )
@@ -20,7 +18,6 @@ from PyQt5.QtGui import (
 from addon import AddOnBase
 
 from ui import ConfirmationDialog
-from ui import RedButton, GrnButton
 from settings import UI_SCALE
 from ui.utils import get_font
 
@@ -30,13 +27,10 @@ class NoteTab(QWidget):
         super().__init__()
         self.file_path = file_path
 
-        # Create QTextEdit within the QWidget
         self.text_edit = QTextEdit()
         self.text_edit.setFont(get_font(size=16))
         self.text_edit.textChanged.connect(self.save_text_to_file)
         self.text_edit.setAcceptRichText(False)
-        # This is for the tab itself
-        # Add QTextEdit to layout with padding
         layout = QVBoxLayout()
         layout.addWidget(self.text_edit)
         #  Set the margins
@@ -64,21 +58,15 @@ class NoteTab(QWidget):
             file.write("")
 
 
-class CustomTabWidget(QTabWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.addTabButton = GrnButton(self)
-        self.addTabButton.clicked.connect(parent.add_new_tab)
 
 
-class JottingDownWindow(QWidget):
+class JottingDownWindow(TabsWindow):
     window_toggle_signal = pyqtSignal()
 
     def __init__(self):
         super().__init__()
 
         self.window_toggle_signal.connect(self.toggle_window)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
 
         self.notes_folder = "addons/notes/data"
         if not os.path.exists(self.notes_folder):
@@ -86,31 +74,13 @@ class JottingDownWindow(QWidget):
 
         self.config_file = os.path.join(self.notes_folder, "config.json")
 
-        self.tab_widget = CustomTabWidget(self)
-        self.tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        layout.addWidget(self.tab_widget)
 
-        new_tab_shortcut = QShortcut(QKeySequence("Ctrl+T"), self)
-        new_tab_shortcut.activated.connect(self.add_new_tab)
-
-        self.setFixedSize(int(650 * UI_SCALE), int(450 * UI_SCALE))
         self.load_tabs()
         self.old_pos = None
-
-    def add_tab(self, file_path, file_name, tabno):
-        note_tab = NoteTab(file_path)
-        self.tab_widget.addTab(note_tab, file_name)
-        self.add_button_to_tab(tabno)
-
-    def movePlusButton(self):
-        """Move the plus button to the correct location."""
-        w = self.tab_widget.count()
-        if w > 0:
-            rect = self.tab_widget.tabBar().size()
-            self.tab_widget.addTabButton.move(rect.width() + int(50 * UI_SCALE), 5)
+        self.red_button.clicked.connect(self.closeEvent)
+        self.grn_button.clicked.connect(self.add_new_tab)
+    
 
     def load_tabs(self):
         if os.path.exists(self.config_file):
@@ -118,14 +88,16 @@ class JottingDownWindow(QWidget):
         else:
             self.Load_tabs_from_text_files()
 
-        if self.tab_widget.count() == 0:
+        if self.count() == 0:
             self.add_new_tab("notes")
 
     def Load_tabs_from_text_files(self):
         for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
             if file_name.endswith(".txt"):
                 file_path = os.path.join(self.notes_folder, file_name)
-                self.add_tab(file_path, file_name, tabno)
+                note_tab = NoteTab(file_path)
+                self.addTab(note_tab, file_name)
+
 
     def load_tabs_from_config(self):
         with open(self.config_file, "r") as file:
@@ -134,24 +106,19 @@ class JottingDownWindow(QWidget):
         for tabno, file_path in enumerate(config["files"]):
             if os.path.exists(file_path):
                 file_name = os.path.basename(file_path)
-                self.add_tab(file_path, file_name, tabno)
+                note_tab = NoteTab(file_name)
+                self.addTab(note_tab, file_name)
 
-        self.tab_widget.setCurrentIndex(config["last_active"])
+        self.setCurrentIndex(config["last_active"])
 
-    def add_button_to_tab(self, tabno):
-        self.button = RedButton(self.tab_widget, "radial")
-        self.right = self.tab_widget.tabBar().RightSide
-        self.tab_widget.tabBar().setTabButton(tabno, self.right, self.button)
-        tab_text = self.tab_widget.tabBar().tabText(tabno)
-        self.button.clicked.connect(lambda: self.delete_tab(tab_text))
 
     def save_tabs(self):
         config = {
             "files": [
-                self.notes_folder + "/" + self.tab_widget.tabText(i)
-                for i in range(self.tab_widget.count())
+                self.notes_folder + "/" + self.tabText(i)
+                for i in range(self.count())
             ],
-            "last_active": self.tab_widget.currentIndex(),
+            "last_active": self.currentIndex(),
         }
         with open(self.config_file, "w") as file:
             json.dump(config, file)
@@ -165,19 +132,19 @@ class JottingDownWindow(QWidget):
 
     def delete_tab(self, tab_text):
         tabid = self.get_tab_number_from_text(tab_text)
-        file_name = self.tab_widget.tabText(tabid)
+        file_name = self.tabText(tabid)
         dialog = ConfirmationDialog(f"Delete tab {file_name}?")
         res = dialog.exec()
         if not res:
             return
-        self.tab_widget.removeTab(tabid)
-        # self.delete_tab_text_file(file_name)
+        self.removeTab(tabid)
+        self.delete_tab_text_file(file_name)
         self.movePlusButton()
         self.save_tabs()
 
     def get_tab_number_from_text(self, tab_text):
-        for i in range(self.tab_widget.count()):
-            if self.tab_widget.tabText(i) == tab_text:
+        for i in range(self.count()):
+            if self.tabText(i) == tab_text:
                 return i
         return -1
 
@@ -194,13 +161,11 @@ class JottingDownWindow(QWidget):
         if not os.path.exists(file_path):
             note_tab = NoteTab(file_path)  # create an instance of NoteTab
             note_tab.create_new_file()
-            self.tab_widget.addTab(
+            self.addTab(
                 note_tab, file_name
             )  # add the NoteTab instance, not the QTextEdit
-            self.add_button_to_tab(len(self.tab_widget) - 1)
-            self.movePlusButton()
             self.save_tabs()
-            self.tab_widget.setCurrentIndex(len(self.tab_widget) - 1)
+            self.setCurrentIndex(len(self) - 1)
 
         else:
             QMessageBox.warning(
@@ -210,9 +175,8 @@ class JottingDownWindow(QWidget):
     def toggle_window(self) -> None:
         if self.isHidden():
             window.show()
-            self.movePlusButton()
             window.activateWindow()
-            if current_widget := self.tab_widget.currentWidget():
+            if current_widget := self.currentWidget():
                 current_widget.setFocus()
         else:
             window.hide()
@@ -234,12 +198,12 @@ class JottingDownWindow(QWidget):
 
     def closeEvent(self, event):
         self.save_tabs()
-
+        self.hide()
 
 window = JottingDownWindow()
 
-with open(os.path.join(os.path.dirname(__file__), "notes.qss"), "r") as f:
-    window.setStyleSheet(f.read())
+# with open(os.path.join(os.path.dirname(__file__), "notes.qss"), "r") as f:
+    # window.setStyleSheet(f.read())
 
 AddOnBase().activate = window.window_toggle_signal.emit
 AddOnBase().set_activate_shortcut(QKeySequence("Ctrl+`"))
