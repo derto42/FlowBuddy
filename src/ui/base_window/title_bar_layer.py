@@ -44,10 +44,11 @@ class TabButton(QWidget):
         
         self.setFont(get_font(size=scaled(16)))
 
-        red_button = RedButton(self, "radial")
-        red_button.move(QPoint(self.size().width() - scaled(22 + 10), scaled(8)))
-        red_button.setIconSize(size := scaled(QSize(22, 22)))
-        red_button.setFixedSize(size)
+        self._red_button = RedButton(self, "radial")
+        self._red_button.move(QPoint(self.size().width() - scaled(22 + 10), scaled(8)))
+        self._red_button.setIconSize(size := scaled(QSize(22, 22)))
+        self._red_button.setFixedSize(size)
+        self._red_button.hide()
         
         self.setFixedSize(self.size())
         
@@ -59,6 +60,11 @@ class TabButton(QWidget):
         self.setGraphicsEffect(self.shadow_effect)
         
         self.set_focused(self.focused)  # updating the shadow color
+
+
+    @property
+    def red_button(self) -> RedButton:
+        return self._red_button
 
 
     def set_focused(self, focused: bool) -> None:
@@ -135,17 +141,17 @@ class Buttons(QWidget):
 
 
 class TitleBarLayer(QWidget):
-    def __init__(self, title_bar: Optional[Literal["title", "tab"]] = None,
+    def __init__(self, title_bar: Optional[Literal["title", "tab", "hidden"]] = None,
                  parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
-        if title_bar not in ["title", "tab"]:
-            raise ValueError(f"Invalid title_bar option: '{title_bar}'. title_bar should be 'title' or 'tab'")
-
-        self._parent = parent
         self.mode = title_bar
+        self._parent = parent
         self._offset_for_drag = None
         
+        if title_bar == "hidden":
+            return
+
         self.buttons = Buttons(self)
         self._set_button_position()
         
@@ -162,8 +168,6 @@ class TitleBarLayer(QWidget):
         shadow_effect.setBlurRadius(60)
         self.setGraphicsEffect(shadow_effect)  # XXX: should be removed
         
-        self.setFixedSize(600, 300)  # XXX: should be removed
-            
 
     def _init_for_title(self) -> None:
         """initialize title bar for title."""
@@ -176,6 +180,11 @@ class TitleBarLayer(QWidget):
         """initialize title bar for tabs."""
         self.tabs: dict[int, TabButton] = {}
         self.tabs_order: list[int] = []
+        self.add_button = GrnButton(self, "radial")
+        self.add_button.setIconSize(size := scaled(QSize(22, 22)))
+        self.add_button.setFixedSize(size)
+        self.add_button.move(scaled(20), scaled(50 if self.mode == "tab" else 34)//2 - self.add_button.height()//2)
+        self.add_button.hide()
 
     def _tab_moving(self, tab_id: int):
         """Checks if the tab is moved more than a specified amount and changes the order of the tabs."""
@@ -202,10 +211,18 @@ class TitleBarLayer(QWidget):
             pos = tab.get_tab_button_position(index)
             if tab._offset is None and tab.pos() != pos:  # check if the tab is being dragged.
                 tab.move(pos)
+                
+        self._set_add_button_position()
 
     def _set_button_position(self) -> None:
         self.buttons.adjustSize()
-        self.buttons.move(self.width() - self.buttons.width() - scaled(20), scaled(50)//2 - self.buttons.height()//2)
+        self.buttons.move(self.width() - self.buttons.width() - scaled(20),
+                          scaled(50 if self.mode == "tab" else 34)//2 - self.buttons.height()//2)
+
+    def _set_add_button_position(self) -> None:
+        if not self.add_button.isHidden():
+            # applying the x position of green button to the x position of next tab to the last tab.
+            self.add_button.move(TabButton.get_tab_button_position(len(self.tabs)).x(), self.add_button.y())
 
 
     def add_tab_button(self, title: str, tab_id: int) -> TabButton:
@@ -265,5 +282,6 @@ class TitleBarLayer(QWidget):
         self._offset_for_drag = None
 
     def resizeEvent(self, QResizeEvent) -> None:
-        self._set_button_position()
+        if self.mode != "hidden":
+            self._set_button_position()
         return super().resizeEvent(QResizeEvent)
