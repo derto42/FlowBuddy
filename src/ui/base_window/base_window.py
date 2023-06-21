@@ -25,12 +25,16 @@ from settings import CORNER_RADIUS, apply_ui_scale as scaled
 from ui.custom_button import RedButton, YelButton
 from ui.utils import get_font
 
-from .title_bar_layer import TitleBarLayer
+from .title_bar_layer import TabButton, TitleBarLayer
 from .tab_widget import TabWidget
 
 
-def add_base_window(widget: QWidget | TabWidget, title_bar: Literal["title", "tab"],
+def add_base_window(widget: QWidget | TabWidget, title_bar: Literal["title", "tab", "hidden"],
                     parent: QWidget | None = None) -> None:
+    
+    if title_bar not in ["title", "tab", "hidden"]:
+        raise ValueError(f"Invalid title_bar option: '{title_bar}'. title_bar should be 'title' or 'tab'")
+
     shadow_layer = QWidget(parent, Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
     shadow_layer.setAttribute(Qt.WA_TranslucentBackground)
     
@@ -42,7 +46,10 @@ def add_base_window(widget: QWidget | TabWidget, title_bar: Literal["title", "ta
     shadow_layer_layout.addWidget(title_bar_layer := TitleBarLayer(title_bar, shadow_layer)) 
     title_bar_layer.setLayout(title_bar_layer_layout := QVBoxLayout(title_bar_layer))
     title_bar_layer_layout.setContentsMargins(0, 0, 0, 0)
-    title_bar_layer_layout.addSpacing(50)
+    if title_bar == "tab": spacing = 50
+    elif title_bar == "title": spacing = 34
+    else: spacing = 0
+    title_bar_layer_layout.addSpacing(scaled(spacing))
 
     widget.setParent(title_bar_layer)
     title_bar_layer_layout.addWidget(widget)
@@ -50,9 +57,11 @@ def add_base_window(widget: QWidget | TabWidget, title_bar: Literal["title", "ta
     # adding shadow that shows in the title bar
     shadow = QGraphicsDropShadowEffect()
     shadow.setColor(QColor(118, 118, 118, 25))
-    shadow.setOffset(0, -4.33)
-    shadow.setBlurRadius(27)
-    widget.setGraphicsEffect(shadow)
+    shadow.setOffset(0, scaled(-4.33))
+    shadow.setBlurRadius(scaled(27))
+    # the shadow doesn't apply to the title bar if the title_bar is "hidden"
+    if title_bar != "hidden":
+        widget.setGraphicsEffect(shadow)
     
     # redirecting some functions to shadow_layer.
     widget.show = shadow_layer.show
@@ -91,7 +100,7 @@ class Buttons:
     
     
 class BaseWindow(QWidget, Buttons):
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, hide_title_bar: bool = False, parent: QWidget | None = None) -> None:
         super().__init__()
         
         # fot linting
@@ -99,7 +108,7 @@ class BaseWindow(QWidget, Buttons):
         self.title_bar_layer: TitleBarLayer
         self.shadow_effect: QGraphicsDropShadowEffect
         
-        add_base_window(self, "title", parent)
+        add_base_window(self, "hidden" if hide_title_bar else "title", parent)
 
 
     def setGraphicsEffect(self, effect: QGraphicsEffect) -> None:
@@ -109,6 +118,16 @@ class BaseWindow(QWidget, Buttons):
     
     
 class TabsWindow(TabWidget, Buttons):
+    class TabIndex(int):
+        """This class created for access the tab_button and tab_button.red_button from the index of the tab."""
+        def __new__(cls, index: int, tab_button: TabButton):
+            cls.tab_button = tab_button
+            return super().__new__(cls, index)
+
+        @property
+        def red_button(self) -> RedButton:
+            return self.tab_button.red_button
+        
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__()
 
@@ -134,13 +153,13 @@ class TabsWindow(TabWidget, Buttons):
         return super().setGraphicsEffect(effect)
         
     
-    def addTab(self, widget: QWidget, label: str, icon: QIcon | None = None) -> int:
+    def addTab(self, widget: QWidget, label: str, icon: QIcon | None = None) -> TabsWindow.TabIndex:
         # NOTE: index of QTabWidget is tab_id here
         tab_id = super().addTab(widget, label)
         tab_button = self.title_bar_layer.add_tab_button(label, tab_id)
         tab_button.clicked.connect(self.setCurrentIndex)
         self.title_bar_layer.set_tab_focus(self.currentIndex())
-        return tab_id
+        return TabsWindow.TabIndex(tab_id, tab_button)
 
     def removeTab(self, index: int) -> None:
         super().removeTab(index)
