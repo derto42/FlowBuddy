@@ -76,10 +76,7 @@ class JottingDownWindow(TabsWindow):
         self.setFixedSize(840,400)
 
     def load_tabs(self):
-        if exists(CONFIG_FILE):
-            self.load_tabs_from_config()
-        else:
-            self.Load_tabs_from_text_files()
+        self.Load_tabs_from_text_files()
 
         if self.count() == 0:
             self.add_new_tab("notes")
