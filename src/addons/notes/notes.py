@@ -25,7 +25,8 @@ from .notes_save import (
     get_file_data,
     save_file_data,
     write_config,
-)
+    get_config,
+    )
 
 
 class NoteTab(QWidget):
@@ -53,6 +54,7 @@ class NoteTab(QWidget):
         self.text_edit.setPlainText(file_data)
         self.text_edit.moveCursor(QTextCursor.End)
 
+
     def save_text_to_file(self):
         save_file_data(self.file_name, self.text_edit.toPlainText())
 
@@ -76,10 +78,10 @@ class JottingDownWindow(TabsWindow):
         self.setFixedSize(840, 400)
 
     def load_tabs(self):
-        for file_name in os.listdir(ADDONS_FOLDER):
-            if file_name.endswith(".txt"):
-                note_tab = NoteTab(file_name)
-                self.addTab(note_tab, file_name)
+        for file_name in get_config()["files"]:
+            note_tab = NoteTab(file_name)
+            self.addTab(note_tab, file_name)
+
         if self.count() == 0:
             self.add_new_tab("notes")
 
