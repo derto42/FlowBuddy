@@ -19,9 +19,13 @@ from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
-from .notes_save import exists,ADDONS_FOLDER,get_file_data,save_file_data,write_config
-
-
+from .notes_save import (
+    exists,
+    ADDONS_FOLDER,
+    get_file_data,
+    save_file_data,
+    write_config,
+)
 
 
 class NoteTab(QWidget):
@@ -45,18 +49,16 @@ class NoteTab(QWidget):
         self.load_text_from_file()
 
     def load_text_from_file(self):
-        file_data=get_file_data(self.file_name)
+        file_data = get_file_data(self.file_name)
         self.text_edit.setPlainText(file_data)
         self.text_edit.moveCursor(QTextCursor.End)
 
     def save_text_to_file(self):
-        save_file_data(self.file_name,self.text_edit.toPlainText())
+        save_file_data(self.file_name, self.text_edit.toPlainText())
 
     def create_new_file(self):
         with open(self.file_name, "w") as file:
             file.write("")
-
-
 
 
 class JottingDownWindow(TabsWindow):
@@ -67,32 +69,23 @@ class JottingDownWindow(TabsWindow):
 
         self.window_toggle_signal.connect(self.toggle_window)
 
-
         self.load_tabs()
         self.old_pos = None
         self.red_button.clicked.connect(self.closeEvent)
         self.add_button.clicked.connect(self.add_new_tab)
-        self.setFixedSize(840,400)
-
-
+        self.setFixedSize(840, 400)
 
     def load_tabs(self):
-        for  file_name in os.listdir(ADDONS_FOLDER):
+        for file_name in os.listdir(ADDONS_FOLDER):
             if file_name.endswith(".txt"):
                 note_tab = NoteTab(file_name)
                 self.addTab(note_tab, file_name)
         if self.count() == 0:
             self.add_new_tab("notes")
 
-
-
-
     def save_tabs(self):
         config = {
-            "files": [
-                self.tabText(i)
-                for i in range(self.count())
-            ],
+            "files": [self.tabText(i) for i in range(self.count())],
             "last_active": self.currentIndex(),
         }
         write_config(config)
@@ -173,6 +166,7 @@ class JottingDownWindow(TabsWindow):
     def closeEvent(self, event):
         self.save_tabs()
         self.hide()
+
 
 window = JottingDownWindow()
 
