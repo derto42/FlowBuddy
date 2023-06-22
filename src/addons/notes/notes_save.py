@@ -10,6 +10,7 @@ ADDONS_FOLDER=os.path.join(FILE_PATH,ADDONS_NAME)
 PLATFORM = sys.platform
 CONFIG_FILE = os.path.join(ADDONS_FOLDER, "config.json")
 
+
 # If there are any exceptions related to JSON decoding, file not found, or missing keys,
 # a save file is created using the FS module.
 try:
@@ -18,7 +19,6 @@ try:
     _, _ = data["files"], data["last_active"]
 except (json.JSONDecodeError, FileNotFoundError, KeyError):
     with open(CONFIG_FILE, 'w') as f:
-        # f.write(json.dumps ({"files": [""], "last_active": 0})
         f.write(json.dumps ({"files": [], "last_active": 0}))
 
 
