@@ -30,6 +30,8 @@ def get_file_data(file_name):
             return file.read()
         
 
+if not exists(ADDONS_FOLDER):
+    os.makedirs(ADDONS_FOLDER)
 
 def open_file(file_path: str | None) -> None:
     if file_path is not None:
