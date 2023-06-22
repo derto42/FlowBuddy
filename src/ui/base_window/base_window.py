@@ -95,7 +95,7 @@ class Buttons:
         (button := self.title_bar_layer.buttons.grn_button).show()
         self.title_bar_layer._set_button_position()
         return button
-    
+
     
 class BaseWindow(QWidget, Buttons):
     def __init__(self, hide_title_bar: bool = False, parent: QWidget | None = None) -> None:
@@ -107,6 +107,13 @@ class BaseWindow(QWidget, Buttons):
         self.shadow_effect: QGraphicsDropShadowEffect
         
         add_base_window(self, "hidden" if hide_title_bar else "title", parent)
+
+
+    def set_title(self, title: str) -> None:
+        self.title_bar_layer.set_title(title)
+
+    def title(self) -> str:
+        return self.title_bar_layer.title()
 
 
     def setGraphicsEffect(self, effect: QGraphicsEffect) -> None:

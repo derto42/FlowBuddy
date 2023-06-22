@@ -3,6 +3,7 @@ from typing import Optional, Literal
 from PyQt5.QtCore import Qt, QSize, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget,
+    QLabel,
     QHBoxLayout,
     QGraphicsDropShadowEffect,
 )
@@ -159,9 +160,9 @@ class TitleBarLayer(QWidget):
 
     def _init_for_title(self) -> None:
         """initialize title bar for title."""
-        # XXX add stuff here for show title
-        self.add_tab_button = lambda widget, title, index: print(f"""WARNING: tab with {title=} {index=} not created. 
-                                                                 this BaseWindow is not tabs implemented.""")
+        self.title_label = QLabel("", self)
+        self.title_label.move(scaled(20), scaled(5))
+        self.title_label.setFont(get_font(size=scaled(16)))
 
     def _init_for_tabs(self) -> None:
         """initialize title bar for tabs."""
@@ -210,6 +211,12 @@ class TitleBarLayer(QWidget):
         if not self.add_button.isHidden():
             # applying the x position of green button to the x position of next tab to the last tab.
             self.add_button.move(TabButton.get_tab_button_position(len(self.tabs)).x(), self.add_button.y())
+
+    def set_title(self, title: str) -> None:
+        self.title_label.setText(title)
+
+    def title(self) -> str:
+        return self.title_label.text()
 
 
     def add_tab_button(self, title: str, tab_id: int) -> TabButton:
