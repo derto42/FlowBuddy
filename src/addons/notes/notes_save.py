@@ -51,8 +51,12 @@ def create_config_from_text_files():
             ],
             "last_active": 0,
         }
+        write_config(config)
+
+def write_config(config):
         with open(CONFIG_FILE, "w") as f:
             f.write(json.dumps (config))
+
 # If there are any exceptions related to JSON decoding, file not found, or missing keys,
 # a save file is created using the FS module.
 try:
