@@ -1,0 +1,3 @@
+black # formatter
+ruff  # linter
+pytest # for unittesting
