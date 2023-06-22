@@ -16,6 +16,11 @@ def save_file_data(file_name: str, file_data: str = "") -> None:
     with open(SAVE_FILE, "w") as f:
         f.write(file_data)
 
+def delete_file_data(file_name: str) -> None:
+    SAVE_FILE = os.path.join(ADDONS_FOLDER, file_name)
+    if exists(SAVE_FILE):
+        os.remove(SAVE_FILE)
+
 
 def exists(file_name: str):
     """Returns True if the path exists. Returns False otherwise"""

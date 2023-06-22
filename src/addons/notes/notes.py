@@ -1,4 +1,3 @@
-import os
 
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
@@ -6,7 +5,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QInputDialog,
-    QMessageBox,
 )
 from PyQt5.QtGui import (
     QTextCursor,
@@ -20,12 +18,11 @@ from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
 from .notes_save import (
-    exists,
-    ADDONS_FOLDER,
     get_file_data,
     save_file_data,
     write_config,
     get_config,
+    delete_file_data
     )
 
 
@@ -92,12 +89,6 @@ class JottingDownWindow(TabsWindow):
         }
         write_config(config)
 
-    def delete_tab_text_file(self, file_name):
-        file_path = os.path.join(ADDONS_FOLDER, file_name)
-        if exists(file_path):
-            os.remove(file_path)
-        else:
-            QMessageBox.warning(self, "File Exists", f"{file_path} does not exist.")
 
     def delete_tab(self, tab_text):
         tabid = self.get_tab_number_from_text(tab_text)
@@ -107,8 +98,7 @@ class JottingDownWindow(TabsWindow):
         if not res:
             return
         self.removeTab(tabid)
-        self.delete_tab_text_file(file_name)
-        # self.movePlusButton()
+        delete_file_data(file_name)
         self.save_tabs()
 
     def get_tab_number_from_text(self, tab_text):
@@ -125,21 +115,15 @@ class JottingDownWindow(TabsWindow):
             if not ok or not file_name:
                 return
         file_name = f"{file_name}.txt"
+        note_tab = NoteTab(file_name)  
+        note_tab.create_new_file()
+        self.addTab(
+            note_tab, file_name
+        )  
+        save_file_data(file_name)
+        self.save_tabs()
+        self.setCurrentIndex(len(self) - 1)
 
-        file_path = os.path.join(ADDONS_FOLDER, file_name)
-        if not exists(file_path):
-            note_tab = NoteTab(file_path)  # create an instance of NoteTab
-            note_tab.create_new_file()
-            self.addTab(
-                note_tab, file_name
-            )  # add the NoteTab instance, not the QTextEdit
-            self.save_tabs()
-            self.setCurrentIndex(len(self) - 1)
-
-        else:
-            QMessageBox.warning(
-                self, "File Exists", f"A file with the name {file_name} already exists."
-            )
 
     def toggle_window(self) -> None:
         if self.isHidden():
