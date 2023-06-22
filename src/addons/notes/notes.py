@@ -91,7 +91,7 @@ class JottingDownWindow(TabsWindow):
             self.add_new_tab("notes")
 
     def Load_tabs_from_text_files(self):
-        for tabno, file_name in enumerate(os.listdir(ADDONS_FOLDER)):
+        for  file_name in os.listdir(ADDONS_FOLDER):
             if file_name.endswith(".txt"):
                 file_path = os.path.join(ADDONS_FOLDER, file_name)
                 note_tab = NoteTab(file_path)
