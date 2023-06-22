@@ -1,8 +1,7 @@
 from __future__ import annotations
 import os
 import sys
-from pathlib import Path
-
+import json
 
 
 FILE_PATH = os.path.join(os.path.dirname(__file__))
@@ -10,6 +9,18 @@ ADDONS_NAME = "data"
 ADDONS_FOLDER=os.path.join(FILE_PATH,ADDONS_NAME)
 PLATFORM = sys.platform
 CONFIG_FILE = os.path.join(ADDONS_FOLDER, "config.json")
+
+# If there are any exceptions related to JSON decoding, file not found, or missing keys,
+# a save file is created using the FS module.
+try:
+    with open(CONFIG_FILE) as f:
+        data = json.load(f)
+    _, _ = data["files"], data["last_active"]
+except (json.JSONDecodeError, FileNotFoundError, KeyError):
+    with open(CONFIG_FILE, 'w') as f:
+        # f.write(json.dumps ({"files": [""], "last_active": 0})
+        f.write(json.dumps ({"files": [], "last_active": 0}))
+
 
 
 def save_file_data(file_name:str,file_data:str ="") -> None:
