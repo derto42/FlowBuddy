@@ -41,6 +41,12 @@ def open_file(file_path: str | None) -> None:
         elif PLATFORM in ("linux", "darwin"):
             os.system(f"xdg-open {file_path}")
 
+def get_config():
+    with open(CONFIG_FILE, "r") as file:
+        config = json.load(file)
+    return config
+
+
 
 def create_config_from_text_files():
     config = {
