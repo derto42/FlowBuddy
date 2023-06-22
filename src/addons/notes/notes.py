@@ -86,15 +86,6 @@ class JottingDownWindow(TabsWindow):
             self.add_new_tab("notes")
 
 
-    def load_tabs_from_config(self):
-        with open(CONFIG_FILE, "r") as file:
-            config = json.load(file)
-
-        for  file_name in config["files"]:
-                note_tab = NoteTab(file_name)
-                self.addTab(note_tab, file_name)
-
-        self.setCurrentIndex(config["last_active"])
 
 
     def save_tabs(self):
