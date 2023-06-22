@@ -20,7 +20,7 @@ from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
-from .notes_save import exists,ADDONS_FOLDER,get_file_data,save_file_data
+from .notes_save import exists,ADDONS_FOLDER,get_file_data,save_file_data,CONFIG_FILE
 
 
 
@@ -68,12 +68,6 @@ class JottingDownWindow(TabsWindow):
 
         self.window_toggle_signal.connect(self.toggle_window)
 
-        if not exists(ADDONS_FOLDER):
-            os.makedirs(ADDONS_FOLDER)
-
-        self.config_file = os.path.join(ADDONS_FOLDER, "config.json")
-
-
 
         self.load_tabs()
         self.old_pos = None
@@ -82,7 +76,7 @@ class JottingDownWindow(TabsWindow):
         self.setFixedSize(840,400)
 
     def load_tabs(self):
-        if exists(self.config_file):
+        if exists(CONFIG_FILE):
             self.load_tabs_from_config()
         else:
             self.Load_tabs_from_text_files()
@@ -93,13 +87,12 @@ class JottingDownWindow(TabsWindow):
     def Load_tabs_from_text_files(self):
         for  file_name in os.listdir(ADDONS_FOLDER):
             if file_name.endswith(".txt"):
-                file_path = os.path.join(ADDONS_FOLDER, file_name)
-                note_tab = NoteTab(file_path)
+                note_tab = NoteTab(file_name)
                 self.addTab(note_tab, file_name)
 
 
     def load_tabs_from_config(self):
-        with open(self.config_file, "r") as file:
+        with open(CONFIG_FILE, "r") as file:
             config = json.load(file)
 
         for  file_name in config["files"]:
@@ -117,7 +110,7 @@ class JottingDownWindow(TabsWindow):
             ],
             "last_active": self.currentIndex(),
         }
-        with open(self.config_file, "w") as file:
+        with open(CONFIG_FILE, "w") as file:
             json.dump(config, file)
 
     def delete_tab_text_file(self, file_name):

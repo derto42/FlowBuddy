@@ -9,6 +9,7 @@ FILE_PATH = os.path.join(os.path.dirname(__file__))
 ADDONS_NAME = "data"
 ADDONS_FOLDER=os.path.join(FILE_PATH,ADDONS_NAME)
 PLATFORM = sys.platform
+CONFIG_FILE = os.path.join(ADDONS_FOLDER, "config.json")
 
 
 def save_file_data(file_name:str,file_data:str ="") -> None:
