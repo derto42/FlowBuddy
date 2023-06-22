@@ -1,5 +1,4 @@
 import os
-import json
 
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
@@ -20,7 +19,7 @@ from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
-from .notes_save import exists,ADDONS_FOLDER,get_file_data,save_file_data,CONFIG_FILE
+from .notes_save import exists,ADDONS_FOLDER,get_file_data,save_file_data,write_config
 
 
 
@@ -96,8 +95,7 @@ class JottingDownWindow(TabsWindow):
             ],
             "last_active": self.currentIndex(),
         }
-        with open(CONFIG_FILE, "w") as file:
-            json.dump(config, file)
+        write_config(config)
 
     def delete_tab_text_file(self, file_name):
         file_path = os.path.join(ADDONS_FOLDER, file_name)
