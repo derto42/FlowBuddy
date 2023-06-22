@@ -20,15 +20,15 @@ from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
-from .notes_save import exists,ADDONS_FOLDER
+from .notes_save import exists,ADDONS_FOLDER,get_file_data
 
 
 
 
 class NoteTab(QWidget):
-    def __init__(self, file_path):
+    def __init__(self, file_name):
         super().__init__()
-        self.file_path = file_path
+        self.file_name = file_name
         self.text_edit = QTextEdit()
         self.text_edit.setFont(get_font(size=16))
         self.text_edit.textChanged.connect(self.save_text_to_file)
@@ -46,17 +46,16 @@ class NoteTab(QWidget):
         self.load_text_from_file()
 
     def load_text_from_file(self):
-        if exists(self.file_path):
-            with open(self.file_path, "r") as file:
-                self.text_edit.setPlainText(file.read())
-            self.text_edit.moveCursor(QTextCursor.End)
+        file_data=get_file_data(self.file_name)
+        self.text_edit.setPlainText(file_data)
+        self.text_edit.moveCursor(QTextCursor.End)
 
     def save_text_to_file(self):
-        with open(self.file_path, "w") as file:
+        with open(self.file_name, "w") as file:
             file.write(self.text_edit.toPlainText())
 
     def create_new_file(self):
-        with open(self.file_path, "w") as file:
+        with open(self.file_name, "w") as file:
             file.write("")
 
 
@@ -105,9 +104,7 @@ class JottingDownWindow(TabsWindow):
         with open(self.config_file, "r") as file:
             config = json.load(file)
 
-        for tabno, file_path in enumerate(config["files"]):
-            if exists(file_path):
-                file_name = os.path.basename(file_path)
+        for  file_name in config["files"]:
                 note_tab = NoteTab(file_name)
                 self.addTab(note_tab, file_name)
 
@@ -117,7 +114,7 @@ class JottingDownWindow(TabsWindow):
     def save_tabs(self):
         config = {
             "files": [
-               ADDONS_FOLDER  + "/" + self.tabText(i)
+                self.tabText(i)
                 for i in range(self.count())
             ],
             "last_active": self.currentIndex(),
