@@ -20,7 +20,7 @@ from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
-from addons.notes.save_notes import exists
+from .notes_save import exists,ADDONS_FOLDER
 
 
 
@@ -70,19 +70,19 @@ class JottingDownWindow(TabsWindow):
 
         self.window_toggle_signal.connect(self.toggle_window)
 
-        self.notes_folder = "src/addons/notes/data"
-        if not exists(self.notes_folder):
-            os.makedirs(self.notes_folder)
+        # self.notes_folder = "src/addons/notes/data"
+        if not exists(ADDONS_FOLDER):
+            os.makedirs(ADDONS_FOLDER)
 
-        self.config_file = os.path.join(self.notes_folder, "config.json")
+        self.config_file = os.path.join(ADDONS_FOLDER, "config.json")
 
 
 
         self.load_tabs()
         self.old_pos = None
         self.red_button.clicked.connect(self.closeEvent)
-        self.grn_button.clicked.connect(self.add_new_tab)
-    
+        self.add_button.clicked.connect(self.add_new_tab)
+        self.setFixedSize(840,400)
 
     def load_tabs(self):
         if exists(self.config_file):
@@ -94,9 +94,9 @@ class JottingDownWindow(TabsWindow):
             self.add_new_tab("notes")
 
     def Load_tabs_from_text_files(self):
-        for tabno, file_name in enumerate(os.listdir(self.notes_folder)):
+        for tabno, file_name in enumerate(os.listdir(ADDONS_FOLDER)):
             if file_name.endswith(".txt"):
-                file_path = os.path.join(self.notes_folder, file_name)
+                file_path = os.path.join(ADDONS_FOLDER, file_name)
                 note_tab = NoteTab(file_path)
                 self.addTab(note_tab, file_name)
 
@@ -117,7 +117,7 @@ class JottingDownWindow(TabsWindow):
     def save_tabs(self):
         config = {
             "files": [
-                self.notes_folder + "/" + self.tabText(i)
+               ADDONS_FOLDER  + "/" + self.tabText(i)
                 for i in range(self.count())
             ],
             "last_active": self.currentIndex(),
@@ -126,7 +126,7 @@ class JottingDownWindow(TabsWindow):
             json.dump(config, file)
 
     def delete_tab_text_file(self, file_name):
-        file_path = os.path.join(self.notes_folder, file_name)
+        file_path = os.path.join(ADDONS_FOLDER, file_name)
         if exists(file_path):
             os.remove(file_path)
         else:
@@ -159,7 +159,7 @@ class JottingDownWindow(TabsWindow):
                 return
         file_name = f"{file_name}.txt"
 
-        file_path = os.path.join(self.notes_folder, file_name)
+        file_path = os.path.join(ADDONS_FOLDER, file_name)
         if not exists(file_path):
             note_tab = NoteTab(file_path)  # create an instance of NoteTab
             note_tab.create_new_file()
