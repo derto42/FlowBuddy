@@ -16,6 +16,7 @@ def save_file_data(file_name: str, file_data: str = "") -> None:
     with open(SAVE_FILE, "w") as f:
         f.write(file_data)
 
+
 def delete_file_data(file_name: str) -> None:
     SAVE_FILE = os.path.join(ADDONS_FOLDER, file_name)
     if exists(SAVE_FILE):
@@ -46,11 +47,11 @@ def open_file(file_path: str | None) -> None:
         elif PLATFORM in ("linux", "darwin"):
             os.system(f"xdg-open {file_path}")
 
+
 def get_config():
     with open(CONFIG_FILE, "r") as file:
         config = json.load(file)
     return config
-
 
 
 def create_config_from_text_files():

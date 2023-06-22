@@ -1,4 +1,3 @@
-
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
     QTextEdit,
@@ -22,8 +21,8 @@ from .notes_save import (
     save_file_data,
     write_config,
     get_config,
-    delete_file_data
-    )
+    delete_file_data,
+)
 
 
 class NoteTab(QWidget):
@@ -50,7 +49,6 @@ class NoteTab(QWidget):
         file_data = get_file_data(self.file_name)
         self.text_edit.setPlainText(file_data)
         self.text_edit.moveCursor(QTextCursor.End)
-
 
     def save_text_to_file(self):
         save_file_data(self.file_name, self.text_edit.toPlainText())
@@ -89,7 +87,6 @@ class JottingDownWindow(TabsWindow):
         }
         write_config(config)
 
-
     def delete_tab(self, tab_text):
         tabid = self.get_tab_number_from_text(tab_text)
         file_name = self.tabText(tabid)
@@ -115,15 +112,12 @@ class JottingDownWindow(TabsWindow):
             if not ok or not file_name:
                 return
         file_name = f"{file_name}.txt"
-        note_tab = NoteTab(file_name)  
+        note_tab = NoteTab(file_name)
         note_tab.create_new_file()
-        self.addTab(
-            note_tab, file_name
-        )  
+        self.addTab(note_tab, file_name)
         save_file_data(file_name)
         self.save_tabs()
         self.setCurrentIndex(len(self) - 1)
-
 
     def toggle_window(self) -> None:
         if self.isHidden():
