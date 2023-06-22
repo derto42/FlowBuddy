@@ -15,11 +15,10 @@ from PyQt5.QtWidgets import (
     QSystemTrayIcon,
 )
 
-from addon import AddOnBase
+from addon import AddOnBase, NotFoundException
 
 from . import shortcuts_save as Data
 from FileSystem import open_file
-import SaveFile
 
 from ui import (
     BaseWindow,
@@ -34,7 +33,7 @@ from ui import (
 
 from .dialog import TaskDialog, GroupDialog
 
-from ui.settings import UI_SCALE
+from settings import UI_SCALE
 from ui.utils import get_font
 
 
@@ -258,7 +257,7 @@ class MainWindow(BaseWindow):
     window_toggle_signal = pyqtSignal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(True, parent)
+        super().__init__(parent)
 
         self._edit_mode = False
         self._editors: list[QWidget] = []
@@ -304,8 +303,8 @@ class MainWindow(BaseWindow):
         self.add_to_editors(add_group_widget)
 
         try:
-            position = SaveFile.get_setting("position")
-        except SaveFile.NotFound:
+            position = AddOnBase().get_setting("position")
+        except NotFoundException:
             pass
         else:
             self.move(position[0], position[1])
@@ -408,26 +407,26 @@ class MainWindow(BaseWindow):
         QApplication.instance().processEvents()
 
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
-        SaveFile.apply_settings("position", [self.pos().x(), self.pos().y()])
+        AddOnBase().apply_setting("position", [self.pos().x(), self.pos().y()])
         return super().mouseReleaseEvent(a0)
     
     def show(self) -> None:
-        SaveFile.apply_settings("hidden", False)
+        AddOnBase().apply_setting("hidden", False)
         return super().show()
     
     def hide(self) -> None:
-        SaveFile.apply_settings("hidden", True)
+        AddOnBase().apply_setting("hidden", True)
         return super().hide()
     
     def setHidden(self, hidden: bool) -> None:
-        SaveFile.apply_settings("hidden", hidden)
+        AddOnBase().apply_setting("hidden", hidden)
         return super().setHidden(hidden)
 
 
 window = MainWindow()
 
-with contextlib.suppress(SaveFile.NotFound):
-    if not SaveFile.get_setting("hidden"):
+with contextlib.suppress(NotFoundException):
+    if not AddOnBase().get_setting("hidden"):
         QApplication.instance().processEvents()
         window.update()
         window.show()

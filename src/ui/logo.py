@@ -19,7 +19,7 @@ from PyQt5.QtGui import (
 
 
 from .custom_button import RedButton, GrnButton, Button
-from .settings import CORNER_RADIUS, UI_SCALE
+from settings import CORNER_RADIUS, UI_SCALE
 
 
 class Buddy(QWidget):

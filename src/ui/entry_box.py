@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QLineEdit, QWidget
-from .settings import CORNER_RADIUS, UI_SCALE
+from settings import CORNER_RADIUS, UI_SCALE
 from .utils import get_font
 
 
