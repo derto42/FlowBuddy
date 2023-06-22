@@ -20,7 +20,7 @@ from ui import ConfirmationDialog
 from settings import UI_SCALE
 from ui.utils import get_font
 from ui.base_window import TabsWindow
-from .notes_save import exists,ADDONS_FOLDER,get_file_data
+from .notes_save import exists,ADDONS_FOLDER,get_file_data,save_file_data
 
 
 
@@ -51,8 +51,7 @@ class NoteTab(QWidget):
         self.text_edit.moveCursor(QTextCursor.End)
 
     def save_text_to_file(self):
-        with open(self.file_name, "w") as file:
-            file.write(self.text_edit.toPlainText())
+        save_file_data(self.file_name,self.text_edit.toPlainText())
 
     def create_new_file(self):
         with open(self.file_name, "w") as file:
@@ -69,7 +68,6 @@ class JottingDownWindow(TabsWindow):
 
         self.window_toggle_signal.connect(self.toggle_window)
 
-        # self.notes_folder = "src/addons/notes/data"
         if not exists(ADDONS_FOLDER):
             os.makedirs(ADDONS_FOLDER)
 
