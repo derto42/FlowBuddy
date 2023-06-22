@@ -5,7 +5,4 @@ pyqt5==5.15.9
 pyqt5-qt5==5.15.2
 pyqt5-sip==12.12.1
 requests==2.31.0
-black # formatter
-ruff  # linter
-pytest # for unittesting
 pytube>=15.0.0 # for youtube downloads
