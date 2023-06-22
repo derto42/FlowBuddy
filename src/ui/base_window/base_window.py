@@ -1,29 +1,20 @@
 from __future__ import annotations
-from typing import Optional, Literal
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QRect, QRectF, QVariantAnimation, QEasingCurve, QPoint
+from typing import Literal
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QGraphicsEffect,
     QWidget,
     QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
     QGraphicsDropShadowEffect,
-    QTabWidget
 )
 from PyQt5.QtGui import (
     QColor,
     QPainter,
-    QPainterPath,
-    QPaintEvent,
-    QMouseEvent,
-    QPen,
     QIcon,
 )
 
 from settings import CORNER_RADIUS, apply_ui_scale as scaled
-from ui.custom_button import RedButton, YelButton
-from ui.utils import get_font
+from ui.custom_button import RedButton
 
 from .title_bar_layer import TabButton, TitleBarLayer
 from .tab_widget import TabWidget
@@ -39,29 +30,36 @@ def add_base_window(widget: QWidget | TabWidget, title_bar: Literal["title", "ta
     shadow_layer.setAttribute(Qt.WA_TranslucentBackground)
     
     shadow_layer.setLayout(shadow_layer_layout := QVBoxLayout(shadow_layer))
-    shadow_layer_layout.setContentsMargins(50, 50, 50, 50)
+    shadow_layer_layout.setContentsMargins(x := scaled(50), x, x, x)
     shadow_layer_layout.setSpacing(0)
 
     # create widget for show title bar.
     shadow_layer_layout.addWidget(title_bar_layer := TitleBarLayer(title_bar, shadow_layer)) 
     title_bar_layer.setLayout(title_bar_layer_layout := QVBoxLayout(title_bar_layer))
     title_bar_layer_layout.setContentsMargins(0, 0, 0, 0)
-    if title_bar == "tab": spacing = 50
-    elif title_bar == "title": spacing = 34
+    if title_bar == "tab": spacing = scaled(50)
+    elif title_bar == "title": spacing = scaled(34)
     else: spacing = 0
     title_bar_layer_layout.addSpacing(scaled(spacing))
 
     widget.setParent(title_bar_layer)
     title_bar_layer_layout.addWidget(widget)
     
+    # adding shadow that shows behind the main window.
+    main_window_shadow = QGraphicsDropShadowEffect(title_bar_layer)
+    main_window_shadow.setColor(QColor(118, 118, 118, 70))
+    main_window_shadow.setOffset(0, scaled(10))
+    main_window_shadow.setBlurRadius(60)
+    title_bar_layer.setGraphicsEffect(main_window_shadow)
+    
     # adding shadow that shows in the title bar
-    shadow = QGraphicsDropShadowEffect()
-    shadow.setColor(QColor(118, 118, 118, 25))
-    shadow.setOffset(0, scaled(-4.33))
-    shadow.setBlurRadius(scaled(27))
+    title_bar_shadow = QGraphicsDropShadowEffect()
+    title_bar_shadow.setColor(QColor(118, 118, 118, 25))
+    title_bar_shadow.setOffset(0, scaled(-4.33))
+    title_bar_shadow.setBlurRadius(scaled(27))
     # the shadow doesn't apply to the title bar if the title_bar is "hidden"
     if title_bar != "hidden":
-        widget.setGraphicsEffect(shadow)
+        widget.setGraphicsEffect(title_bar_shadow)
     
     # redirecting some functions to shadow_layer.
     widget.show = shadow_layer.show
@@ -72,7 +70,7 @@ def add_base_window(widget: QWidget | TabWidget, title_bar: Literal["title", "ta
     
     widget.shadow_layer = shadow_layer
     widget.title_bar_layer = title_bar_layer
-    widget.shadow_effect = shadow
+    widget.shadow_effect = title_bar_shadow
 
 
 class Buttons:
@@ -114,6 +112,7 @@ class BaseWindow(QWidget, Buttons):
     def setGraphicsEffect(self, effect: QGraphicsEffect) -> None:
         """NOTE: Shadow effect is already applied to this window.\n
         for access the shadow effect, self.shadow_layer."""
+        # this function defined here just for add the docstring
         return super().setGraphicsEffect(effect)
     
     

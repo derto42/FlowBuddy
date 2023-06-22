@@ -1,18 +1,14 @@
 from __future__ import annotations
 from typing import Optional, Literal
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QSize, QRect, QRectF, QVariantAnimation, QEasingCurve, QPoint, QObject, pyqtSignal
+from PyQt5.QtCore import Qt, QSize, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget,
-    QVBoxLayout,
     QHBoxLayout,
-    QLabel,
     QGraphicsDropShadowEffect,
 )
 from PyQt5.QtGui import (
     QColor,
     QPainter,
-    QPainterPath,
     QPaintEvent,
     QMouseEvent,
     QPen,
@@ -54,7 +50,7 @@ class TabButton(QWidget):
         
         
         self.shadow_effect = QGraphicsDropShadowEffect(self)
-        self.shadow_effect.setOffset(0, 4.3)
+        self.shadow_effect.setOffset(0, scaled(4.3))
         self.shadow_effect.setBlurRadius(16)
         
         self.setGraphicsEffect(self.shadow_effect)
@@ -159,20 +155,11 @@ class TitleBarLayer(QWidget):
             self._init_for_title()
         else:
             self._init_for_tabs()
-            
-            
-        # adding shadow
-        shadow_effect = QGraphicsDropShadowEffect(self)
-        shadow_effect.setColor(QColor(118, 118, 118, 70))
-        shadow_effect.setOffset(0, 10)
-        shadow_effect.setBlurRadius(60)
-        self.setGraphicsEffect(shadow_effect)  # XXX: should be removed
-        
+
 
     def _init_for_title(self) -> None:
         """initialize title bar for title."""
         # XXX add stuff here for show title
-        # XXX add close and edit buttons (should be accessible from instance of BaseWindow)
         self.add_tab_button = lambda widget, title, index: print(f"""WARNING: tab with {title=} {index=} not created. 
                                                                  this BaseWindow is not tabs implemented.""")
 
