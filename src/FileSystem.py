@@ -18,12 +18,7 @@ ADDONS_FOLDER = os.path.join(PROGRAM_DIR, ADDONS_NAME)
 PLATFORM = sys.platform
 
 
-def create_save_file() -> None:
-    """Creates an empty save file."""
-    with open(SAVE_FILE, 'w') as f:
-        f.write('{"settings": {}, "groups": {}, "tasks": {}}')
-
-def abspath(path: str) -> str:
+def abspath(path: str) -> str | None:
     """Returns the absolute path. Returns None if the path does not exist."""
     _path = os.path.join(PROGRAM_DIR, path)
     return os.path.abspath(_path) if os.path.exists(_path) else None

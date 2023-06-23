@@ -9,8 +9,8 @@ import inspect
 from PyQt5.QtWidgets import QSystemTrayIcon
 from PyQt5.QtGui import QKeySequence
 
-from FileSystem import exists, ADDONS_FOLDER, ADDONS_NAME
-from SaveFile import JsonType, NotFoundException, apply_setting, get_setting, remove_setting, NotFoundException
+from FileSystem import exists, abspath, icon as get_icon, ADDONS_FOLDER, ADDONS_NAME
+from SaveFile import JsonType, NotFoundException, apply_setting, get_setting, remove_setting
 from utils import HotKeys
 
 
@@ -108,6 +108,7 @@ def load_addons() -> None:
             # Import the module
             add_on_paths[module_name] = modules_and_paths[module_name]
             currently_loading_module = module_name
+            AddOnBase()  # create a new instance of AddOnBase.
             module = import_module(module_name)
             currently_loading_module = None
             add_ons[module_name] = module
@@ -140,9 +141,14 @@ class AddOnBase:
         else: raise ValueError(f"'{name}' AddOn instance not found.")
     
     def _init(self):
-        self.name = currently_loading_module
+        self.MODULE_NAME = currently_loading_module
         self.activate_shortcut = None
         
+        # default name and icon_path
+        self.name = self.MODULE_NAME.split(".")[-1].replace("_", " ").title()
+        self.icon_path = "icon.png"
+
+
     @staticmethod
     def _get_calling_module() -> str | None:
         """Returns the calling module name if calling module is an addon. Otherwise returns None."""
@@ -157,6 +163,27 @@ class AddOnBase:
         )
         
         
+    @property
+    def MODULE(self) -> ModuleType:
+        return add_ons[self.MODULE_NAME]
+    
+    @property
+    def PATH(self) -> str:
+        return add_on_paths[self.MODULE_NAME]
+    
+    @property
+    def icon_path(self) -> str:
+        return self._icon_path
+    
+    @icon_path.setter
+    def icon_path(self, icon_path: str) -> None:
+        if _icon_path := abspath(f"{os.path.dirname(self.PATH)}/{icon_path}"):
+            self._icon_path = _icon_path.replace("\\", "/")
+            # XXX: inform icon not found warning.
+        else:
+            self._icon_path = get_icon("default_launcher_icon.png")
+        
+        
     def activate(self):
         """Override this method to call when desktop widget is activated."""
         pass
@@ -166,17 +193,27 @@ class AddOnBase:
         self.activate_shortcut: QKeySequence = key
         HotKeys.add_global_shortcut(HotKeys.format_shortcut_string(key.toString()), lambda: self.activate())
 
+    
+    def set_icon_path(self, icon_path: str) -> None:
+        """Set the icon path of icon that shows in the launcher. The icon should be in the addon directory."""
+        self.icon_path = icon_path
+        
+    def set_name(self, name: str) -> None:
+        """Set custom name for this addon. that shows in the launcher."""
+        self.name = name
+        # XXX: The name must be bound to the conditions. it should be rejected if not.
+
 
     def apply_setting(self, name: str, value: JsonType) -> None:
-        save_file = os.path.join(os.path.dirname(add_on_paths[self.name]), "save.json")
+        save_file = os.path.join(os.path.dirname(add_on_paths[self.MODULE_NAME]), "save.json")
         return apply_setting(name, value, save_file)
     
     def get_setting(self, name: str) -> JsonType:
-        save_file = os.path.join(os.path.dirname(add_on_paths[self.name]), "save.json")
+        save_file = os.path.join(os.path.dirname(add_on_paths[self.MODULE_NAME]), "save.json")
         return get_setting(name, save_file)
     
     def remove_setting(self, name: str) -> None:
-        save_file = os.path.join(os.path.dirname(add_on_paths[self.name]), "save.json")
+        save_file = os.path.join(os.path.dirname(add_on_paths[self.MODULE_NAME]), "save.json")
         return remove_setting(name, save_file)
     
     

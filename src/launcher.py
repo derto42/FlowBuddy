@@ -36,7 +36,7 @@ from FileSystem import icon as get_icon, abspath
 from SaveFile import apply_setting, get_setting, remove_setting, NotFoundException
 from utils import HotKeys
 
-from addon import AddOnBase, add_on_paths
+from addon import AddOnBase
 
 
 def check_setting(name: str) -> bool:
@@ -325,15 +325,10 @@ class MainWindow(QWidget):
     def add_widget(self, index: int, add_on_name: str) -> None:
         """Adds a new GroupWidget to the main window."""
         
-        title = add_on_name.split(".")[-1].replace("_", " ").title()
-
-        add_on_path = path.dirname(add_on_paths[add_on_name])
-        if icon_path := abspath(f"{add_on_path}/icon.png"):
-            icon_path = icon_path.replace("\\", "/")
-        else:
-            icon_path = get_icon("default_launcher_icon.png")
-        hover_icon_path = icon_path
         add_on_base_instance = AddOnBase(add_on_name)
+
+        title = add_on_base_instance.name
+        icon_path = hover_icon_path = add_on_base_instance.icon_path
         activate = add_on_base_instance.activate
         shortcut = add_on_base_instance.activate_shortcut
 
@@ -388,28 +383,3 @@ class MainWindow(QWidget):
     def setHidden(self, hidden: bool) -> None:
         apply_setting("upper-hidden", hidden)
         return super().setHidden(hidden)
-
-
-
-if __name__ == '__main__':
-    import sys
-    
-    app = QApplication(sys.argv)
-    # window = MainWindow()
-    # window.show()
-    
-    # widget2 = ShortcutLabel(parent = None, shortcut=QKeySequence(Qt.CTRL | Qt.Key.Key_S))
-    # widget2.show()
-    
-    # widget = GroupWidget(None)
-    # widget.show()
-
-    # window = MainWindow({"Name 1": None, "Name 2": None, "Name 3": None, "Name 4": None})
-    # widget2 = GroupWidget(window, "Title", "src/addons/shortcuts/icon.png", "src/addons/shortcuts/icon.png")
-    # widget2.move(20, 40)
-    # window.show()
-    
-    # wid = LowerWidget(None)
-    # wid.show()
-
-    sys.exit(app.exec_())
