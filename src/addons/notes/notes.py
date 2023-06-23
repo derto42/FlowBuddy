@@ -33,6 +33,10 @@ class NoteTab(QWidget):
         self.text_edit.setFont(get_font(size=16))
         self.text_edit.textChanged.connect(self.save_text_to_file)
         self.text_edit.setAcceptRichText(False)
+        self.text_edit.setStyleSheet("""QTextEdit{ 
+                                            background-color:lightgrey;
+                                            border-radius: 10;
+                                        } """)
         layout = QVBoxLayout()
         layout.addWidget(self.text_edit)
         #  Set the margins
