@@ -75,7 +75,9 @@ class JottingDownWindow(TabsWindow):
     def load_tabs(self):
         for file_name in get_config()["files"]:
             note_tab = NoteTab(file_name)
-            self.addTab(note_tab, file_name)
+            self.tab=self.addTab(note_tab, file_name)
+            self.tab.red_button.clicked.connect(self.delete_tab)
+
 
         if self.count() == 0:
             self.add_new_tab("notes")
