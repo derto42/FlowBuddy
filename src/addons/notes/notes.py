@@ -129,21 +129,6 @@ class JottingDownWindow(TabsWindow):
         else:
             window.hide()
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.old_pos = event.globalPos()
-
-    def mouseMoveEvent(self, event):
-        if not self.old_pos:
-            return
-        delta = QPoint(event.globalPos() - self.old_pos)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.old_pos = event.globalPos()
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.old_pos = None
-
     def closeEvent(self, event):
         self.save_tabs()
         self.hide()
