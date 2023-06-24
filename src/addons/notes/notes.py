@@ -77,15 +77,13 @@ class JottingDownWindow(TabsWindow):
     def create_tab(self, file_name):
         note_tab = NoteTab(file_name)
         self.tab = self.addTab(note_tab, file_name)
-        self.addTab(p := note_tab, file_name)
-        p.clicked.connect(lambda: window.remove_tab(file_name))
-        self.tab.red_button.clicked.connect(self.remove_tab)
+        self.tab.red_button.clicked.connect(lambda: window.remove_tab(file_name))
 
     def load_tabs(self):
         for file_name in get_config()["files"]:
             self.create_tab(file_name)
         if self.count() == 0:
-            self.create_tab()("notes")
+            self.create_tab("notes")
 
     def save_tabs(self):
         config = {
@@ -97,10 +95,10 @@ class JottingDownWindow(TabsWindow):
     def remove_tab(self, tab_text):
         tabid = self.get_tab_number_from_text(tab_text)
         file_name = self.tabText(tabid)
-        dialog = ConfirmationDialog(f"Delete tab {file_name}?")
-        res = dialog.exec()
-        if not res:
-            return
+        # dialog = ConfirmationDialog(f"Delete tab {file_name}?")
+        # res = dialog.exec()
+        # if not res:
+        #     return
         self.removeTab(tabid)
         delete_file_data(file_name)
         self.save_tabs()
