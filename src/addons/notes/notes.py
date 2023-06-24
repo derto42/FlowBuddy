@@ -95,10 +95,10 @@ class JottingDownWindow(TabsWindow):
     def remove_tab(self, tab_text):
         tabid = self.get_tab_number_from_text(tab_text)
         file_name = self.tabText(tabid)
-        # dialog = ConfirmationDialog(f"Delete tab {file_name}?")
-        # res = dialog.exec()
-        # if not res:
-        #     return
+        dialog = ConfirmationDialog(f"Delete tab {file_name}?")
+        res = dialog.exec()
+        if not res:
+            return
         self.removeTab(tabid)
         delete_file_data(file_name)
         self.save_tabs()
@@ -116,9 +116,6 @@ class JottingDownWindow(TabsWindow):
             )
             if not ok or not file_name:
                 return
-        # file_name = f"{file_name}.txt"
-        # note_tab = NoteTab(file_name)
-        # note_tab.create_new_file()
         self.create_tab(file_name)
         save_file_data(file_name)
         self.save_tabs()
