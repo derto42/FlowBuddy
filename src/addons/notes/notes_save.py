@@ -12,12 +12,14 @@ CONFIG_FILE = os.path.join(DATA_FOLDER, "config.json")
 
 
 def save_file_data(file_name: str, file_data: str = "") -> None:
+    file_name+=".txt"
     SAVE_FILE = os.path.join(DATA_FOLDER, file_name)
     with open(SAVE_FILE, "w") as f:
         f.write(file_data)
 
 
 def delete_file_data(file_name: str) -> None:
+    file_name+=".txt"
     SAVE_FILE = os.path.join(DATA_FOLDER, file_name)
     if exists(SAVE_FILE):
         os.remove(SAVE_FILE)
@@ -30,6 +32,7 @@ def exists(file_name: str):
 
 
 def get_file_data(file_name):
+    file_name+=".txt"
     SAVE_FILE = os.path.join(DATA_FOLDER, file_name)
     if exists(SAVE_FILE):
         with open(SAVE_FILE, "r") as file:
