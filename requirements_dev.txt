@@ -1,3 +1,5 @@
 black # formatter
 ruff  # linter
 pytest # for unittesting
+python-dotenv # for environment variables
+
