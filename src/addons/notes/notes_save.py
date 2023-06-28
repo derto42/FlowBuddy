@@ -5,39 +5,42 @@ import json
 
 
 FILE_PATH = os.path.join(os.path.dirname(__file__))
-ADDONS_NAME = "data"
-ADDONS_FOLDER = os.path.join(FILE_PATH, ADDONS_NAME)
+DATA_NAME = "data"
+DATA_FOLDER = os.path.join(FILE_PATH, DATA_NAME)
 PLATFORM = sys.platform
-CONFIG_FILE = os.path.join(ADDONS_FOLDER, "config.json")
+CONFIG_FILE = os.path.join(DATA_FOLDER, "config.json")
 
 
 def save_file_data(file_name: str, file_data: str = "") -> None:
-    SAVE_FILE = os.path.join(ADDONS_FOLDER, file_name)
+    file_name+=".txt"
+    SAVE_FILE = os.path.join(DATA_FOLDER, file_name)
     with open(SAVE_FILE, "w") as f:
         f.write(file_data)
 
 
 def delete_file_data(file_name: str) -> None:
-    SAVE_FILE = os.path.join(ADDONS_FOLDER, file_name)
+    file_name+=".txt"
+    SAVE_FILE = os.path.join(DATA_FOLDER, file_name)
     if exists(SAVE_FILE):
         os.remove(SAVE_FILE)
 
 
 def exists(file_name: str):
     """Returns True if the path exists. Returns False otherwise"""
-    SAVE_FILE = os.path.join(ADDONS_FOLDER, file_name)
+    SAVE_FILE = os.path.join(DATA_FOLDER, file_name)
     return os.path.exists(SAVE_FILE)
 
 
 def get_file_data(file_name):
-    SAVE_FILE = os.path.join(ADDONS_FOLDER, file_name)
+    file_name+=".txt"
+    SAVE_FILE = os.path.join(DATA_FOLDER, file_name)
     if exists(SAVE_FILE):
         with open(SAVE_FILE, "r") as file:
             return file.read()
 
 
-if not exists(ADDONS_FOLDER):
-    os.makedirs(ADDONS_FOLDER)
+if not exists(DATA_FOLDER):
+    os.makedirs(DATA_FOLDER)
 
 
 def open_file(file_path: str | None) -> None:
@@ -56,7 +59,7 @@ def get_config():
 
 def create_config_from_text_files():
     config = {
-        "files": [file_name for file_name in os.listdir(ADDONS_FOLDER)],
+        "files": [file_name for file_name in os.listdir(DATA_FOLDER)],
         "last_active": 0,
     }
     write_config(config)

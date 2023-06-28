@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QPoint, pyqtSignal
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
@@ -33,10 +33,12 @@ class NoteTab(QWidget):
         self.text_edit.setFont(get_font(size=16))
         self.text_edit.textChanged.connect(self.save_text_to_file)
         self.text_edit.setAcceptRichText(False)
-        self.text_edit.setStyleSheet("""QTextEdit{ 
+        self.text_edit.setStyleSheet(
+            """QTextEdit{ 
                                             background-color:lightgrey;
                                             border-radius: 10;
-                                        } """)
+                                        } """
+        )
         layout = QVBoxLayout()
         layout.addWidget(self.text_edit)
         #  Set the margins
@@ -57,10 +59,6 @@ class NoteTab(QWidget):
     def save_text_to_file(self):
         save_file_data(self.file_name, self.text_edit.toPlainText())
 
-    def create_new_file(self):
-        with open(self.file_name, "w") as file:
-            file.write("")
-
 
 class JottingDownWindow(TabsWindow):
     window_toggle_signal = pyqtSignal()
@@ -76,14 +74,16 @@ class JottingDownWindow(TabsWindow):
         self.add_button.clicked.connect(self.add_new_tab)
         self.setFixedSize(840, 400)
 
+    def create_tab(self, file_name):
+        note_tab = NoteTab(file_name)
+        self.tab = self.addTab(note_tab, file_name)
+        self.tab.red_button.clicked.connect(lambda: window.remove_tab(file_name))
+
     def load_tabs(self):
         for file_name in get_config()["files"]:
-            note_tab = NoteTab(file_name)
-            self.tab = self.addTab(note_tab, file_name)
-            self.tab.red_button.clicked.connect(self.delete_tab)
-
+            self.create_tab(file_name)
         if self.count() == 0:
-            self.add_new_tab("notes")
+            self.create_tab("notes")
 
     def save_tabs(self):
         config = {
@@ -92,7 +92,7 @@ class JottingDownWindow(TabsWindow):
         }
         write_config(config)
 
-    def delete_tab(self, tab_text):
+    def remove_tab(self, tab_text):
         tabid = self.get_tab_number_from_text(tab_text)
         file_name = self.tabText(tabid)
         dialog = ConfirmationDialog(f"Delete tab {file_name}?")
@@ -116,10 +116,7 @@ class JottingDownWindow(TabsWindow):
             )
             if not ok or not file_name:
                 return
-        file_name = f"{file_name}.txt"
-        note_tab = NoteTab(file_name)
-        note_tab.create_new_file()
-        self.addTab(note_tab, file_name)
+        self.create_tab(file_name)
         save_file_data(file_name)
         self.save_tabs()
         self.setCurrentIndex(len(self) - 1)

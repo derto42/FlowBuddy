@@ -246,6 +246,8 @@ class TitleBarLayer(QWidget):
         self._reset_tab_positions()
 
     def set_tab_focus(self, tab_id: int) -> None:
+        if not self.tabs:
+            return
         if self.tabs[tab_id].focused:
             return
         for _tab_id, _tab_button in self.tabs.items():
