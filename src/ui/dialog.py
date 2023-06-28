@@ -12,14 +12,13 @@ from PyQt5.QtGui import QKeyEvent, QShowEvent
 from settings import UI_SCALE
 from .custom_button import RedButton, GrnButton
 from .utils import get_font
-from .base_window import BaseWindow
 
 
 ACCEPTED = QDialog.Accepted
 REJECTED = QDialog.Rejected
 
 
-class BaseDialog(QDialog, BaseWindow):
+class BaseDialog(QDialog):
     def __init__(self, title: str = "Title",
                  parent: QWidget | None = None,) -> None:
         super().__init__(parent = parent)
