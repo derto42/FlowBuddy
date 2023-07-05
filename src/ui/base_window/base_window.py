@@ -11,6 +11,7 @@ from PyQt5.QtGui import (
     QColor,
     QPainter,
     QIcon,
+    QResizeEvent,
 )
 
 from settings import CORNER_RADIUS, apply_ui_scale as scaled
@@ -122,6 +123,11 @@ class BaseWindow(QWidget, Buttons):
         # this function defined here just for add the docstring
         return super().setGraphicsEffect(effect)
     
+    def resizeEvent(self, a0: QResizeEvent) -> None:
+        self.title_bar_layer.adjustSize()
+        self.shadow_layer.adjustSize()
+        return super().resizeEvent(a0)
+    
     
 class TabsWindow(TabWidget, Buttons):
     class TabIndex(int):
@@ -184,3 +190,8 @@ class TabsWindow(TabWidget, Buttons):
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRoundedRect(self.rect(), x := scaled(CORNER_RADIUS), x)
         painter.end()
+
+    def resizeEvent(self, a0: QResizeEvent) -> None:
+        self.title_bar_layer.adjustSize()
+        self.shadow_layer.adjustSize()
+        return super().resizeEvent(a0)
