@@ -163,6 +163,8 @@ class TitleBarLayer(QWidget):
         self.title_label = QLabel("", self)
         self.title_label.move(scaled(20), scaled(5))
         self.title_label.setFont(get_font(size=scaled(16)))
+        # raise the buttons forward to make be able to click on them
+        self.buttons.raise_()
 
     def _init_for_tabs(self) -> None:
         """initialize title bar for tabs."""
