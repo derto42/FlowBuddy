@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QGraphicsOpacityEffect,
 )
+from .shortcuts_save import TaskClass
 
 from ui import BaseDialog, ACCEPTED, REJECTED, TextButton, Entry
 
@@ -162,7 +163,8 @@ class TaskDialog(BaseDialog):
         elif type == "folder":
             self._file_path = QFileDialog.getExistingDirectory(self, "Choose Folder", "", options=options)
 
-    def for_edit(self, name: str, button_text: str, url: str, file_path: str) -> None:
+    def for_edit(self, task_class: TaskClass) -> None:
+        name, button_text, url, file_path, _ = task_class.get_task_data().values()
         self.setTitle("Edit Task")
         self._name_entry.setText(name)
         self._button_entry.setText(button_text if button_text is not None else "")
@@ -180,7 +182,7 @@ class TaskDialog(BaseDialog):
         file_path = filet if filet else None
         return name, button_text, url, file_path
 
-    def exec(self) -> Any:
+    def exec(self) -> tuple[str, str, str, str]:
         self.adjustSize()
         cursor_pos = QCursor.pos()
         geo = self.geometry()
@@ -189,5 +191,5 @@ class TaskDialog(BaseDialog):
         super().exec()
         return self.result()
     
-    def exec_(self) -> int:
+    def exec_(self):
         return self.exec()

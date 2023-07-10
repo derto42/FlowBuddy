@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+from typing import Literal
 import requests
 import os
 
@@ -56,6 +57,7 @@ class InvalidURL(Exception):
 class TaskClass:
     def __init__(
         self,
+        group_id: str,
         task_name: str,
         task_id: str | None = None,
         button_text: str | None = None,
@@ -84,6 +86,7 @@ class TaskClass:
         else:
             self.task_id = task_id
 
+        self.group_id = group_id
         self.task_name = task_name
         self.button_text = button_text
         self.url = url
@@ -150,7 +153,7 @@ class TaskClass:
 
     def edit_task(
         self,
-        task_name: str | None,
+        task_name: str,
         button_text: str | None = None,
         url: str | None = None,
         file_path: str | None = None,
@@ -193,13 +196,9 @@ class TaskClass:
         Will delete the task from the Save_File.
         Does not search for any associated groups so should only be used when deleting the parent group.
         """
-        with open(FILE_PATH, "r") as save_file:
-            json_data = json.load(save_file)
-
-        json_data["tasks"].pop(self.task_id)
-
-        with open(FILE_PATH, "w") as save_file:
-            json.dump(json_data, save_file, indent=4)
+        # get group of this task and delete from task to remove it from the group as well
+        group = get_group_by_id(self.group_id)
+        group.delete_task(self.task_id)
 
     def save_task(self) -> None:
         """
@@ -220,7 +219,7 @@ class GroupClass:
         self,
         group_name: str,
         group_id: str | None = None,
-        group_tasks: list[str, ...] | None = None,
+        group_tasks: list[str] | None = None,
     ):
         """
         Class to hold all the required details that a group requires.
@@ -363,7 +362,7 @@ class GroupClass:
         :param file_path: filepath string
         :param directory_path: directory path string
         """
-        new_task = TaskClass(task_name, task_id, button_text, url, file_path, directory_path)
+        new_task = TaskClass(self.group_id, task_name, task_id, button_text, url, file_path, directory_path)
 
         self.group_tasks.append(new_task.task_id)
         self.save_group()
@@ -382,7 +381,7 @@ class GroupClass:
         self.remove(task_id)
         delete_task_by_id(task_id)
 
-    def get_tasks(self) -> list[TaskClass, ...]:
+    def get_tasks(self) -> list[TaskClass]:
         """
         Returns a list of objects of all the tasks associated with the
         GroupClass.
@@ -390,6 +389,9 @@ class GroupClass:
         :return: list of TaskClass object
         """
         return [get_task_by_id(str(task)) for task in self.group_tasks]
+
+    def delete_group(self) -> None:
+        delete_group_by_id(self.group_id)
 
     def save_group(self) -> None:
         """
@@ -429,6 +431,7 @@ def get_task_by_id(task_id: str) -> TaskClass:
     task_data = json_data["tasks"][f"{task_id}"]
 
     return TaskClass(
+        group_id=get_group_id_of_task(task_id),
         task_name=task_data["task_name"],
         task_id=task_id,
         button_text=task_data["button_text"],
@@ -436,6 +439,7 @@ def get_task_by_id(task_id: str) -> TaskClass:
         file_path=task_data["file_path"],
         directory_path=task_data["directory_path"],
     )
+
 
 
 def get_group_by_id(group_id: str) -> GroupClass:
@@ -465,6 +469,18 @@ def delete_task_by_id(task_id: str) -> None:
     get_task_by_id(task_id).delete_task()
 
 
+def get_group_id_of_task(task_id: str) -> str:
+    """Returns the group_id of the given task_id."""
+    with open(FILE_PATH, "r") as save_file:
+        json_data = json.load(save_file)
+        groups: dict[str, dict] = json_data["groups"]
+
+    for group_id, group in groups.items():
+        if task_id in group["group_tasks"]:
+            return group_id
+    raise NotFound(f"Task with id '{task_id}' not found in any groups.")
+
+
 def delete_group_by_id(group_id: str) -> None:
     """
     Delete a group and its tasks from the SaveFile by using its id as a lookup.
@@ -484,7 +500,7 @@ def is_id_used(_id: str | int) -> bool:
     return _id in json_data["groups"] or _id in json_data["tasks"]
 
 
-def load_groups() -> list:
+def load_groups() -> list[str]:
     """
     loads a list of group ids currently in the SaveFile.
     :return: list of ids as strings
