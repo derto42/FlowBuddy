@@ -1,41 +1,16 @@
-
-name: Format Python Code
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
+name: Format Python code with black
+on: push
 jobs:
   format:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v2
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'  # 3.10' is the desired Python version
-
-      - name: Install Dependencies
+          python-version: 3.9
+      - name: Install black
         run: pip install black
-
-      - name: Format Code
-        run: black .  # Use 'black .' to format the entire repository
-
-      - name: Commit Changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Apply Black formatting"
-          git push
+      - name: Format code with black
+        run: black .
