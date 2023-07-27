@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Union
+from typing import NewType, Union
 from PyQt5 import QtGui
 
 from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QSize, QEvent
@@ -35,12 +35,14 @@ from settings import UI_SCALE, apply_ui_scale as scaled
 from ui.utils import get_font
 
 
+NodeChangeEventType = NewType("NodeChangeEventType", int)
+
 class NodeChangeEvent(QEvent):
-    class Event:
-        NODE_RESIZED: int = 0
-        NODE_DELETED: int = 1
+    class Type:
+        NODE_RESIZED: NodeChangeEventType = NodeChangeEventType(0)
+        NODE_DELETED: NodeChangeEventType = NodeChangeEventType(1)
         
-    def __init__(self, event: int, node: GroupNode | TaskNode,
+    def __init__(self, event: NodeChangeEventType, node: GroupNode | TaskNode,
                  data_class: Data.TaskClass | Data.GroupClass):
         super().__init__(QEvent.Type.User)
         self.event = event
@@ -98,11 +100,11 @@ class BaseNode(QWidget):
     def delete_node(self) -> None:
         self.hide()
         self.deleteLater()
-        self.changed.emit(NodeChangeEvent(NodeChangeEvent.Event.NODE_DELETED, self, self.data_class))
+        self.changed.emit(NodeChangeEvent(NodeChangeEvent.Type.NODE_DELETED, self, self.data_class))
         
     def adjustSize(self) -> None:
         super().adjustSize()
-        self.changed.emit(NodeChangeEvent(NodeChangeEvent.Event.NODE_RESIZED, self, self.data_class))
+        self.changed.emit(NodeChangeEvent(NodeChangeEvent.Type.NODE_RESIZED, self, self.data_class))
 
     @property
     def data_class(self):
@@ -170,7 +172,7 @@ class TaskNode(BaseNode):
                 '{Data.get_group_by_id(self.task.group_id).group_name}'?")
         if dialog.exec() == ACCEPTED:
             self.task.delete_task()
-            self.changed.emit(NodeChangeEvent(NodeChangeEvent.Event.NODE_DELETED, self, self.data_class))
+            self.changed.emit(NodeChangeEvent(NodeChangeEvent.Type.NODE_DELETED, self, self.data_class))
 
 
 class GroupNode(BaseNode):
@@ -224,4 +226,4 @@ class GroupNode(BaseNode):
         dialog = ConfirmationDialog(f"Delete '{self.group.group_name}'")
         if dialog.exec() == ACCEPTED:
             self.group.delete_group()
-            self.changed.emit(NodeChangeEvent(NodeChangeEvent.Event.NODE_DELETED, self, self.data_class))
+            self.changed.emit(NodeChangeEvent(NodeChangeEvent.Type.NODE_DELETED, self, self.data_class))

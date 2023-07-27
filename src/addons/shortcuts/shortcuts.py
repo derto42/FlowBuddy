@@ -78,9 +78,9 @@ class MainWindow(BaseWindow):
         self._update_size()
         
     def _on_node_changed(self, event: NodeChangeEvent) -> None:
-        if event.event == NodeChangeEvent.Event.NODE_RESIZED:
+        if event.event == NodeChangeEvent.Type.NODE_RESIZED:
             self._update_size()
-        elif event.event == NodeChangeEvent.Event.NODE_DELETED:
+        elif event.event == NodeChangeEvent.Type.NODE_DELETED:
             self._delete_node(event.node)
         
     def _get_next_position(self) -> QPoint:
