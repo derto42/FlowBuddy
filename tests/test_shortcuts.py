@@ -1,4 +1,4 @@
 import test_components
-module=test_components.load_addon("notes")
-test_components.activate_addon("notes")
+module=test_components.load_addon("shortcuts")
+test_components.activate_addon("shortcuts")
 test_components.application.exec()
