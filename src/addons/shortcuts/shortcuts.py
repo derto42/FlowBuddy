@@ -1,26 +1,24 @@
 from __future__ import annotations
-from typing import overload
 
-from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QSize
-from PyQt5.QtGui import QMouseEvent, QKeySequence
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel
 
 from addon import AddOnBase
+from addons.shortcuts.dialog import GroupDialog, REJECTED
+from ui.utils import get_font
 
 from . import shortcuts_save as Data
-from FileSystem import open_file
 
 from ui import (
     BaseWindow,
-    RedButton,
     GrnButton,
-    YelButton,
-    TextButton,
-    ConfirmationDialog,
-    ACCEPTED,
     REJECTED,
 )
 
-from .nodes import GroupNode, TaskNode, NodeChangeEvent
+from .nodes import (
+    GroupNode,
+    SubNodeManager,
+    TaskNode
+)
 
 from settings import apply_ui_scale as scaled
 
@@ -34,84 +32,95 @@ class MainWindow(BaseWindow):
     def __init__(self) -> None:
         super().__init__(hide_title_bar = False)
         
-        self._nodes: list[GroupNode | TaskNode] = []
         self._edit_mode: bool = False
         
         self.toggle_window = lambda: window.show() if window.isHidden() else window.hide()
 
         self.setContentsMargins(x := scaled(15), x, x, x)
+        self.setMinimumSize(scaled(110), scaled(76))
+        
+        self.setLayout(layout := QVBoxLayout())
+        layout.addLayout(nodes_layout := QVBoxLayout())
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        nodes_layout.setContentsMargins(0, 0, 0, 0)
+        nodes_layout.setSpacing(0)
+        self._nodes_layout = nodes_layout
+
+        self._group_nodes_manager = SubNodeManager(nodes_layout, self)
+        
+        layout.addLayout(add_new_group_layout := QHBoxLayout())
+        self._setup_add_new_group_button(add_new_group_layout)
+        
         
         for group_id in Data.load_groups():
-            group = Data.get_group_by_id(group_id)
-            self._add_group_node(group)
-            for task in group.get_tasks():
-                self._add_task_node(task)
+            group_class = Data.get_group_by_id(group_id)
+            self._add_group_node(group_class)
                 
-        self._update_size()
-
         self.yel_button.clicked.connect(self._toggle_edit_mode)
-        self.red_button.clicked.connect(self.toggle_window)
+        self.red_button.clicked.connect(self.hide)
+        
 
+    def _setup_add_new_group_button(self, add_new_group_layout: QHBoxLayout):
+        """Creates 'Add New Group' label and green button and places that on add_new_group_layout."""
+        add_new_group_layout.setContentsMargins(0, scaled(25), 0, 0)
+        add_new_group_layout.setSpacing(0)
+        
+        add_group_label = QLabel("Add New Group", self)
+        add_group_label.setFont(get_font(size=scaled(24), weight="semibold"))
+        add_group_label.setStyleSheet("color: #ABABAB")
+
+        add_group_button = GrnButton(self, "radial")
+        add_group_button.clicked.connect(self._on_add_group_button)
+        add_group_button.setToolTip("Add Group")
+
+        add_new_group_layout.addWidget(add_group_label)
+        add_new_group_layout.addSpacing(scaled(13))
+        add_new_group_layout.addWidget(add_group_button)
+        add_new_group_layout.addStretch()
+        
+        self._add_new_group_label = add_group_label
+        self._add_new_group_button = add_group_button
+        self._add_new_group_layout = add_new_group_layout
+        
+        self._update_edit_mode()
 
     def _add_group_node(self, group_class: Data.GroupClass) -> None:
-        if len(self._nodes) != 0:
-            self._nodes.append(QSize(0, scaled(25)))
         group_node = GroupNode(group_class, self)
-        self._setup_node(group_node)
+        self._group_nodes_manager.add_node(group_node)
+        self._update_edit_mode()
+        group_node.task_node_departed_signal.connect(self._on_task_node_departed)
         
-    def _add_task_node(self, task_class: Data.TaskClass) -> None:
-        if len(self._nodes) != 0:
-            self._nodes.append(QSize(0, scaled(12)))
-        task_node = TaskNode(task_class, self)
-        self._setup_node(task_node)
-
-    def _setup_node(self, node: TaskNode | GroupNode):
-        node.move(self._get_next_position())
-        node.set_edit_mode(self._edit_mode)
-        node.changed.connect(self._on_node_changed)
-        self._nodes.append(node)
+    def _on_add_group_button(self) -> None:
+        dialog = GroupDialog(self)
+        if dialog.exec() != REJECTED:
+            res = dialog.result()
+            self._add_group_node(Data.GroupClass(res))
         
-    def _delete_node(self, node: TaskNode | GroupNode) -> None:
-        node.hide()
-        node.deleteLater()
-        self._nodes.remove(node)
-        self._update_size()
-        
-    def _on_node_changed(self, event: NodeChangeEvent) -> None:
-        if event.event == NodeChangeEvent.Type.NODE_RESIZED:
-            self._update_size()
-        elif event.event == NodeChangeEvent.Type.NODE_DELETED:
-            self._delete_node(event.node)
-        
-    def _get_next_position(self) -> QPoint:
-        y = sum(node.height() for node in self._nodes)
-        return self._add_paddings(0, y)
-    
-    def _position_of_node_by_index(self, node_index: int) -> QPoint:
-        y = sum(node.height() for node in self._nodes[:node_index])  # XXX: should remove counting QSize
-        return self._add_paddings(0, y)
-
-    def _add_paddings(self, x, y):
-        y += self.contentsMargins().top()
-        x += self.contentsMargins().left()
-        return QPoint(x, y)
-    
-    def _update_node_position(self) -> None:
-        pass  # XXX: should be implemented.
-    
-    def _update_size(self) -> None:
-        if self._nodes:
-            width = max(node.width() for node in self._nodes)
-            height = sum(node.height() for node in self._nodes)
-            width += self.contentsMargins().left() + self.contentsMargins().right()  # adding the contentsMargins
-            height += self.contentsMargins().top() + self.contentsMargins().bottom()  # adding the contentsMargins
-            self.setFixedSize(width, height)
+    def _update_edit_mode(self) -> None:
+        self._group_nodes_manager.set_edit_mode(self._edit_mode)
+        self._add_new_group_label.setHidden(not self._edit_mode)
+        self._add_new_group_button.setHidden(not self._edit_mode)
+        self._add_new_group_layout.setContentsMargins(0, scaled(25) if self._edit_mode else 0, 0, 0)
+        self.adjustSize()
         
     def _toggle_edit_mode(self) -> None:
         self._edit_mode = not self._edit_mode
-        [node.set_edit_mode(self._edit_mode) for node in self._nodes if not isinstance(node, QSize)]
-        self._update_size()
+        self._update_edit_mode()
         
+    def _on_task_node_departed(self, task_node: TaskNode) -> None:
+        print(f"{self._nodes[task_node.task_class.task_id]} is departed from {self._nodes[Data.get_group_id_of_task(task_node.task_class.task_id)]}.")
+        # XXX: Should be implemented
+        
+        
+    def get_first_node(self) -> GroupNode:
+        return self.layout().itemAt(0).layout().itemAt(0).widget()
+
+    @property
+    def _nodes(self) -> dict[str, GroupNode | TaskNode]:
+        """This property is used to keep all the nodes accessible via its save data id."""
+        return {**GroupNode.nodes, **TaskNode.nodes}
+
 
 window = MainWindow()
 add_on_base.activate = window.toggle_window

@@ -1,6 +1,5 @@
 from __future__ import annotations
 import json
-from typing import Literal
 import requests
 import os
 
@@ -213,6 +212,9 @@ class TaskClass:
         with open(FILE_PATH, "w") as save_file:
             json.dump(json_data, save_file, indent=4)
 
+    def change_group(self, new_group_id: str) -> None:
+        change_group_of_task(self.task_id, new_group_id)
+
 
 class GroupClass:
     def __init__(
@@ -294,6 +296,10 @@ class GroupClass:
         The method will loop through 'group_tasks' to delete all tasks
         individually.
         """
+        
+        for task in self.group_tasks:
+            get_task_by_id(task).delete_task()
+            
         with open(FILE_PATH, "r") as save_file:
             json_data = json.load(save_file)
 
@@ -301,9 +307,6 @@ class GroupClass:
 
         with open(FILE_PATH, "w") as save_file:
             json.dump(json_data, save_file, indent=4)
-
-        for task in self.group_tasks:
-            get_task_by_id(task).delete_task()
 
     def insert(self, index, new_task_id: str) -> None:
         """
@@ -381,14 +384,14 @@ class GroupClass:
         self.remove(task_id)
         delete_task_by_id(task_id)
 
-    def get_tasks(self) -> list[TaskClass]:
+    def get_tasks(self) -> tuple[TaskClass]:
         """
         Returns a list of objects of all the tasks associated with the
         GroupClass.
 
         :return: list of TaskClass object
         """
-        return [get_task_by_id(str(task)) for task in self.group_tasks]
+        return (get_task_by_id(str(task)) for task in self.group_tasks)
 
     def delete_group(self) -> None:
         delete_group_by_id(self.group_id)
@@ -412,6 +415,10 @@ class GroupClass:
         with open(FILE_PATH, "w") as save_file:
             json.dump(json_data, save_file, indent=4)
 
+    def reorder_tasks(self, new_task_id_list: list[str]) -> None:
+        self.group_tasks = new_task_id_list
+        self.save_group()
+
 
 def get_task_by_id(task_id: str) -> TaskClass:
     """
@@ -425,7 +432,7 @@ def get_task_by_id(task_id: str) -> TaskClass:
     with open(FILE_PATH, "r") as save_file:
         json_data = json.load(save_file)
 
-    if task_id not in [str(i) for i in json_data["tasks"]]:
+    if task_id not in (str(i) for i in json_data["tasks"]):
         raise NotFoundInFile(task_id)
 
     task_data = json_data["tasks"][f"{task_id}"]
@@ -439,7 +446,6 @@ def get_task_by_id(task_id: str) -> TaskClass:
         file_path=task_data["file_path"],
         directory_path=task_data["directory_path"],
     )
-
 
 
 def get_group_by_id(group_id: str) -> GroupClass:
@@ -466,7 +472,13 @@ def delete_task_by_id(task_id: str) -> None:
     Delete a task from the SaveFile by using its id as a lookup.
     :param task_id: id of the task to be deleted.
     """
-    get_task_by_id(task_id).delete_task()
+    with open(FILE_PATH, "r") as save_file:
+        json_data = json.load(save_file)
+
+    del json_data["tasks"][task_id]
+
+    with open(FILE_PATH, "w") as save_file:
+        json.dump(json_data, save_file, indent=4)
 
 
 def get_group_id_of_task(task_id: str) -> str:
@@ -552,6 +564,19 @@ def load_tasks() -> list:
         json_data = json.load(save_file)
 
     return list(json_data["tasks"])
+
+
+def change_group_of_task(task_id: str, new_group_id: str):
+    group_id = get_group_id_of_task(task_id)
+    
+    with open(FILE_PATH, "r") as save_file:
+        json_data = json.load(save_file)
+
+    json_data["groups"][group_id]["group_tasks"].remove(task_id)
+    json_data["groups"][new_group_id]["group_tasks"].append(task_id)
+
+    with open(FILE_PATH, "w") as save_file:
+        json.dump(json_data, save_file, indent=4)
 
 
 def apply_settings(name: str, value=None) -> None:
