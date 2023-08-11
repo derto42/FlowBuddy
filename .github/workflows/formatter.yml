@@ -1,16 +1,39 @@
-name: Format Python code with black
-on: push
+name: Format Python code with black and push changes
+on: workflow_dispatch
+
 jobs:
-  format:
+  format_and_push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+
       - name: Install black
         run: pip install black
+
       - name: Format code with black
         run: black .
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --quiet || echo "Changes detected"
+          echo "changes=$(git diff --quiet || echo "true")" >> $GITHUB_ENV
+
+      - name: Configure Git
+        if: env.changes == 'true'
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Commit and push changes
+        if: env.changes == 'true'
+        run: |
+          git add -A
+          git commit -m "Auto-format code with black"
+          git push
