@@ -196,11 +196,14 @@ class LowerWidget(QMainWindow):
         
         self.window_toggle_signal.connect(self.toggle_windows)
         
-        self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1]) \
-                              if check_setting("lower_position") else \
-                              QPoint(QApplication.desktop().width() // 2 - self.size().width() // 2,
-                                     QApplication.desktop().height() - self.size().height() - 200)
-
+        if check_setting("lower_position"):
+            self.lower_position = QPoint(get_setting("lower_position")[0], get_setting("lower_position")[1])
+        else:
+            desktop = QApplication.desktop()
+            primary_screen_index = desktop.primaryScreen()
+            screen = desktop.screen(primary_screen_index)
+            self.lower_position = QPoint(screen.width() // 2 - self.size().width() // 2,
+                                         screen.height() - 60 - self.size().height())
 
         self.icon: QPixmap = QPixmap(get_icon("icon.png")).scaled(scaled(35), scaled(35),
                                                                   Qt.AspectRatioMode.KeepAspectRatio,
@@ -305,12 +308,17 @@ class MainWindow(QWidget):
         for index, add_on_name in enumerate(add_ons, 1):
             self.add_widget(index, add_on_name)
 
-        self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1]) \
-                              if check_setting("upper_position") else \
-                              QPoint(QApplication.desktop().width() // 2 - self.get_window_size().width() // 2,
-                                     QApplication.desktop().height() - self.get_window_size().height() - 150)
+        current_window_size = ws = self.get_window_size()
+        if check_setting("upper_position"):
+            self.upper_position = QPoint(get_setting("upper_position")[0], get_setting("upper_position")[1])
+        else:
+            desktop = QApplication.desktop()
+            primary_screen_index = desktop.primaryScreen()
+            screen = desktop.screen(primary_screen_index)
+            self.upper_position = QPoint(screen.width() // 2 - ws.width() // 2,
+                                         screen.height() - 150 - ws.height())
 
-        self.setGeometry(QRect(self.upper_position, self.get_window_size()))
+        self.setGeometry(QRect(self.upper_position, current_window_size))
 
         
     def get_window_size(self) -> QSize:
