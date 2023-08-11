@@ -58,7 +58,7 @@ class HotKeys:
         Args:
             shortcut (str): The key combination of the global shortcut for which the callback functions need to be called.
         """
-        [func() for func in HotKeys._shortcuts_and_callbacks[shortcut]]
+        (func() for func in HotKeys._shortcuts_and_callbacks[shortcut])
 
 
     @staticmethod
@@ -70,7 +70,7 @@ class HotKeys:
             "home", "left", "page_down", "page_up", "right",
             "shift", "shift_l", "shift_r", "space", "tab", "up",
             "insert", "menu", "num_lock", "print_screen", "scroll_lock",]
-        return "+".join([f"<{k.lower().strip()}>" if k.lower().strip() in x else k.lower().strip() for k in key.split("+")])
+        return "+".join(f"<{k.lower().strip()}>" if k.lower().strip() in x else k.lower().strip() for k in key.split("+"))
 
 
 

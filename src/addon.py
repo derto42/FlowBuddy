@@ -58,14 +58,14 @@ def load_addons() -> None:
                     with open(order_file, "r") as f:
                         order_data = json.load(f)
                         
-                    high_priorities   = [x.lower() for x in order_data["high_priority"]]
-                    medium_priorities = [x.lower() for x in order_data["medium_priority"]]
-                    low_priorities    = [x.lower() for x in order_data["low_priority"]]
+                    high_priorities   = (x.lower() for x in order_data["high_priority"])
+                    medium_priorities = (x.lower() for x in order_data["medium_priority"])
+                    low_priorities    = (x.lower() for x in order_data["low_priority"])
                     
                     modules_name_in_lower = {x.split(".")[-1].lower(): x for x in modules_and_paths}
                     
                     priority_addons = []
-                    for priority in [high_priorities, medium_priorities, low_priorities]:
+                    for priority in (high_priorities, medium_priorities, low_priorities):
                         addons = {}
                         for module in priority:
                             if module in modules_name_in_lower:

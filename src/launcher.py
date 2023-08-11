@@ -234,7 +234,7 @@ class LowerWidget(QMainWindow):
             for window in self.active_windows:
                 window.show()
         else:
-            self.active_windows = [x for x in QApplication.allWindows() if x.isVisible()]
+            self.active_windows = (x for x in QApplication.allWindows() if x.isVisible())
             for window in self.active_windows:
                 window.hide()
                 
@@ -341,7 +341,7 @@ class MainWindow(QWidget):
             for window in self.active_windows:
                 window.show()
         else:
-            self.active_windows = [x for x in QApplication.allWindows() if x.isVisible()]
+            self.active_windows = (x for x in QApplication.allWindows() if x.isVisible())
             for window in self.active_windows:
                 window.hide()
         
